@@ -18,14 +18,15 @@ Nairi uses automated guards to enforce documentation boundaries, bilingual synch
 1. `README.md` exists and links to `README-cn.md`.
 2. `LICENSE` exists and uses MIT.
 3. `AGENTS.md` exists.
-4. `docs/*.md` files have matching `docs/*-cn.md` files.
-5. Local runs require `memory-bank/*.md` files to have matching local `memory-bank/*-cn.md` files.
-6. CI skips local memory-bank Chinese pair existence checks because `memory-bank/*-cn.md` files are intentionally ignored and not pushed.
-7. `memory-bank/*-cn.md` files are ignored by `.gitignore`.
-8. Root directory must not contain scattered development-state documents.
-9. `docs/` must not contain development planning or progress documents.
-10. `memory-bank/` must not contain external deployment or user manuals.
-11. Documents must not use Step, Phase, or Slice as development-stage headings.
+4. Root GitHub entry-point docs may include `SECURITY.md`, `SECURITY-cn.md`, `CONTRIBUTING.md`, and `CONTRIBUTING-cn.md`.
+5. `docs/*.md` files have matching `docs/*-cn.md` files.
+6. Local runs require `memory-bank/*.md` files to have matching local `memory-bank/*-cn.md` files.
+7. CI skips local memory-bank Chinese pair existence checks because `memory-bank/*-cn.md` files are intentionally ignored and not pushed.
+8. `memory-bank/*-cn.md` files are ignored by `.gitignore`.
+9. Root directory must not contain scattered development-state documents.
+10. `docs/` must not contain development planning or progress documents.
+11. `memory-bank/` must not contain external deployment or user manuals.
+12. Documents must not use Step, Phase, or Slice as development-stage headings.
 
 ## I18n Doc Guard
 

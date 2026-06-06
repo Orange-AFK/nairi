@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+import os
 from pathlib import Path
 
 from guard_common import ROOT, Guard, extract_backtick_values, markdown_files
@@ -32,8 +33,11 @@ def compare_pair(guard: Guard, english: Path, chinese: Path) -> None:
 
 def main() -> None:
     guard = Guard("i18n_doc_guard", [])
+    ci_run = os.environ.get("GITHUB_ACTIONS") == "true"
 
     for base in ["docs", "memory-bank"]:
+        if base == "memory-bank" and ci_run:
+            continue
         for english in markdown_files(base):
             if english.name.endswith("-cn.md"):
                 continue

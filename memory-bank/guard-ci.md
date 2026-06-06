@@ -19,12 +19,13 @@ Nairi uses automated guards to enforce documentation boundaries, bilingual synch
 2. `LICENSE` exists and uses MIT.
 3. `AGENTS.md` exists.
 4. `docs/*.md` files have matching `docs/*-cn.md` files.
-5. `memory-bank/*.md` files have matching local `memory-bank/*-cn.md` files.
-6. `memory-bank/*-cn.md` files are ignored by `.gitignore`.
-7. Root directory must not contain scattered development-state documents.
-8. `docs/` must not contain development planning or progress documents.
-9. `memory-bank/` must not contain external deployment or user manuals.
-10. Documents must not use Step, Phase, or Slice as development-stage headings.
+5. Local runs require `memory-bank/*.md` files to have matching local `memory-bank/*-cn.md` files.
+6. CI skips local memory-bank Chinese pair existence checks because `memory-bank/*-cn.md` files are intentionally ignored and not pushed.
+7. `memory-bank/*-cn.md` files are ignored by `.gitignore`.
+8. Root directory must not contain scattered development-state documents.
+9. `docs/` must not contain development planning or progress documents.
+10. `memory-bank/` must not contain external deployment or user manuals.
+11. Documents must not use Step, Phase, or Slice as development-stage headings.
 
 ## I18n Doc Guard
 
@@ -36,7 +37,7 @@ Nairi uses automated guards to enforce documentation boundaries, bilingual synch
 ### Check Scope
 
 1. Every tracked English `docs/*.md` file has a tracked `docs/*-cn.md` pair.
-2. Every English `memory-bank/*.md` file has a local ignored `memory-bank/*-cn.md` pair.
+2. Local runs require every English `memory-bank/*.md` file to have a local ignored `memory-bank/*-cn.md` pair; CI skips this because the Chinese memory-bank files are local-only by design.
 3. Contract-like tokens inside backticks must appear in both language versions.
 4. The guard focuses on contract drift, not prose equality.
 

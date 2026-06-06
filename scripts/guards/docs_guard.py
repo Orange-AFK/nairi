@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+import os
 from pathlib import Path
 
 from guard_common import ROOT, Guard, exists, git_check_ignored, markdown_files, read
@@ -9,6 +10,7 @@ from guard_common import ROOT, Guard, exists, git_check_ignored, markdown_files,
 
 def main() -> None:
     guard = Guard("docs_guard", [])
+    require_local_memory_pairs = os.environ.get("GITHUB_ACTIONS") != "true"
 
     for required in ["README.md", "README-cn.md", "LICENSE", "AGENTS.md", ".gitignore", ".env.example"]:
         guard.require(exists(required), f"missing required root file: {required}")
@@ -42,7 +44,8 @@ def main() -> None:
             guard.require(git_check_ignored(str(path.relative_to(ROOT))), f"memory-bank Chinese file must be git-ignored: {path.relative_to(ROOT)}")
             continue
         pair = path.with_name(f"{path.stem}-cn.md")
-        guard.require(pair.exists(), f"memory-bank file missing local Chinese pair: {path.relative_to(ROOT)}")
+        if require_local_memory_pairs:
+            guard.require(pair.exists(), f"memory-bank file missing local Chinese pair: {path.relative_to(ROOT)}")
 
     root_md_files = [p.name for p in ROOT.glob("*.md")]
     allowed_root_md = {"README.md", "README-cn.md", "AGENTS.md"}

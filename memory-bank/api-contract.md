@@ -1,0 +1,113 @@
+# Nairi
+
+## API Contract Principles
+
+### API Authority
+
+1. FastAPI owns all product capability behavior.
+2. API contracts are documented before implementation.
+3. Every route must define method, path, scope, request, response, errors, audit behavior, and client mapping.
+
+## Authentication
+
+### Token Model
+
+1. Admin users authenticate through session or token-backed flows.
+2. Agents and automation use API tokens.
+3. API tokens carry explicit scopes.
+4. `admin:all` may imply all scopes only for trusted administrative use.
+
+## System API
+
+### Read API Health
+
+1. Method: `GET`
+2. Path: `/api/v1/health`
+3. Scope: `public:read`
+4. Response fields: `status`, `service`, `version`
+5. Clients: deployment smoke tests, uptime checks, and local development verification.
+
+## Content API
+
+### List Posts
+
+1. Method: `GET`
+2. Path: `/api/v1/posts`
+3. Scope: `posts:read`
+4. Query parameters: `status`, `tag`, `category`, `series`, `limit`, `cursor`
+5. Response fields: `items`, `nextCursor`
+6. Clients: public frontend for public posts, admin console for authenticated lists, MCP for agent-safe listing.
+
+### Create Post Draft
+
+1. Method: `POST`
+2. Path: `/api/v1/posts`
+3. Scope: `posts:write`
+4. Request body fields: `title`, `slug`, `contentFormat`, `content`, `summary`, `tags`, `categoryId`, `seriesId`, `metadata`
+5. Response fields: `postId`, `status`, `revisionId`, `createdAt`
+6. Audit event: `post.created`
+
+### Update Post Draft
+
+1. Method: `PATCH`
+2. Path: `/api/v1/posts/{post_id}`
+3. Scope: `posts:write`
+4. Request body fields: `title`, `slug`, `contentFormat`, `content`, `summary`, `tags`, `categoryId`, `seriesId`, `metadata`, `expectedRevisionId`
+5. Response fields: `postId`, `status`, `revisionId`, `updatedAt`
+6. Audit event: `post.updated`
+
+### Publish Post
+
+1. Method: `POST`
+2. Path: `/api/v1/posts/{post_id}/publish`
+3. Scope: `posts:publish`
+4. Request body fields: `revisionId`, `publishMode`, `scheduledAt`
+5. Response fields: `postId`, `status`, `publishedAt`, `jobId`
+6. Audit event: `post.published`
+7. Duplicate capability warning: admin, MCP, and agents must use this capability instead of creating parallel publish endpoints.
+
+## MDX Component API
+
+### List MDX Components
+
+1. Method: `GET`
+2. Path: `/api/v1/mdx-components`
+3. Scope: `settings:read`
+4. Response fields: `items`
+5. Errors: `401` when the bearer token is missing or invalid; `403` when the token lacks `settings:read` or `admin:all`.
+6. Clients: CMS admin console and Agent/MCP risk-policy readers.
+
+### Update MDX Component Policy
+
+1. Method: `PATCH`
+2. Path: `/api/v1/mdx-components/{component_name}`
+3. Scope: `settings:write`
+4. Request body fields: `enabled`, `riskLevel`, `allowedRoles`, `allowedAgentScopes`, `requiresReview`, `propsSchema`
+5. Response fields: `componentName`, `enabled`, `riskLevel`, `updatedAt`
+6. Audit event: `mdx.risk_detected` when risk policy changes affect pending content.
+
+## Agent Task API
+
+### Create Agent Draft Task
+
+1. Method: `POST`
+2. Path: `/api/v1/agent-tasks/article-draft`
+3. Scope: `agent:invoke`
+4. Request body fields: `sourceType`, `sourceRefs`, `prompt`, `targetPostId`, `riskPolicy`
+5. Response fields: `agentTaskId`, `status`, `createdAt`
+6. Audit event: `agent.task_created`
+
+## Error Model
+
+### Standard Error Fields
+
+1. `code`
+2. `message`
+3. `details`
+4. `requestId`
+
+## Versioning
+
+### API Versioning Rule
+
+Breaking changes require a new version prefix or a documented migration plan. Non-breaking extensions may add optional fields.

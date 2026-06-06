@@ -1,0 +1,34 @@
+name: Guards
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  documentation-and-contract-guards:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run docs guard
+        run: python3 scripts/guards/docs_guard.py
+
+      - name: Run i18n doc guard
+        run: python3 scripts/guards/i18n_doc_guard.py
+
+      - name: Run contract guard
+        run: python3 scripts/guards/contract_guard.py
+
+      - name: Run API schema guard
+        run: python3 scripts/guards/api_schema_guard.py
+
+      - name: Run secret guard
+        run: python3 scripts/guards/secret_guard.py

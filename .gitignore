@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+
+# Runtime data
+data/
+uploads/
+logs/
+*.sqlite
+*.sqlite3
+
+# Build outputs
+.next/
+dist/
+build/
+.coverage/
+.pytest_cache/
+*.egg-info/
+
+# Local-only Chinese development memory bank
+memory-bank/*-cn.md
+
+# Editor and OS
+.DS_Store
+.vscode/
+.idea/

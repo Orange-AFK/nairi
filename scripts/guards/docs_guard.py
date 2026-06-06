@@ -48,7 +48,7 @@ def main() -> None:
             guard.require(pair.exists(), f"memory-bank file missing local Chinese pair: {path.relative_to(ROOT)}")
 
     root_md_files = [p.name for p in ROOT.glob("*.md")]
-    allowed_root_md = {"README.md", "README-cn.md", "AGENTS.md"}
+    allowed_root_md = {"README.md", "README-cn.md", "AGENTS.md", "SECURITY.md", "SECURITY-cn.md", "CONTRIBUTING.md", "CONTRIBUTING-cn.md"}
     for name in root_md_files:
         guard.require(name in allowed_root_md, f"unexpected root markdown file: {name}")
 

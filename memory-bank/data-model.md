@@ -56,6 +56,15 @@
 1. Records sensitive and state-changing operations.
 2. Key fields: `id`, `eventType`, `actorType`, `actorId`, `targetType`, `targetId`, `metadata`, `createdAt`.
 
+## Current Persistence Boundary
+
+### Article Draft Persistence
+
+1. `PostStore` currently owns the minimal SQLite-backed `posts`, `post_revisions`, and `audit_events` tables used by `POST /api/v1/posts`.
+2. Draft creation persists one `Post`, one `PostRevision`, and one `post.created` audit event in the same request path.
+3. This boundary is intentionally smaller than the final SQLAlchemy/Alembic model layer.
+4. Future migration work must preserve these logical entities while replacing scaffold schema initialization with managed migrations.
+
 ## Database Support
 
 ### SQLite

@@ -32,3 +32,10 @@
 1. Status: Accepted.
 2. Decision: Maintain English and Chinese documentation with consistent meaning.
 3. Rationale: GitHub PRs and open-source collaboration use English, while local Chinese memory-bank files serve the owner.
+
+### Use Minimal SQLite Store Before ORM Migration
+
+1. Status: Accepted.
+2. Decision: Use a small `PostStore` with SQLite DDL for the first article draft persistence boundary before introducing SQLAlchemy and Alembic.
+3. Rationale: The current task needs verified persistence for `Post`, `PostRevision`, and `post.created` without widening into a full migration/model layer.
+4. Consequence: The next migration task must replace scaffold schema initialization with managed migrations while preserving the route contract and persistence tests.

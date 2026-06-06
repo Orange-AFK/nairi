@@ -3,8 +3,9 @@ from typing import Literal
 from fastapi import Depends, FastAPI
 from pydantic import BaseModel, Field
 
-from nairi_api.auth import ApiError, api_error_response, require_scope
+from nairi_api.auth import ApiError, AuthenticatedActor, api_error_response, require_scope
 from nairi_api.config import Settings, get_settings
+from nairi_api.posts import CreatedPostDraft, PostDraftInput, PostStore
 
 
 class CreatePostDraftRequest(BaseModel):
@@ -31,6 +32,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         settings = get_settings()
     app = FastAPI(title="Nairi API", version=settings.version)
     app.state.settings = settings
+    app.state.post_store = PostStore(settings.database_path)
     app.add_exception_handler(ApiError, api_error_response)
 
     @app.get("/api/v1/health")
@@ -48,13 +50,27 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.post("/api/v1/posts", status_code=201)
     def create_post_draft(
         draft: CreatePostDraftRequest,
-        _actor: object = Depends(require_scope("posts:write")),
+        actor: AuthenticatedActor = Depends(require_scope("posts:write")),
     ) -> CreatePostDraftResponse:
+        created: CreatedPostDraft = app.state.post_store.create_draft(
+            PostDraftInput(
+                title=draft.title,
+                slug=draft.slug,
+                content_format=draft.content_format,
+                content=draft.content,
+                summary=draft.summary,
+                tags=draft.tags,
+                category_id=draft.category_id,
+                series_id=draft.series_id,
+                metadata=draft.metadata,
+            ),
+            actor.token,
+        )
         return CreatePostDraftResponse(
-            postId=f"draft-{draft.slug}",
+            postId=created.post_id,
             status="draft",
-            revisionId=f"revision-{draft.slug}-1",
-            createdAt="1970-01-01T00:00:00Z",
+            revisionId=created.revision_id,
+            createdAt=created.created_at,
         )
 
     return app

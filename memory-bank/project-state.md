@@ -4,11 +4,11 @@
 
 ### Project Status
 
-1. Nairi has completed foundational documentation, guard scripts, the first API scaffold, and the first protected scope-check route.
+1. Nairi has completed foundational documentation, guard scripts, the first API scaffold, the first protected scope-check route, and the scaffold-level article draft creation route.
 2. The FastAPI service skeleton and auth dependency exist under `services/api/`.
 3. The accepted product direction is API-first and agent-first CMS.
 4. FastAPI is the product capability authority.
-5. Documentation, contracts, guard rules, health endpoint tests, and protected scope tests currently pass locally.
+5. Documentation, contracts, guard rules, health endpoint tests, protected scope tests, and article draft creation route tests currently pass locally.
 
 ## Confirmed Decisions
 
@@ -30,9 +30,9 @@
 
 ### Article Draft API Development
 
-1. Define the smallest post draft request and response model.
-2. Add route-level tests for authenticated draft creation using `posts:write`.
-3. Keep persistence minimal until database model work is explicitly started.
+1. Scaffold-level post draft creation is implemented at `POST /api/v1/posts`.
+2. The next small task is Article Draft Persistence Boundary: define how draft creation moves from deterministic scaffold response to real `Post` and `PostRevision` storage.
+3. Keep SQLAlchemy and Alembic work bounded to that persistence task.
 4. Preserve scope checks and standard error behavior.
 
 ## Blockers

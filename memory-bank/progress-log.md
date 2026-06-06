@@ -50,6 +50,16 @@
 6. Risks or blockers: the first GitHub Actions run failed because guard scripts required ignored local Chinese memory-bank pairs in CI.
 7. Next recommended named task: complete CI fix and verify final pushed HEAD.
 
+### Article Draft Create API Scaffold
+
+1. Status: completed.
+2. Scope: added route-level tests and a minimal scaffold implementation for `POST /api/v1/posts` using `posts:write` or `admin:all`.
+3. Changed files: `services/api/src/nairi_api/main.py`, `services/api/tests/test_post_drafts.py`, `memory-bank/project-state.md`, `memory-bank/architecture.md`, `memory-bank/roadmap.md`, and local Chinese memory-bank pairs.
+4. Verification performed: wrote failing route tests first and observed `404` RED, implemented the smallest FastAPI route and Pydantic request/response models, then verified focused GREEN and full API test suite.
+5. Result: passed for the scaffold boundary.
+6. Risks or blockers: draft creation currently returns deterministic scaffold identifiers and does not persist `Post`, `PostRevision`, or `post.created` audit events.
+7. Next recommended named task: Article Draft Persistence Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

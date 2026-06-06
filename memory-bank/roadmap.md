@@ -72,6 +72,7 @@ All roadmap items use named modules and named tasks. Abstract labels such as Ste
 1. Implement post draft creation.
 2. Implement post draft update.
 3. Implement revision creation.
+4. Status: scaffold-level draft creation completed; persistence-backed draft creation remains next.
 
 ### Article Publishing API Development
 

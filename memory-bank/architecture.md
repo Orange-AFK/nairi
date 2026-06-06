@@ -38,7 +38,8 @@ FastAPI is the single authority for product capabilities. Other modules are clie
 5. Auth module: `nairi_api.auth`.
 6. Current public health endpoint: `GET /api/v1/health`.
 7. Current protected contract smoke endpoint: `GET /api/v1/mdx-components`.
-8. Test path: `services/api/tests/`.
+8. Current scaffold article draft endpoint: `POST /api/v1/posts`.
+9. Test path: `services/api/tests/`.
 
 ### Authentication and Scope Boundary
 
@@ -88,11 +89,12 @@ FastAPI is the single authority for product capabilities. Other modules are clie
 
 1. Admin or agent requests draft creation through API or MCP-backed API call.
 2. FastAPI validates scope and input.
-3. FastAPI creates or updates content records.
-4. Risk checks and audit events are recorded.
-5. Admin reviews the draft through the CMS console.
-6. Publish request goes through `/api/v1/posts/{post_id}/publish`.
-7. The job runner performs publication work under documented state rules.
+3. Current scaffold draft creation returns deterministic `postId`, `status`, `revisionId`, and `createdAt` without database persistence.
+4. Future persistence work will create or update content records.
+5. Risk checks and audit events are recorded when the persistence and workflow boundary is implemented.
+6. Admin reviews the draft through the CMS console.
+7. Publish request goes through `/api/v1/posts/{post_id}/publish`.
+8. The job runner performs publication work under documented state rules.
 
 ## Security Boundary
 

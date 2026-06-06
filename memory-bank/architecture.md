@@ -36,10 +36,11 @@ FastAPI is the single authority for product capabilities. Other modules are clie
 3. Runtime app object: `nairi_api.main.app`.
 4. Settings module: `nairi_api.config`.
 5. Auth module: `nairi_api.auth`.
-6. Current public health endpoint: `GET /api/v1/health`.
-7. Current protected contract smoke endpoint: `GET /api/v1/mdx-components`.
-8. Current scaffold article draft endpoint: `POST /api/v1/posts`.
-9. Test path: `services/api/tests/`.
+6. Post persistence module: `nairi_api.posts`.
+7. Current public health endpoint: `GET /api/v1/health`.
+8. Current protected contract smoke endpoint: `GET /api/v1/mdx-components`.
+9. Current article draft endpoint: `POST /api/v1/posts`.
+10. Test path: `services/api/tests/`.
 
 ### Authentication and Scope Boundary
 
@@ -68,6 +69,8 @@ FastAPI is the single authority for product capabilities. Other modules are clie
 1. Persists data for API-owned capabilities.
 2. Is not an external product interface.
 3. Schema changes require data model and migration updates.
+4. Current scaffold-level SQLite tables are initialized by `PostStore` for `posts`, `post_revisions`, and `audit_events`.
+5. SQLAlchemy and Alembic remain planned but are not yet introduced in code.
 
 ## Data Flow
 
@@ -89,9 +92,9 @@ FastAPI is the single authority for product capabilities. Other modules are clie
 
 1. Admin or agent requests draft creation through API or MCP-backed API call.
 2. FastAPI validates scope and input.
-3. Current scaffold draft creation returns deterministic `postId`, `status`, `revisionId`, and `createdAt` without database persistence.
-4. Future persistence work will create or update content records.
-5. Risk checks and audit events are recorded when the persistence and workflow boundary is implemented.
+3. `PostStore` creates a `posts` row with status `draft`.
+4. `PostStore` creates a matching immutable `post_revisions` row.
+5. `PostStore` records a `post.created` audit row.
 6. Admin reviews the draft through the CMS console.
 7. Publish request goes through `/api/v1/posts/{post_id}/publish`.
 8. The job runner performs publication work under documented state rules.

@@ -13,6 +13,7 @@ from nairi_api.posts import (
     PostDraftNotFoundError,
     PostRevisionConflictError,
     PostStore,
+    QueuedPostPublish,
     StoredPostDraft,
     UpdatedPostDraft,
 )
@@ -46,6 +47,19 @@ class UpdatePostDraftResponse(BaseModel):
     status: Literal["draft"]
     revision_id: str = Field(alias="revisionId")
     updated_at: str = Field(alias="updatedAt")
+
+
+class PublishPostRequest(BaseModel):
+    revision_id: str = Field(alias="revisionId")
+    publish_mode: Literal["immediate", "scheduled"] = Field(alias="publishMode")
+    scheduled_at: str | None = Field(default=None, alias="scheduledAt")
+
+
+class PublishPostResponse(BaseModel):
+    post_id: str = Field(alias="postId")
+    status: Literal["queued"]
+    published_at: str | None = Field(alias="publishedAt")
+    job_id: str = Field(alias="jobId")
 
 
 class PostDraftSummaryResponse(BaseModel):
@@ -220,6 +234,30 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return ReadPostDraftResponse(
             **post_draft_summary_response(draft).model_dump(by_alias=True),
             content=draft.content,
+        )
+
+    @app.post("/api/v1/posts/{post_id}/publish", status_code=202)
+    def publish_post(
+        post_id: str,
+        request: PublishPostRequest,
+        _actor: AuthenticatedActor = Depends(require_scope("posts:publish")),
+    ) -> PublishPostResponse:
+        try:
+            queued: QueuedPostPublish = app.state.post_store.queue_publish(post_id, request.revision_id)
+        except PostDraftNotFoundError as error:
+            raise ApiError(404, "not_found", "Post not found", {"postId": error.post_id}) from error
+        except PostRevisionConflictError as error:
+            raise ApiError(
+                409,
+                "conflict",
+                "Post revision conflict",
+                {"currentRevisionId": error.current_revision_id},
+            ) from error
+        return PublishPostResponse(
+            postId=queued.post_id,
+            status="queued",
+            publishedAt=queued.published_at,
+            jobId=queued.job_id,
         )
 
     return app

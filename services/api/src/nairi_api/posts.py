@@ -43,6 +43,14 @@ class UpdatedPostDraft:
 
 
 @dataclass(frozen=True)
+class QueuedPostPublish:
+    post_id: str
+    status: str
+    published_at: str | None
+    job_id: str
+
+
+@dataclass(frozen=True)
 class StoredPostDraft:
     post_id: str
     title: str
@@ -238,6 +246,30 @@ class PostStore:
             status=DRAFT_STATUS,
             revision_id=revision_id,
             updated_at=updated_at,
+        )
+
+    def queue_publish(self, post_id: str, revision_id: str) -> QueuedPostPublish:
+        with self._connect() as connection:
+            self._init_schema(connection)
+            row = connection.execute(
+                """
+                SELECT current_revision_id
+                FROM posts
+                WHERE id = ? AND status = ?
+                """,
+                (post_id, DRAFT_STATUS),
+            ).fetchone()
+            if row is None:
+                raise PostDraftNotFoundError(post_id)
+            current_revision_id = cast(str, row[0])
+            if current_revision_id != revision_id:
+                raise PostRevisionConflictError(current_revision_id)
+
+        return QueuedPostPublish(
+            post_id=post_id,
+            status="queued",
+            published_at=None,
+            job_id=f"publish-{post_id}-{revision_id}",
         )
 
     def list_drafts(self) -> list[StoredPostDraft]:

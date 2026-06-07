@@ -71,7 +71,10 @@
 3. Scope: `posts:write`
 4. Request body fields: `title`, `slug`, `contentFormat`, `content`, `summary`, `tags`, `categoryId`, `seriesId`, `metadata`, `expectedRevisionId`
 5. Response fields: `postId`, `status`, `revisionId`, `updatedAt`
-6. Audit event: `post.updated`
+6. Timestamp rule: `updatedAt` is a request-time UTC timestamp serialized as `YYYY-MM-DDTHH:MM:SSZ`.
+7. Audit event: `post.updated`
+8. Errors: `404` with code `not_found` when `post_id` is unknown or does not identify a draft.
+9. Errors: `409` with code `conflict` when `expectedRevisionId` does not match the current draft revision. The conflict response must not create a post revision or audit event.
 
 ### Publish Post
 

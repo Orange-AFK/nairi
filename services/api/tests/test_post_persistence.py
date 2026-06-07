@@ -182,6 +182,238 @@ def test_list_post_drafts_returns_empty_items_when_no_drafts(tmp_path: Path) -> 
     assert response.json() == {"items": [], "nextCursor": None}
 
 
+def test_update_post_draft_creates_revision_and_updates_current_draft(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    settings = Settings(
+        api_tokens={
+            "post-writer-token": ["posts:write"],
+            "post-reader-token": ["posts:read"],
+        },
+        database_path=str(database_path),
+    )
+    timestamps = iter(
+        [
+            datetime(2026, 6, 7, 8, 9, 10, tzinfo=UTC),
+            datetime(2026, 6, 7, 8, 10, 11, tzinfo=UTC),
+        ]
+    )
+    app = create_app(settings=settings)
+    app.state.post_store = PostStore(str(database_path), clock=lambda: next(timestamps))
+    client = TestClient(app)
+
+    create_response = client.post(
+        "/api/v1/posts",
+        json=draft_payload(),
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+    post_id = create_response.json()["postId"]
+    original_revision_id = create_response.json()["revisionId"]
+
+    update_response = client.patch(
+        f"/api/v1/posts/{post_id}",
+        json={
+            "title": "Updated persistent draft",
+            "slug": "updated-persistent-draft",
+            "contentFormat": "mdx",
+            "content": "# Updated persistent draft\n\nUpdated body.",
+            "summary": "Updated stored summary.",
+            "tags": ["storage", "updated"],
+            "categoryId": "category-updated",
+            "seriesId": "series-updated",
+            "metadata": {"source": "update-test"},
+            "expectedRevisionId": original_revision_id,
+        },
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+
+    assert create_response.status_code == 201
+    assert update_response.status_code == 200
+    update_body = update_response.json()
+    assert update_body == {
+        "postId": post_id,
+        "status": "draft",
+        "revisionId": "revision-persistent-draft-2",
+        "updatedAt": "2026-06-07T08:10:11Z",
+    }
+
+    read_response = client.get(
+        f"/api/v1/posts/{post_id}",
+        headers={"Authorization": "Bearer post-reader-token"},
+    )
+    assert read_response.status_code == 200
+    assert read_response.json() == {
+        "postId": post_id,
+        "title": "Updated persistent draft",
+        "slug": "updated-persistent-draft",
+        "status": "draft",
+        "contentFormat": "mdx",
+        "content": "# Updated persistent draft\n\nUpdated body.",
+        "summary": "Updated stored summary.",
+        "tags": ["storage", "updated"],
+        "categoryId": "category-updated",
+        "seriesId": "series-updated",
+        "metadata": {"source": "update-test"},
+        "revisionId": "revision-persistent-draft-2",
+        "createdAt": "2026-06-07T08:09:10Z",
+        "updatedAt": "2026-06-07T08:10:11Z",
+    }
+
+    with sqlite3.connect(database_path) as connection:
+        post_row = connection.execute(
+            """
+            SELECT title, slug, content_format, current_revision_id, created_at, updated_at
+            FROM posts
+            WHERE id = ?
+            """,
+            (post_id,),
+        ).fetchone()
+        revision_rows = connection.execute(
+            """
+            SELECT id, post_id, content, metadata, created_by, created_at
+            FROM post_revisions
+            WHERE post_id = ?
+            ORDER BY created_at ASC, id ASC
+            """,
+            (post_id,),
+        ).fetchall()
+        audit_rows = connection.execute(
+            """
+            SELECT event_type, actor_type, actor_id, target_type, target_id, metadata, created_at
+            FROM audit_events
+            WHERE target_id = ?
+            ORDER BY id ASC
+            """,
+            (post_id,),
+        ).fetchall()
+
+    assert post_row == (
+        "Updated persistent draft",
+        "updated-persistent-draft",
+        "mdx",
+        "revision-persistent-draft-2",
+        "2026-06-07T08:09:10Z",
+        "2026-06-07T08:10:11Z",
+    )
+    assert revision_rows == [
+        (
+            original_revision_id,
+            post_id,
+            "# Persistent draft\n\nStored body.",
+            '{"source":"persistence-test","summary":"Stored summary.","tags":["storage"],"categoryId":null,"seriesId":null}',
+            "token:post-writer-token",
+            "2026-06-07T08:09:10Z",
+        ),
+        (
+            "revision-persistent-draft-2",
+            post_id,
+            "# Updated persistent draft\n\nUpdated body.",
+            '{"source":"update-test","summary":"Updated stored summary.","tags":["storage","updated"],"categoryId":"category-updated","seriesId":"series-updated"}',
+            "token:post-writer-token",
+            "2026-06-07T08:10:11Z",
+        ),
+    ]
+    assert audit_rows == [
+        (
+            "post.created",
+            "api_token",
+            "token:post-writer-token",
+            "post",
+            post_id,
+            f'{{"revisionId":"{original_revision_id}"}}',
+            "2026-06-07T08:09:10Z",
+        ),
+        (
+            "post.updated",
+            "api_token",
+            "token:post-writer-token",
+            "post",
+            post_id,
+            '{"revisionId":"revision-persistent-draft-2","previousRevisionId":"revision-persistent-draft-1"}',
+            "2026-06-07T08:10:11Z",
+        ),
+    ]
+
+
+def test_update_post_draft_requires_posts_write_scope(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    client = build_client(database_path)
+
+    response = client.patch(
+        "/api/v1/posts/draft-persistent-draft",
+        json={**draft_payload(), "expectedRevisionId": "revision-persistent-draft-1"},
+        headers={"Authorization": "Bearer post-reader-token"},
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {
+        "code": "forbidden",
+        "message": "Missing required scope",
+        "details": {"requiredScope": "posts:write"},
+        "requestId": "unavailable",
+    }
+
+
+def test_update_post_draft_returns_not_found_for_unknown_post(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    client = build_client(database_path)
+
+    response = client.patch(
+        "/api/v1/posts/missing-post",
+        json={**draft_payload(), "expectedRevisionId": "missing-revision"},
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "code": "not_found",
+        "message": "Post not found",
+        "details": {"postId": "missing-post"},
+        "requestId": "unavailable",
+    }
+
+
+def test_update_post_draft_rejects_revision_conflict_without_side_effects(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    client = build_client(database_path)
+
+    create_response = client.post(
+        "/api/v1/posts",
+        json=draft_payload(),
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+    post_id = create_response.json()["postId"]
+    response = client.patch(
+        f"/api/v1/posts/{post_id}",
+        json={**draft_payload(), "title": "Conflicting update", "expectedRevisionId": "stale-revision"},
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+
+    assert create_response.status_code == 201
+    assert response.status_code == 409
+    assert response.json() == {
+        "code": "conflict",
+        "message": "Post revision conflict",
+        "details": {"currentRevisionId": create_response.json()["revisionId"]},
+        "requestId": "unavailable",
+    }
+    with sqlite3.connect(database_path) as connection:
+        counts = connection.execute(
+            """
+            SELECT
+                (SELECT COUNT(*) FROM posts),
+                (SELECT COUNT(*) FROM post_revisions),
+                (SELECT COUNT(*) FROM audit_events)
+            """
+        ).fetchone()
+        current_row = connection.execute(
+            "SELECT title, current_revision_id FROM posts WHERE id = ?",
+            (post_id,),
+        ).fetchone()
+
+    assert counts == (1, 1, 1)
+    assert current_row == ("Persistent draft", create_response.json()["revisionId"])
+
+
 def test_get_post_draft_returns_created_draft_for_reader_scope(tmp_path: Path) -> None:
     database_path = tmp_path / "nairi.db"
     client = build_client(database_path)

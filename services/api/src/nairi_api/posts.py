@@ -35,6 +35,14 @@ class CreatedPostDraft:
 
 
 @dataclass(frozen=True)
+class UpdatedPostDraft:
+    post_id: str
+    status: str
+    revision_id: str
+    updated_at: str
+
+
+@dataclass(frozen=True)
 class StoredPostDraft:
     post_id: str
     title: str
@@ -56,6 +64,18 @@ class DuplicatePostSlugError(Exception):
 
     def __init__(self, slug: str) -> None:
         self.slug = slug
+
+
+class PostDraftNotFoundError(Exception):
+
+    def __init__(self, post_id: str) -> None:
+        self.post_id = post_id
+
+
+class PostRevisionConflictError(Exception):
+
+    def __init__(self, current_revision_id: str) -> None:
+        self.current_revision_id = current_revision_id
 
 
 class PostStore:
@@ -127,6 +147,91 @@ class PostStore:
             status=DRAFT_STATUS,
             revision_id=revision_id,
             created_at=created_at,
+        )
+
+    def update_draft(
+        self,
+        post_id: str,
+        draft: PostDraftInput,
+        actor_token: str,
+        expected_revision_id: str,
+    ) -> UpdatedPostDraft:
+        updated_at = utc_timestamp(self.clock())
+        metadata = dict(draft.metadata)
+        metadata.update(
+            {
+                "summary": draft.summary,
+                "tags": draft.tags,
+                "categoryId": draft.category_id,
+                "seriesId": draft.series_id,
+            }
+        )
+
+        with self._connect() as connection:
+            self._init_schema(connection)
+            row = connection.execute(
+                """
+                SELECT current_revision_id
+                FROM posts
+                WHERE id = ? AND status = ?
+                """,
+                (post_id, DRAFT_STATUS),
+            ).fetchone()
+            if row is None:
+                raise PostDraftNotFoundError(post_id)
+            previous_revision_id = cast(str, row[0])
+            if previous_revision_id != expected_revision_id:
+                raise PostRevisionConflictError(previous_revision_id)
+            revision_count = connection.execute(
+                "SELECT COUNT(*) FROM post_revisions WHERE post_id = ?",
+                (post_id,),
+            ).fetchone()[0]
+            revision_id = f"revision-{post_id.removeprefix('draft-')}-{revision_count + 1}"
+            connection.execute(
+                """
+                INSERT INTO post_revisions (id, post_id, content, metadata, created_by, created_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    revision_id,
+                    post_id,
+                    draft.content,
+                    json.dumps(metadata, separators=(",", ":")),
+                    f"token:{actor_token}",
+                    updated_at,
+                ),
+            )
+            connection.execute(
+                """
+                UPDATE posts
+                SET title = ?, slug = ?, content_format = ?, current_revision_id = ?, updated_at = ?
+                WHERE id = ?
+                """,
+                (draft.title, draft.slug, draft.content_format, revision_id, updated_at, post_id),
+            )
+            connection.execute(
+                """
+                INSERT INTO audit_events (event_type, actor_type, actor_id, target_type, target_id, metadata, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    "post.updated",
+                    "api_token",
+                    f"token:{actor_token}",
+                    "post",
+                    post_id,
+                    json.dumps(
+                        {"revisionId": revision_id, "previousRevisionId": previous_revision_id},
+                        separators=(",", ":"),
+                    ),
+                    updated_at,
+                ),
+            )
+        return UpdatedPostDraft(
+            post_id=post_id,
+            status=DRAFT_STATUS,
+            revision_id=revision_id,
+            updated_at=updated_at,
         )
 
     def list_drafts(self) -> list[StoredPostDraft]:

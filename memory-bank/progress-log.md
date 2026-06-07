@@ -300,6 +300,16 @@
 6. Risks or blockers: pagination, filter UI, cache/CDN policy, RSS, sitemap, complete styling system, and deployment configuration remain deferred.
 7. Next recommended named task: Article Public Site Styling Boundary.
 
+### Article Public Site Styling Boundary
+
+1. Status: completed.
+2. Scope: unified the first public-site visual rhythm across `/`, `/posts`, `/posts/{slug}`, the list empty state, and the list error state using shared `article-header` and `surface-card` boundaries.
+3. Changed files: `.github/workflows/guards.yml`, `apps/public-site/app/globals.css`, `apps/public-site/app/page.tsx`, `apps/public-site/app/posts/page.tsx`, `apps/public-site/app/posts/[slug]/page.tsx`, `apps/public-site/app/posts/error.tsx`, `scripts/checks/frontend_public_style_check.py`, `memory-bank/frontend-design.md`, `memory-bank/guard-ci.md`, `memory-bank/project-state.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: added `frontend_public_style_check.py` first and observed RED on missing style tokens, shared header/card classes, and page usage; implemented the smallest shared style boundary; verified style/detail/list checks, public-site typecheck, and public-site build.
+5. Result: passed for the public site styling boundary.
+6. Risks or blockers: Tailwind, shadcn/ui, a complete design system, cache/CDN policy, SEO metadata, RSS, sitemap, pagination, and filter UI remain deferred.
+7. Next recommended named task: Article Published Public Render Coverage Boundary or Article Public Site SEO Metadata Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

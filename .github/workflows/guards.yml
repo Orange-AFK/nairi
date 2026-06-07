@@ -49,6 +49,9 @@ jobs:
       - name: Run frontend public list check
         run: python3 scripts/checks/frontend_public_list_check.py
 
+      - name: Run frontend public style check
+        run: python3 scripts/checks/frontend_public_style_check.py
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:

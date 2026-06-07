@@ -1,6 +1,7 @@
 import { fetchPublicPosts } from "../../lib/public-posts";
 
 const DEFAULT_PUBLIC_SITE_URL = "http://localhost:3000";
+const PUBLIC_FEED_SINGLE_PAGE_POLICY = "RSS uses one single public list page; full-history feed pagination is deferred.";
 
 function PUBLIC_SITE_URL(): string {
   return (process.env.NEXT_PUBLIC_NAIRI_PUBLIC_SITE_URL ?? DEFAULT_PUBLIC_SITE_URL).replace(/\/$/, "");
@@ -18,6 +19,7 @@ function escapeXml(value: string): string {
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  void PUBLIC_FEED_SINGLE_PAGE_POLICY;
   const siteUrl = PUBLIC_SITE_URL();
   const { items: posts } = await fetchPublicPosts();
   const items = posts.map((post) => {

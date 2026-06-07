@@ -65,7 +65,8 @@
 33. Article Public Frontend Pagination Boundary is complete: `/posts` requests a limited public list page, accepts `cursor` from query params, and renders a `Load more articles` link when `nextCursor` exists.
 34. Article Public Pagination Metadata Boundary is complete: anonymous `GET /api/v1/public/posts` now returns minimal `page` metadata (`limit`, `cursor`, `hasNextPage`) alongside `items` and `nextCursor`.
 35. Article Public Pagination Metadata Frontend Boundary is complete: `/posts` now uses `page.hasNextPage` plus `nextCursor` to decide whether to render the next-page link.
-36. The next product-development task is Article Public RSS/Sitemap Pagination Policy Boundary.
+36. Article Public RSS/Sitemap Pagination Policy Boundary is complete: `/rss.xml` and `/sitemap.xml` explicitly consume one single public list page only, with cursor/full-history expansion deferred.
+37. The next product-development task is Article Public RSS/Sitemap Full-History Pagination Boundary or Article Public CDN/Invalidation Boundary.
 17. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
 18. Preserve scope checks and standard error behavior.
 

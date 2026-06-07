@@ -15,6 +15,8 @@ required_route = [
     "export const dynamic = \"force-dynamic\"",
     "export async function GET()",
     "fetchPublicPosts",
+    "PUBLIC_SITEMAP_SINGLE_PAGE_POLICY",
+    "single public list page",
     "PUBLIC_SITE_URL",
     "application/xml",
     "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">",
@@ -35,6 +37,10 @@ if "Authorization" in route:
     failures.append("sitemap must not send bearer tokens")
 if "rss" in route.lower():
     failures.append("sitemap boundary must not implement RSS")
+if "cursor" in route:
+    failures.append("sitemap pagination policy must not request cursor-based follow-up pages")
+if "while" in route or "for await" in route:
+    failures.append("sitemap pagination policy must not implement implicit multi-page crawling")
 
 if failures:
     raise SystemExit("\n".join(failures))

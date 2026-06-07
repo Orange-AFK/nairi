@@ -184,11 +184,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/api/v1/posts")
     def list_posts(
         status: Literal["draft", "published"] = "draft",
+        tag: str | None = None,
+        category: str | None = None,
+        series: str | None = None,
         _actor: AuthenticatedActor = Depends(require_scope("posts:read")),
     ) -> ListPostDraftsResponse:
         drafts: list[StoredPostDraft] = app.state.post_store.list_drafts()
         if status == "published":
-            published_posts: list[StoredPostDraft] = app.state.post_store.list_published()
+            published_posts: list[StoredPostDraft] = app.state.post_store.list_published(
+                tag=tag,
+                category_id=category,
+                series_id=series,
+            )
             return ListPostDraftsResponse(
                 items=[published_post_summary_response(post) for post in published_posts],
                 nextCursor=None,

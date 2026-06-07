@@ -190,6 +190,16 @@
 6. Risks or blockers: filtering, pagination, unauthenticated public-read policy, public rendering, scheduling semantics, job runner execution, and SQLAlchemy/Alembic migrations remain deferred.
 7. Next recommended named task: Article Draft Published Filtering Boundary.
 
+### Article Draft Published Filtering Boundary
+
+1. Status: completed.
+2. Scope: added the first authenticated published-list filters for `GET /api/v1/posts?status=published`: `tag`, `category`, and `series` filter published summaries while preserving the existing response shape and `posts:read` scope.
+3. Changed files: `services/api/src/nairi_api/main.py`, `services/api/src/nairi_api/posts.py`, `services/api/tests/test_post_persistence.py`, `memory-bank/api-contract.md`, `memory-bank/project-state.md`, `memory-bank/architecture.md`, `memory-bank/data-model.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: wrote the published filtering route test first and observed RED because the published list returned unrelated posts; implemented the smallest route query parameters and scaffold store filtering; then verified focused GREEN and persistence tests.
+5. Result: passed for the published filtering boundary.
+6. Risks or blockers: pagination, unauthenticated public-read policy, public rendering, scheduling semantics, job runner execution, and SQLAlchemy/Alembic migrations remain deferred.
+7. Next recommended named task: Article Draft Published Pagination Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

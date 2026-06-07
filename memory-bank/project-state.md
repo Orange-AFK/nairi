@@ -7,8 +7,8 @@
 1. Nairi is in early alpha implementation.
 2. The implementation still follows the accepted API-first, agent-first CMS direction.
 3. Core public and management content flows exist as scaffold implementations with verified route tests and guards.
-4. The current development focus is Managed Migration Runner Boundary.
-5. SQLite schema migration baseline metadata has merged; data migration work is now extracting the baseline into an ordered, testable migration runner without changing public API behavior.
+4. The current development focus is Data Migration Rehearsal Boundary.
+5. Managed migration runner work has merged; data migration work is now adding backup-and-readback rehearsal for SQLite migration safety without touching live databases.
 
 ### Current Authority Snapshot
 
@@ -90,8 +90,9 @@
 1. SQLite `PostStore` now uses an ordered `PostStoreMigration` runner to record and apply the current scaffold baseline / `post_store_baseline`.
 2. `schema_migrations` records the current `(1, "post_store_baseline")` row and the runner skips already-applied migrations.
 3. Existing pre-migration SQLite files can be adopted by creating migration metadata without losing posts, revisions, or audit rows.
-4. SQLAlchemy and Alembic are target stack components but are not yet introduced in code.
-5. PostgreSQL remains a future production option after managed migrations exist.
+4. A local rehearsal helper can copy a source SQLite file to backup and rehearsal paths, trigger migration on the rehearsal copy, and verify metadata/count/readback safety.
+5. SQLAlchemy and Alembic are target stack components but are not yet introduced in code.
+6. PostgreSQL remains a future production option after managed migrations exist.
 
 ### Admin Console
 
@@ -115,13 +116,13 @@
 
 ## Next Named Work
 
-### Managed Migration Runner Boundary
+### Data Migration Rehearsal Boundary
 
 1. Status: in progress.
-2. Scope: extract a minimal ordered `PostStoreMigration` runner for `PostStore` and keep the baseline schema as migration 1 / `post_store_baseline`.
-3. Boundary: preserve current API contracts and route behavior; do not introduce SQLAlchemy, Alembic, PostgreSQL, external migration CLIs, route/UI changes, or live database operations.
-4. Verification: RED runner tests, focused runner/baseline/adoption tests, full API tests, guards, scans, PR CI, and main CI.
-5. After completion: continue toward data migration rehearsal, migration repair policy, or CMS Admin Console Foundation.
+2. Scope: add a local rehearsal helper that backs up a pre-migration SQLite file, migrates a rehearsal copy, and verifies metadata/count/readback safety.
+3. Boundary: preserve current API contracts and route behavior; do not introduce SQLAlchemy, Alembic, PostgreSQL, external migration CLIs, route/UI changes, production database access, deployment changes, or live database operations.
+4. Verification: RED rehearsal test, focused rehearsal/persistence tests, full API tests, guards, scans, PR CI, and main CI.
+5. After completion: continue toward migration repair policy, standalone rehearsal CLI, or CMS Admin Console Foundation.
 
 ## Blockers
 

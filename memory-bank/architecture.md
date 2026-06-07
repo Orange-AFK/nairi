@@ -113,8 +113,8 @@ FastAPI is the single authority for product capabilities. Other modules are clie
 17. Public detail includes both authored `content` and a minimal sanitized `bodyHtml` render output. The renderer is intentionally not full MDX execution; it only handles a small Markdown subset and strips script blocks from rendered HTML.
 18. Public clients must not reuse authenticated content-management routes.
 19. Authenticated published summary lists can currently be filtered by tag membership, category id, or series id.
-20. Authenticated published summary lists can currently be paginated with `limit` and an item-id `cursor`.
-21. Public filtering/pagination inputs, full MDX/component rendering, cache policy, scheduling semantics, and the job runner remain future work under documented state rules.
+20. Authenticated and public published summary lists can currently be paginated with `limit` and an item-id `cursor`.
+21. Public filtering inputs, full MDX/component rendering, cache policy, scheduling semantics, and the job runner remain future work under documented state rules.
 
 ## Security Boundary
 

@@ -58,8 +58,8 @@
 1. Method: `GET`
 2. Path: `/api/v1/public/posts`
 3. Scope: `public:read`
-4. Query parameters:
-5. Current scaffold boundary: anonymous published summary list only; no filters, pagination inputs, detail endpoint, Markdown/MDX rendering, or cache headers yet.
+4. Query parameters: `limit`, `cursor`
+5. Current scaffold boundary: anonymous published summary list with minimal item-id cursor pagination; no filters, Markdown/MDX rendering, or cache headers yet.
 6. Response fields: `items`, `nextCursor`
 7. Item fields: `postId`, `title`, `slug`, `status`, `contentFormat`, `summary`, `tags`, `categoryId`, `seriesId`, `publishedAt`.
 8. Public list items intentionally omit `content`, `revisionId`, `metadata`, `createdAt`, `updatedAt`, audit state, job state, and agent traces.

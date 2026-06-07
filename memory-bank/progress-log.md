@@ -370,6 +370,16 @@
 6. Risks or blockers: Open Graph image generation, Atom, richer SEO schema, pagination sitemap/RSS expansion, CDN headers, and publish-triggered invalidation remain deferred.
 7. Next recommended named task: Article Public Pagination Boundary.
 
+### Article Public Pagination Boundary
+
+1. Status: completed.
+2. Scope: added minimal anonymous public published-list pagination for `GET /api/v1/public/posts` with `limit` and item-id `cursor`, reusing the existing route-level pagination helper while preserving public-safe response fields.
+3. Changed files: `services/api/src/nairi_api/main.py`, `services/api/tests/test_post_persistence.py`, `memory-bank/api-contract.md`, `memory-bank/architecture.md`, `memory-bank/project-state.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: added a public route-level pagination test first and observed RED because `limit` was ignored and all published posts were returned; wired public list to `paginate_posts`; verified the new public pagination test and existing public-safe summary test.
+5. Result: passed for the public API pagination boundary.
+6. Risks or blockers: frontend pagination controls, public filters, sitemap/RSS pagination expansion, CDN headers, and publish-triggered invalidation remain deferred.
+7. Next recommended named task: Article Public Frontend Pagination Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

@@ -72,9 +72,9 @@
 2. Path: `/api/v1/public/posts/{slug}`
 3. Scope: `public:read`
 4. Request body fields:
-5. Response fields: `postId`, `title`, `slug`, `status`, `contentFormat`, `content`, `summary`, `tags`, `categoryId`, `seriesId`, `publishedAt`
-6. Current scaffold boundary: anonymous published detail by slug only; no Markdown/MDX rendering, HTML sanitization, cache headers, or public revision history yet.
-7. Public detail response intentionally omits `revisionId`, `metadata`, `createdAt`, `updatedAt`, audit state, job state, and agent traces.
+5. Response fields: `postId`, `title`, `slug`, `status`, `contentFormat`, `content`, `bodyHtml`, `summary`, `tags`, `categoryId`, `seriesId`, `publishedAt`
+6. Current scaffold boundary: anonymous published detail by slug with a minimal safe Markdown-to-HTML rendering field. The renderer supports a deliberately small subset (`#` headings, paragraphs, and `**strong**`), escapes user text, and strips script blocks from `bodyHtml`; full MDX execution, component rendering, cache headers, and public revision history are deferred.
+7. Public detail response intentionally omits `revisionId`, `metadata`, `createdAt`, `updatedAt`, audit state, job state, and agent traces. `content` remains the original authored source, while `bodyHtml` is the sanitized render output.
 8. Errors: `404` with code `not_found` when `slug` is unknown or identifies a non-published post.
 9. Audit event: none for public detail readback.
 10. Clients: public frontend, anonymous readers, and future CDN-cacheable public routes.

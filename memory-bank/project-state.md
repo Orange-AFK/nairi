@@ -47,7 +47,8 @@
 15. Published lists now support the first minimal `limit`/`cursor` pagination boundary.
 16. `GET /api/v1/public/posts` now provides the first anonymous public published summary list with public-safe fields while keeping authenticated `/api/v1/posts...` management routes separate.
 17. `GET /api/v1/public/posts/{slug}` now provides the first anonymous public published detail readback with public-safe fields while keeping authenticated `/api/v1/posts...` management detail separate.
-18. The next small task is Article Published Public Render Boundary: introduce governed public rendering for detail content without changing the management API surface.
+18. `GET /api/v1/public/posts/{slug}` now includes `bodyHtml`, a minimal sanitized render output for public detail content. It preserves the original authored `content` and keeps management detail unchanged.
+19. The next small task is Article Published Public Render Coverage Boundary: expand renderer coverage deliberately, or alternatively move to frontend detail integration once the minimal body contract is accepted.
 17. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
 18. Preserve scope checks and standard error behavior.
 

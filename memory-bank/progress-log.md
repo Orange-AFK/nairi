@@ -240,6 +240,16 @@
 6. Risks or blockers: public rendering/sanitization, public filtering/pagination inputs, cache policy, scheduling semantics, job runner execution, and SQLAlchemy/Alembic migrations remain deferred.
 7. Next recommended named task: Article Published Public Render Boundary.
 
+### Article Published Public Render Boundary
+
+1. Status: completed.
+2. Scope: added `bodyHtml` to the public detail response while preserving raw authored `content` and keeping authenticated management detail unchanged.
+3. Changed files: `services/api/src/nairi_api/main.py`, `services/api/tests/test_post_persistence.py`, `memory-bank/api-contract.md`, `memory-bank/project-state.md`, `memory-bank/architecture.md`, `memory-bank/data-model.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: wrote the public detail render expectation first and observed RED because `bodyHtml` was absent; implemented minimal safe Markdown rendering for `#` headings, paragraphs, and `**strong**`; verified script blocks are excluded from `bodyHtml`.
+5. Result: passed for the public published render boundary.
+6. Risks or blockers: renderer coverage is intentionally tiny; full MDX/component rendering, sanitizer policy expansion, frontend page integration, cache policy, scheduling semantics, job runner execution, and SQLAlchemy/Alembic migrations remain deferred.
+7. Next recommended named task: Article Published Public Render Coverage Boundary or Article Frontend Public Detail Integration Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

@@ -1,3 +1,4 @@
+import html
 import re
 from typing import Literal
 
@@ -120,6 +121,7 @@ class ListPublicPostsResponse(BaseModel):
 
 class ReadPublicPostResponse(PublicPostSummaryResponse):
     content: str
+    body_html: str = Field(alias="bodyHtml")
 
 
 class ReadPostDraftResponse(PostDraftSummaryResponse):
@@ -198,6 +200,21 @@ def public_post_summary_response(post: StoredPostDraft) -> PublicPostSummaryResp
     )
 
 
+def render_public_body_html(content: str) -> str:
+    paragraphs: list[str] = []
+    for block in content.split("\n\n"):
+        block = block.strip()
+        if not block or "<script" in block.lower() or "</script" in block.lower():
+            continue
+        if block.startswith("# "):
+            paragraphs.append(f"<h1>{html.escape(block[2:].strip())}</h1>")
+            continue
+        escaped = html.escape(block)
+        escaped = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", escaped)
+        paragraphs.append(f"<p>{escaped}</p>")
+    return "\n".join(paragraphs)
+
+
 def paginate_posts(
     posts: list[StoredPostDraft],
     limit: int | None,
@@ -253,6 +270,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return ReadPublicPostResponse(
             **public_post_summary_response(published_post).model_dump(by_alias=True),
             content=published_post.content,
+            bodyHtml=render_public_body_html(published_post.content),
         )
 
     @app.get("/api/v1/posts")

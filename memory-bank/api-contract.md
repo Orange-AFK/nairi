@@ -35,12 +35,13 @@
 2. Path: `/api/v1/posts`
 3. Scope: `posts:read`
 4. Query parameters: `status`, `tag`, `category`, `series`, `limit`, `cursor`
-5. Current scaffold boundary: authenticated draft list for `status=draft`.
+5. Current scaffold boundary: authenticated list for `status=draft` and `status=published`.
 6. Response fields: `items`, `nextCursor`
 7. Item fields for draft list: `postId`, `title`, `slug`, `status`, `contentFormat`, `summary`, `tags`, `categoryId`, `seriesId`, `metadata`, `revisionId`, `createdAt`, `updatedAt`.
-8. Draft list items intentionally omit `content`; clients should use `GET /api/v1/posts/{post_id}` for draft detail.
-9. Audit event: none for list readback.
-10. Clients: public frontend for public posts, admin console for authenticated lists, MCP for agent-safe listing.
+8. Item fields for published list: `postId`, `title`, `slug`, `status`, `contentFormat`, `summary`, `tags`, `categoryId`, `seriesId`, `metadata`, `revisionId`, `publishedAt`, `createdAt`, `updatedAt`.
+9. List items intentionally omit `content`; clients should use `GET /api/v1/posts/{post_id}` for detail.
+10. Audit event: none for list readback.
+11. Clients: public frontend for public posts, admin console for authenticated lists, MCP for agent-safe listing.
 
 ### Create Post Draft
 
@@ -54,15 +55,16 @@
 8. Errors: `400` with code `invalid_request` when `title` is blank, `slug` is not lowercase letters/numbers/hyphens, or `content` is blank. The validation response must not create a post, revision, or audit event.
 9. Errors: `409` with code `conflict` when the requested `slug` already exists. The conflict response must not create an additional post revision or audit event.
 
-### Read Post Draft
+### Read Post
 
 1. Method: `GET`
 2. Path: `/api/v1/posts/{post_id}`
 3. Scope: `posts:read`
 4. Request body fields: none
-5. Response fields: `postId`, `title`, `slug`, `status`, `contentFormat`, `content`, `summary`, `tags`, `categoryId`, `seriesId`, `metadata`, `revisionId`, `createdAt`, `updatedAt`
-6. Errors: `404` with code `not_found` when `post_id` is unknown or does not identify a draft.
-7. Audit event: none for readback.
+5. Response fields for draft posts: `postId`, `title`, `slug`, `status`, `contentFormat`, `content`, `summary`, `tags`, `categoryId`, `seriesId`, `metadata`, `revisionId`, `createdAt`, `updatedAt`
+6. Response fields for published posts: `postId`, `title`, `slug`, `status`, `contentFormat`, `content`, `summary`, `tags`, `categoryId`, `seriesId`, `metadata`, `revisionId`, `publishedAt`, `createdAt`, `updatedAt`
+7. Errors: `404` with code `not_found` when `post_id` is unknown or does not identify a draft or published post.
+8. Audit event: none for readback.
 
 ### Update Post Draft
 

@@ -180,6 +180,16 @@
 6. Risks or blockers: scheduling semantics, queued/running job lifecycle, retry/failure handling, job runner execution, public rendering/readback beyond draft-only routes, filtering/pagination, and SQLAlchemy/Alembic migrations remain deferred.
 7. Next recommended named task: Article Draft Published Readback Boundary.
 
+### Article Draft Published Readback Boundary
+
+1. Status: completed.
+2. Scope: added authenticated published post detail and list readback through the existing content endpoints: `GET /api/v1/posts/{post_id}` now returns published detail after publication, and `GET /api/v1/posts?status=published` returns published summaries with `publishedAt` while preserving draft list/detail response shapes.
+3. Changed files: `services/api/src/nairi_api/main.py`, `services/api/src/nairi_api/posts.py`, `services/api/tests/test_post_persistence.py`, `memory-bank/api-contract.md`, `memory-bank/project-state.md`, `memory-bank/architecture.md`, `memory-bank/data-model.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: wrote published detail/list route tests first and observed RED on draft-only read/list behavior; implemented the smallest shared status read helpers and published response models; then verified focused GREEN, persistence tests, full API suite, docs guards, schema guards, and secret guards.
+5. Result: passed for the published readback boundary.
+6. Risks or blockers: filtering, pagination, unauthenticated public-read policy, public rendering, scheduling semantics, job runner execution, and SQLAlchemy/Alembic migrations remain deferred.
+7. Next recommended named task: Article Draft Published Filtering Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

@@ -67,6 +67,7 @@ class StoredPostDraft:
     revision_id: str
     created_at: str
     updated_at: str
+    published_at: str | None = None
 
 
 class DuplicatePostSlugError(Exception):
@@ -316,6 +317,12 @@ class PostStore:
         )
 
     def list_drafts(self) -> list[StoredPostDraft]:
+        return self._list_posts_by_status(DRAFT_STATUS)
+
+    def list_published(self) -> list[StoredPostDraft]:
+        return self._list_posts_by_status(PUBLISHED_STATUS)
+
+    def _list_posts_by_status(self, status: str) -> list[StoredPostDraft]:
         with self._connect() as connection:
             self._init_schema(connection)
             rows = connection.execute(
@@ -329,6 +336,7 @@ class PostStore:
                     post_revisions.content,
                     post_revisions.metadata,
                     posts.current_revision_id,
+                    posts.published_at,
                     posts.created_at,
                     posts.updated_at
                 FROM posts
@@ -336,11 +344,17 @@ class PostStore:
                 WHERE posts.status = ?
                 ORDER BY posts.created_at ASC, posts.id ASC
                 """,
-                (DRAFT_STATUS,),
+                (status,),
             ).fetchall()
         return [self._stored_draft_from_row(row) for row in rows]
 
     def get_draft(self, post_id: str) -> StoredPostDraft | None:
+        return self._get_post_by_status(post_id, DRAFT_STATUS)
+
+    def get_published(self, post_id: str) -> StoredPostDraft | None:
+        return self._get_post_by_status(post_id, PUBLISHED_STATUS)
+
+    def _get_post_by_status(self, post_id: str, status: str) -> StoredPostDraft | None:
         with self._connect() as connection:
             self._init_schema(connection)
             row = connection.execute(
@@ -354,13 +368,14 @@ class PostStore:
                     post_revisions.content,
                     post_revisions.metadata,
                     posts.current_revision_id,
+                    posts.published_at,
                     posts.created_at,
                     posts.updated_at
                 FROM posts
                 JOIN post_revisions ON post_revisions.id = posts.current_revision_id
                 WHERE posts.id = ? AND posts.status = ?
                 """,
-                (post_id, DRAFT_STATUS),
+                (post_id, status),
             ).fetchone()
         if row is None:
             return None
@@ -385,8 +400,9 @@ class PostStore:
             series_id=series_id,
             metadata=metadata,
             revision_id=cast(str, row[7]),
-            created_at=cast(str, row[8]),
-            updated_at=cast(str, row[9]),
+            published_at=cast(str | None, row[8]),
+            created_at=cast(str, row[9]),
+            updated_at=cast(str, row[10]),
         )
 
     def _connect(self) -> sqlite3.Connection:

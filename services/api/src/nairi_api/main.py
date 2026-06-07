@@ -78,12 +78,33 @@ class PostDraftSummaryResponse(BaseModel):
     updated_at: str = Field(alias="updatedAt")
 
 
+class PublishedPostSummaryResponse(BaseModel):
+    post_id: str = Field(alias="postId")
+    title: str
+    slug: str
+    status: Literal["published"]
+    content_format: Literal["markdown", "mdx"] = Field(alias="contentFormat")
+    summary: str | None = None
+    tags: list[str]
+    category_id: str | None = Field(alias="categoryId")
+    series_id: str | None = Field(alias="seriesId")
+    metadata: dict[str, object]
+    revision_id: str = Field(alias="revisionId")
+    published_at: str = Field(alias="publishedAt")
+    created_at: str = Field(alias="createdAt")
+    updated_at: str = Field(alias="updatedAt")
+
+
 class ListPostDraftsResponse(BaseModel):
-    items: list[PostDraftSummaryResponse]
+    items: list[PostDraftSummaryResponse | PublishedPostSummaryResponse]
     next_cursor: str | None = Field(default=None, alias="nextCursor")
 
 
 class ReadPostDraftResponse(PostDraftSummaryResponse):
+    content: str
+
+
+class ReadPublishedPostResponse(PublishedPostSummaryResponse):
     content: str
 
 
@@ -121,6 +142,25 @@ def post_draft_summary_response(draft: StoredPostDraft) -> PostDraftSummaryRespo
     )
 
 
+def published_post_summary_response(post: StoredPostDraft) -> PublishedPostSummaryResponse:
+    return PublishedPostSummaryResponse(
+        postId=post.post_id,
+        title=post.title,
+        slug=post.slug,
+        status="published",
+        contentFormat=post.content_format,
+        summary=post.summary,
+        tags=post.tags,
+        categoryId=post.category_id,
+        seriesId=post.series_id,
+        metadata=post.metadata,
+        revisionId=post.revision_id,
+        publishedAt=post.published_at or post.updated_at,
+        createdAt=post.created_at,
+        updatedAt=post.updated_at,
+    )
+
+
 def create_app(settings: Settings | None = None) -> FastAPI:
     if settings is None:
         settings = get_settings()
@@ -142,10 +182,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return {"items": []}
 
     @app.get("/api/v1/posts")
-    def list_post_drafts(
+    def list_posts(
+        status: Literal["draft", "published"] = "draft",
         _actor: AuthenticatedActor = Depends(require_scope("posts:read")),
     ) -> ListPostDraftsResponse:
         drafts: list[StoredPostDraft] = app.state.post_store.list_drafts()
+        if status == "published":
+            published_posts: list[StoredPostDraft] = app.state.post_store.list_published()
+            return ListPostDraftsResponse(
+                items=[published_post_summary_response(post) for post in published_posts],
+                nextCursor=None,
+            )
         return ListPostDraftsResponse(
             items=[post_draft_summary_response(draft) for draft in drafts],
             nextCursor=None,
@@ -227,13 +274,19 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def read_post_draft(
         post_id: str,
         _actor: AuthenticatedActor = Depends(require_scope("posts:read")),
-    ) -> ReadPostDraftResponse:
+    ) -> ReadPostDraftResponse | ReadPublishedPostResponse:
         draft: StoredPostDraft | None = app.state.post_store.get_draft(post_id)
-        if draft is None:
+        if draft is not None:
+            return ReadPostDraftResponse(
+                **post_draft_summary_response(draft).model_dump(by_alias=True),
+                content=draft.content,
+            )
+        published_post: StoredPostDraft | None = app.state.post_store.get_published(post_id)
+        if published_post is None:
             raise ApiError(404, "not_found", "Post not found", {"postId": post_id})
-        return ReadPostDraftResponse(
-            **post_draft_summary_response(draft).model_dump(by_alias=True),
-            content=draft.content,
+        return ReadPublishedPostResponse(
+            **published_post_summary_response(published_post).model_dump(by_alias=True),
+            content=published_post.content,
         )
 
     @app.post("/api/v1/posts/{post_id}/publish")

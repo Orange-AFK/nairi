@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Nairi | Project Experience Publishing",
+  description: "Read project experience notes and published articles through the public Nairi site.",
+};
 
 export default function HomePage() {
   return (

@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { fetchPublicPosts } from "@/lib/public-posts";
+
+export const metadata: Metadata = {
+  title: "Articles | Nairi",
+  description: "Browse published project experience notes from Nairi.",
+};
 
 export default async function PublicPostsPage() {
   const posts = await fetchPublicPosts();

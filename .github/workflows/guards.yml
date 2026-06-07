@@ -58,6 +58,9 @@ jobs:
       - name: Run frontend public render check
         run: python3 scripts/checks/frontend_public_render_check.py
 
+      - name: Run frontend public cache check
+        run: python3 scripts/checks/frontend_public_cache_check.py
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:

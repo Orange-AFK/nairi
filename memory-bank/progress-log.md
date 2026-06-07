@@ -330,6 +330,16 @@
 6. Risks or blockers: pagination, filters, cache/CDN policy, canonical URLs, RSS, sitemap, Open Graph image generation, and richer SEO schema remain deferred.
 7. Next recommended named task: Article Public API / Frontend Cache Policy Boundary or Article Public Sitemap/RSS Boundary.
 
+### Article Public API / Frontend Cache Policy Boundary
+
+1. Status: completed.
+2. Scope: replaced public frontend `no-store` fetches with explicit Next.js revalidation constants for list/detail reads, kept routes dynamic to avoid build-time API prerendering, and added a structural cache-policy check to Guards.
+3. Changed files: `.github/workflows/guards.yml`, `apps/public-site/lib/public-posts.ts`, `apps/public-site/app/posts/page.tsx`, `apps/public-site/app/posts/[slug]/page.tsx`, `scripts/checks/frontend_public_cache_check.py`, `memory-bank/frontend-design.md`, `memory-bank/guard-ci.md`, `memory-bank/project-state.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: added `frontend_public_cache_check.py` first and observed RED on missing revalidation constants and `no-store` usage; implemented revalidation constants; observed build failure from build-time API prerendering; added `dynamic = "force-dynamic"` and extended the check; verified cache/render/metadata/style/detail/list checks, public-site typecheck, and public-site build.
+5. Result: passed for the public API / frontend cache policy boundary.
+6. Risks or blockers: CDN headers, publish-triggered invalidation, tag-based revalidation, pagination cache policy, RSS, and sitemap remain deferred.
+7. Next recommended named task: Article Public Sitemap/RSS Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

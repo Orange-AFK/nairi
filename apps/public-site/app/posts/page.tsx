@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   description: "Browse published project experience notes from Nairi.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function PublicPostsPage() {
   const posts = await fetchPublicPosts();
 

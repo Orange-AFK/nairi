@@ -36,6 +36,8 @@ type FetchPublicPostOptions = {
 };
 
 const DEFAULT_API_BASE_URL = "http://localhost:8000";
+const PUBLIC_POST_LIST_REVALIDATE_SECONDS = 60;
+const PUBLIC_POST_DETAIL_REVALIDATE_SECONDS = 300;
 
 function publicApiBaseUrl(apiBaseUrl?: string): string {
   return (apiBaseUrl ?? process.env.NEXT_PUBLIC_NAIRI_API_BASE_URL ?? DEFAULT_API_BASE_URL).replace(/\/$/, "");
@@ -46,7 +48,7 @@ export async function fetchPublicPostBySlug(
   options: FetchPublicPostOptions = {},
 ): Promise<PublicPostDetail | null> {
   const response = await fetch(`${publicApiBaseUrl(options.apiBaseUrl)}/api/v1/public/posts/${encodeURIComponent(slug)}`, {
-    cache: "no-store",
+    next: { revalidate: PUBLIC_POST_DETAIL_REVALIDATE_SECONDS },
   });
 
   if (response.status === 404) {
@@ -61,7 +63,7 @@ export async function fetchPublicPostBySlug(
 
 export async function fetchPublicPosts(options: FetchPublicPostOptions = {}): Promise<PublicPostSummary[]> {
   const response = await fetch(`${publicApiBaseUrl(options.apiBaseUrl)}/api/v1/public/posts`, {
-    cache: "no-store",
+    next: { revalidate: PUBLIC_POST_LIST_REVALIDATE_SECONDS },
   });
 
   if (!response.ok) {

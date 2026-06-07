@@ -49,6 +49,7 @@ class PublishedPost:
     status: str
     published_at: str | None
     job_id: str
+    public_invalidation_surfaces: list[str]
 
 
 @dataclass(frozen=True)
@@ -68,6 +69,10 @@ class StoredPostDraft:
     created_at: str
     updated_at: str
     published_at: str | None = None
+
+
+def public_invalidation_surfaces_for_post(slug: str) -> list[str]:
+    return ["/posts", f"/posts/{slug}", "/rss.xml", "/sitemap.xml"]
 
 
 class DuplicatePostSlugError(Exception):
@@ -257,7 +262,7 @@ class PostStore:
             self._init_schema(connection)
             row = connection.execute(
                 """
-                SELECT current_revision_id
+                SELECT current_revision_id, slug
                 FROM posts
                 WHERE id = ? AND status = ?
                 """,
@@ -266,8 +271,10 @@ class PostStore:
             if row is None:
                 raise PostDraftNotFoundError(post_id)
             current_revision_id = cast(str, row[0])
+            slug = cast(str, row[1])
             if current_revision_id != revision_id:
                 raise PostRevisionConflictError(current_revision_id)
+            public_invalidation_surfaces = public_invalidation_surfaces_for_post(slug)
             connection.execute(
                 """
                 INSERT INTO publish_jobs (
@@ -279,11 +286,23 @@ class PostStore:
                     started_at,
                     completed_at,
                     error_code,
-                    error_message
+                    error_message,
+                    public_invalidation_surfaces
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
-                (job_id, post_id, revision_id, "succeeded", None, published_at, published_at, None, None),
+                (
+                    job_id,
+                    post_id,
+                    revision_id,
+                    "succeeded",
+                    None,
+                    published_at,
+                    published_at,
+                    None,
+                    None,
+                    json.dumps(public_invalidation_surfaces, separators=(",", ":")),
+                ),
             )
             connection.execute(
                 """
@@ -314,6 +333,7 @@ class PostStore:
             status=PUBLISHED_STATUS,
             published_at=published_at,
             job_id=job_id,
+            public_invalidation_surfaces=public_invalidation_surfaces,
         )
 
     def list_drafts(self) -> list[StoredPostDraft]:
@@ -492,7 +512,11 @@ class PostStore:
                 started_at TEXT,
                 completed_at TEXT,
                 error_code TEXT,
-                error_message TEXT
+                error_message TEXT,
+                public_invalidation_surfaces TEXT NOT NULL DEFAULT '[]'
             )
             """
         )
+        publish_job_columns = {cast(str, row[1]) for row in connection.execute("PRAGMA table_info(publish_jobs)").fetchall()}
+        if "public_invalidation_surfaces" not in publish_job_columns:
+            connection.execute("ALTER TABLE publish_jobs ADD COLUMN public_invalidation_surfaces TEXT NOT NULL DEFAULT '[]'")

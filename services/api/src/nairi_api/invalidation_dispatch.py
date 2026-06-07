@@ -6,6 +6,13 @@ from nairi_api.config import Settings
 
 
 @dataclass(frozen=True)
+class CloudflarePurgeRequestPlan:
+    method: Literal["POST"]
+    path: str
+    body: dict[str, list[str]]
+
+
+@dataclass(frozen=True)
 class PublicInvalidationDispatchResult:
     status: Literal["dispatch_skipped", "dispatch_failed"]
     reason: Literal[
@@ -48,6 +55,16 @@ class CloudflarePublicInvalidationDispatcher:
     def __init__(self, *, zone_id: str | None = None, api_token_configured: bool = False) -> None:
         self._zone_id = zone_id
         self._api_token_configured = api_token_configured
+
+    def build_purge_request_plan(self, *, surfaces: Sequence[str]) -> CloudflarePurgeRequestPlan | None:
+        if not (self._zone_id and self._api_token_configured):
+            return None
+        unique_surfaces = list(dict.fromkeys(surfaces))
+        return CloudflarePurgeRequestPlan(
+            method="POST",
+            path=f"/client/v4/zones/{self._zone_id}/purge_cache",
+            body={"files": unique_surfaces},
+        )
 
     def dispatch(self, *, surfaces: Sequence[str], published_at: str | None) -> PublicInvalidationDispatchResult:
         reason: Literal["cloudflare_adapter_disabled", "cloudflare_adapter_missing_settings"] = (

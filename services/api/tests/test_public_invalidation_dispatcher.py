@@ -1,6 +1,7 @@
 from nairi_api.config import Settings
 from nairi_api.invalidation_dispatch import (
     CloudflarePublicInvalidationDispatcher,
+    CloudflarePurgeRequestPlan,
     ContractPublicInvalidationDispatcher,
     NoopPublicInvalidationDispatcher,
     PublicInvalidationDispatchResult,
@@ -107,6 +108,49 @@ def test_cloudflare_factory_records_missing_settings_for_partial_cloudflare_conf
             attempted=False,
             attempted_at=None,
         )
+
+
+def test_cloudflare_dispatcher_builds_purge_request_plan_without_token_or_external_invalidation() -> None:
+    dispatcher = CloudflarePublicInvalidationDispatcher(zone_id="zone-test", api_token_configured=True)
+
+    plan = dispatcher.build_purge_request_plan(surfaces=["/posts", "/rss.xml", "/posts"])
+
+    assert plan == CloudflarePurgeRequestPlan(
+        method="POST",
+        path="/client/v4/zones/zone-test/purge_cache",
+        body={"files": ["/posts", "/rss.xml"]},
+    )
+    assert "stub" not in repr(plan)
+    assert "Authorization" not in repr(plan)
+    assert "Bearer" not in repr(plan)
+
+
+def test_cloudflare_dispatcher_does_not_build_purge_request_plan_without_required_settings() -> None:
+    dispatcher = CloudflarePublicInvalidationDispatcher(zone_id="zone-test", api_token_configured=False)
+
+    assert dispatcher.build_purge_request_plan(surfaces=["/posts"]) is None
+
+
+def test_cloudflare_factory_exposes_request_plan_but_dispatch_stays_disabled_without_external_invalidation() -> None:
+    settings = Settings(
+        public_invalidation_dispatcher="cloudflare",
+        public_invalidation_cloudflare_zone_id="zone-test",
+        public_invalidation_cloudflare_api_token="stub",
+    )
+    dispatcher = build_public_invalidation_dispatcher(settings)
+
+    assert isinstance(dispatcher, CloudflarePublicInvalidationDispatcher)
+    assert dispatcher.build_purge_request_plan(surfaces=["/posts"]) == CloudflarePurgeRequestPlan(
+        method="POST",
+        path="/client/v4/zones/zone-test/purge_cache",
+        body={"files": ["/posts"]},
+    )
+    assert dispatcher.dispatch(surfaces=["/posts"], published_at="2026-06-07T08:11:12Z") == PublicInvalidationDispatchResult(
+        status="dispatch_skipped",
+        reason="cloudflare_adapter_disabled",
+        attempted=False,
+        attempted_at=None,
+    )
 
 
 def test_dispatcher_factory_builds_noop_dispatcher_for_none_configuration() -> None:

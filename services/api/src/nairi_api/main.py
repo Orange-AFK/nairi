@@ -118,6 +118,10 @@ class ListPublicPostsResponse(BaseModel):
     next_cursor: str | None = Field(default=None, alias="nextCursor")
 
 
+class ReadPublicPostResponse(PublicPostSummaryResponse):
+    content: str
+
+
 class ReadPostDraftResponse(PostDraftSummaryResponse):
     content: str
 
@@ -239,6 +243,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return ListPublicPostsResponse(
             items=[public_post_summary_response(post) for post in published_posts],
             nextCursor=None,
+        )
+
+    @app.get("/api/v1/public/posts/{slug}")
+    def read_public_post(slug: str) -> ReadPublicPostResponse:
+        published_post = app.state.post_store.get_published_by_slug(slug)
+        if published_post is None:
+            raise ApiError(404, "not_found", "Post not found", {"slug": slug})
+        return ReadPublicPostResponse(
+            **public_post_summary_response(published_post).model_dump(by_alias=True),
+            content=published_post.content,
         )
 
     @app.get("/api/v1/posts")

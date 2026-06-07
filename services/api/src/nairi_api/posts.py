@@ -366,11 +366,20 @@ class PostStore:
     def get_published(self, post_id: str) -> StoredPostDraft | None:
         return self._get_post_by_status(post_id, PUBLISHED_STATUS)
 
+    def get_published_by_slug(self, slug: str) -> StoredPostDraft | None:
+        return self._get_post_by_slug_and_status(slug, PUBLISHED_STATUS)
+
     def _get_post_by_status(self, post_id: str, status: str) -> StoredPostDraft | None:
+        return self._get_post_by_column_and_status("posts.id", post_id, status)
+
+    def _get_post_by_slug_and_status(self, slug: str, status: str) -> StoredPostDraft | None:
+        return self._get_post_by_column_and_status("posts.slug", slug, status)
+
+    def _get_post_by_column_and_status(self, column: Literal["posts.id", "posts.slug"], value: str, status: str) -> StoredPostDraft | None:
         with self._connect() as connection:
             self._init_schema(connection)
             row = connection.execute(
-                """
+                f"""
                 SELECT
                     posts.id,
                     posts.title,
@@ -385,9 +394,9 @@ class PostStore:
                     posts.updated_at
                 FROM posts
                 JOIN post_revisions ON post_revisions.id = posts.current_revision_id
-                WHERE posts.id = ? AND posts.status = ?
+                WHERE {column} = ? AND posts.status = ?
                 """,
-                (post_id, status),
+                (value, status),
             ).fetchone()
         if row is None:
             return None

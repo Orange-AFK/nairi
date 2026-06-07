@@ -109,10 +109,11 @@ FastAPI is the single authority for product capabilities. Other modules are clie
 13. `PostStore` changes the post status to `published`, writes request-time `published_at` and `updated_at`, preserves the current revision, and records `post.published` audit metadata.
 14. Admin, MCP, and authorized clients can read published summaries through `GET /api/v1/posts?status=published` and published detail through `GET /api/v1/posts/{post_id}` with `posts:read` scope in the current scaffold.
 15. Public clients read published summaries through `GET /api/v1/public/posts`, which is anonymous and returns only public-safe fields.
-16. Public clients must not reuse authenticated content-management routes.
-17. Authenticated published summary lists can currently be filtered by tag membership, category id, or series id.
-18. Authenticated published summary lists can currently be paginated with `limit` and an item-id `cursor`.
-19. Public detail, public filtering/pagination inputs, public rendering, cache policy, scheduling semantics, and the job runner remain future work under documented state rules.
+16. Public clients read published detail through `GET /api/v1/public/posts/{slug}`, which is anonymous, slug-based, published-only, and returns a public-safe detail response.
+17. Public clients must not reuse authenticated content-management routes.
+18. Authenticated published summary lists can currently be filtered by tag membership, category id, or series id.
+19. Authenticated published summary lists can currently be paginated with `limit` and an item-id `cursor`.
+20. Public filtering/pagination inputs, public rendering, cache policy, scheduling semantics, and the job runner remain future work under documented state rules.
 
 ## Security Boundary
 

@@ -449,6 +449,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             surfaces=published.public_invalidation_surfaces,
             published_at=published.published_at,
         )
+        app.state.post_store.record_public_invalidation_dispatch(
+            published.job_id,
+            status=dispatch_result.status,
+            reason=dispatch_result.reason,
+            attempted=dispatch_result.attempted,
+            attempted_at=dispatch_result.attempted_at,
+        )
         return PublishPostResponse(
             postId=published.post_id,
             status="published",

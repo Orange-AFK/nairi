@@ -713,8 +713,8 @@ def test_publish_post_draft_transitions_to_published_and_records_audit(tmp_path:
         None,
         "dispatch_skipped",
         "no_dispatcher_configured",
-        0,
-        None,
+        1,
+        "2026-06-07T08:12:13Z",
     )
     assert audit_rows == [
         (

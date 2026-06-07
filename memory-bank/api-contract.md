@@ -85,11 +85,12 @@
 3. Scope: `posts:publish`
 4. Request body fields: `revisionId`, `publishMode`, `scheduledAt`
 5. Response fields: `postId`, `status`, `publishedAt`, `jobId`
-6. Current state transition boundary: validates the authenticated publish request, changes the post status from `draft` to `published`, stores request-time `publishedAt`/`updatedAt`, and returns a published job-shaped response.
+6. Current job storage boundary: validates the authenticated publish request, creates a durable `publish_jobs` row, changes the post status from `draft` to `published`, stores request-time `publishedAt`/`updatedAt`, and returns a published job-shaped response.
 7. Errors: `404` with code `not_found` when `post_id` is unknown or does not identify a draft.
 8. Errors: `409` with code `conflict` when `revisionId` does not match the current draft revision. The conflict response must not create a revision or audit event, and must not mutate the post.
 9. Audit event: `post.published` with `revisionId` and `jobId` metadata.
-10. Duplicate capability warning: admin, MCP, and agents must use this capability instead of creating parallel publish endpoints.
+10. Publish job storage: immediate publish currently stores a `publish_jobs` row with deterministic `id`, `postId`, `revisionId`, `status=succeeded`, `scheduledAt=null`, `startedAt=publishedAt`, `completedAt=publishedAt`, `errorCode=null`, and `errorMessage=null`.
+11. Duplicate capability warning: admin, MCP, and agents must use this capability instead of creating parallel publish endpoints.
 
 ## MDX Component API
 

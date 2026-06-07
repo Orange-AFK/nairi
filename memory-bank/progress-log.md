@@ -170,6 +170,16 @@
 6. Risks or blockers: durable `publish_jobs` storage, scheduling semantics, job runner execution, public rendering, filtering/pagination, and SQLAlchemy/Alembic migrations remain deferred.
 7. Next recommended named task: Article Draft Publish Job Storage Boundary.
 
+### Article Draft Publish Job Storage Boundary
+
+1. Status: completed.
+2. Scope: added the first durable `publish_jobs` scaffold table behind `POST /api/v1/posts/{post_id}/publish`; successful immediate publish now records the deterministic job id, post/revision ids, `succeeded` status, null scheduling/error fields, and request-time start/completion timestamps.
+3. Changed files: `services/api/src/nairi_api/posts.py`, `services/api/tests/test_post_persistence.py`, `memory-bank/api-contract.md`, `memory-bank/project-state.md`, `memory-bank/architecture.md`, `memory-bank/data-model.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: extended the publish success test first and observed RED on missing `publish_jobs`; implemented the smallest scaffold table and insert before post/audit mutation; then verified focused GREEN, conflict no-side-effect coverage, persistence tests, full API suite, docs guards, schema guards, and secret guards.
+5. Result: passed for the publish job storage boundary.
+6. Risks or blockers: scheduling semantics, queued/running job lifecycle, retry/failure handling, job runner execution, public rendering/readback beyond draft-only routes, filtering/pagination, and SQLAlchemy/Alembic migrations remain deferred.
+7. Next recommended named task: Article Draft Published Readback Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

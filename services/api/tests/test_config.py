@@ -30,9 +30,19 @@ def test_public_invalidation_dispatcher_accepts_contract_adapter_configuration(
     assert settings.public_invalidation_dispatcher == "contract"
 
 
+def test_public_invalidation_dispatcher_accepts_cloudflare_adapter_configuration(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("NAIRI_PUBLIC_INVALIDATION_DISPATCHER", raising=False)
+
+    settings = Settings(public_invalidation_dispatcher="cloudflare")
+
+    assert settings.public_invalidation_dispatcher == "cloudflare"
+
+
 def test_public_invalidation_dispatcher_rejects_unsupported_values() -> None:
     with pytest.raises(ValidationError):
-        Settings(public_invalidation_dispatcher="cloudflare")
+        Settings(public_invalidation_dispatcher="webhook")
 
 
 def test_public_invalidation_dispatcher_reads_env_none(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -51,8 +61,16 @@ def test_public_invalidation_dispatcher_reads_env_contract(monkeypatch: pytest.M
     assert settings.public_invalidation_dispatcher == "contract"
 
 
-def test_public_invalidation_dispatcher_rejects_unsupported_env_value(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_public_invalidation_dispatcher_reads_env_cloudflare(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("NAIRI_PUBLIC_INVALIDATION_DISPATCHER", "cloudflare")
+
+    settings = Settings()
+
+    assert settings.public_invalidation_dispatcher == "cloudflare"
+
+
+def test_public_invalidation_dispatcher_rejects_unsupported_env_value(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("NAIRI_PUBLIC_INVALIDATION_DISPATCHER", "webhook")
 
     with pytest.raises(ValidationError):
         Settings()

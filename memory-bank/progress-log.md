@@ -550,6 +550,16 @@
 6. Risks or blockers: additional sitemap shards, concrete invalidation adapters, CDN purge, `revalidateTag`/`revalidatePath`, webhooks, cache headers, Atom, richer SEO schema, and the real job runner remain deferred.
 7. Next recommended named task: Article Public Publish Invalidation Concrete Adapter Boundary or Article Public Sitemap Additional Shards Boundary.
 
+### Article Public Publish Invalidation Cloudflare Adapter Config Boundary
+
+1. Status: completed.
+2. Scope: accepted `public_invalidation_dispatcher=cloudflare` as a config-only disabled concrete adapter boundary and exposed a `CloudflarePublicInvalidationDispatcher` that records deterministic skipped bookkeeping without Cloudflare API calls or purge side effects.
+3. Changed files: `services/api/src/nairi_api/config.py`, `services/api/src/nairi_api/invalidation_dispatch.py`, `services/api/src/nairi_api/main.py`, `services/api/tests/test_config.py`, `services/api/tests/test_public_invalidation_dispatcher.py`, `memory-bank/api-contract.md`, `memory-bank/architecture.md`, `memory-bank/project-state.md`, and `memory-bank/progress-log.md`.
+4. Verification performed: added RED config/env/factory/app-state/dispatcher tests for `cloudflare`, observed RED on the previous `none|contract` literal and missing dispatcher class, then implemented the minimal literal, disabled dispatcher, factory branch, and response reason support before verifying focused config/dispatcher tests and the full API test suite.
+5. Result: passed for the Cloudflare adapter config boundary.
+6. Risks or blockers: Cloudflare credentials/settings, zone/tag/path mapping, real Cloudflare API calls, CDN purge, `revalidateTag`/`revalidatePath`, webhooks, cache headers, scheduling semantics, external invalidation execution, and the real job runner remain deferred.
+7. Next recommended named task: Article Public Publish Invalidation Cloudflare Adapter Settings Boundary or Article Public Sitemap Additional Shards Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

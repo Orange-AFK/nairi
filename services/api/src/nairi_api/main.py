@@ -193,6 +193,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             )
         except PostDraftNotFoundError as error:
             raise ApiError(404, "not_found", "Post not found", {"postId": error.post_id}) from error
+        except DuplicatePostSlugError as error:
+            raise ApiError(409, "conflict", "Post slug already exists", {"slug": error.slug}) from error
         except PostRevisionConflictError as error:
             raise ApiError(
                 409,

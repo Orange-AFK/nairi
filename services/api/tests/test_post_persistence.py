@@ -414,6 +414,76 @@ def test_update_post_draft_rejects_revision_conflict_without_side_effects(tmp_pa
     assert current_row == ("Persistent draft", create_response.json()["revisionId"])
 
 
+def test_update_post_draft_rejects_duplicate_slug_without_side_effects(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    settings = Settings(
+        api_tokens={"post-writer-token": ["posts:write"]},
+        database_path=str(database_path),
+    )
+    client = TestClient(create_app(settings=settings), raise_server_exceptions=False)
+    second_payload = draft_payload()
+    second_payload.update({"title": "Second persistent draft", "slug": "second-persistent-draft"})
+
+    first_create_response = client.post(
+        "/api/v1/posts",
+        json=draft_payload(),
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+    second_create_response = client.post(
+        "/api/v1/posts",
+        json=second_payload,
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+    first_post_id = first_create_response.json()["postId"]
+    first_revision_id = first_create_response.json()["revisionId"]
+
+    response = client.patch(
+        f"/api/v1/posts/{first_post_id}",
+        json={
+            **draft_payload(),
+            "title": "Conflicting slug update",
+            "slug": "second-persistent-draft",
+            "expectedRevisionId": first_revision_id,
+        },
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+
+    assert first_create_response.status_code == 201
+    assert second_create_response.status_code == 201
+    assert response.status_code == 409
+    assert response.json() == {
+        "code": "conflict",
+        "message": "Post slug already exists",
+        "details": {"slug": "second-persistent-draft"},
+        "requestId": "unavailable",
+    }
+    with sqlite3.connect(database_path) as connection:
+        counts = connection.execute(
+            """
+            SELECT
+                (SELECT COUNT(*) FROM posts),
+                (SELECT COUNT(*) FROM post_revisions),
+                (SELECT COUNT(*) FROM audit_events)
+            """
+        ).fetchone()
+        first_row = connection.execute(
+            "SELECT title, slug, current_revision_id FROM posts WHERE id = ?",
+            (first_post_id,),
+        ).fetchone()
+        second_row = connection.execute(
+            "SELECT title, slug, current_revision_id FROM posts WHERE id = ?",
+            (second_create_response.json()["postId"],),
+        ).fetchone()
+
+    assert counts == (2, 2, 2)
+    assert first_row == ("Persistent draft", "persistent-draft", first_revision_id)
+    assert second_row == (
+        "Second persistent draft",
+        "second-persistent-draft",
+        second_create_response.json()["revisionId"],
+    )
+
+
 def test_get_post_draft_returns_created_draft_for_reader_scope(tmp_path: Path) -> None:
     database_path = tmp_path / "nairi.db"
     client = build_client(database_path)

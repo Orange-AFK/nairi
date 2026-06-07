@@ -182,6 +182,12 @@ class PostStore:
             previous_revision_id = cast(str, row[0])
             if previous_revision_id != expected_revision_id:
                 raise PostRevisionConflictError(previous_revision_id)
+            existing_slug = connection.execute(
+                "SELECT id FROM posts WHERE slug = ? AND id != ?",
+                (draft.slug, post_id),
+            ).fetchone()
+            if existing_slug is not None:
+                raise DuplicatePostSlugError(draft.slug)
             revision_count = connection.execute(
                 "SELECT COUNT(*) FROM post_revisions WHERE post_id = ?",
                 (post_id,),

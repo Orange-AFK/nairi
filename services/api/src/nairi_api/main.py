@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 from nairi_api.auth import ApiError, AuthenticatedActor, api_error_response, require_scope
 from nairi_api.config import Settings, get_settings
-from nairi_api.posts import CreatedPostDraft, PostDraftInput, PostStore
+from nairi_api.posts import CreatedPostDraft, DuplicatePostSlugError, PostDraftInput, PostStore
 
 
 class CreatePostDraftRequest(BaseModel):
@@ -52,20 +52,23 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         draft: CreatePostDraftRequest,
         actor: AuthenticatedActor = Depends(require_scope("posts:write")),
     ) -> CreatePostDraftResponse:
-        created: CreatedPostDraft = app.state.post_store.create_draft(
-            PostDraftInput(
-                title=draft.title,
-                slug=draft.slug,
-                content_format=draft.content_format,
-                content=draft.content,
-                summary=draft.summary,
-                tags=draft.tags,
-                category_id=draft.category_id,
-                series_id=draft.series_id,
-                metadata=draft.metadata,
-            ),
-            actor.token,
-        )
+        try:
+            created: CreatedPostDraft = app.state.post_store.create_draft(
+                PostDraftInput(
+                    title=draft.title,
+                    slug=draft.slug,
+                    content_format=draft.content_format,
+                    content=draft.content,
+                    summary=draft.summary,
+                    tags=draft.tags,
+                    category_id=draft.category_id,
+                    series_id=draft.series_id,
+                    metadata=draft.metadata,
+                ),
+                actor.token,
+            )
+        except DuplicatePostSlugError as error:
+            raise ApiError(409, "conflict", "Post slug already exists", {"slug": error.slug}) from error
         return CreatePostDraftResponse(
             postId=created.post_id,
             status="draft",

@@ -4,11 +4,11 @@
 
 ### Project Status
 
-1. Nairi has completed foundational documentation, guard scripts, the first API scaffold, the first protected scope-check route, scaffold-level article draft creation, and the first SQLite-backed draft persistence boundary.
+1. Nairi has completed foundational documentation, guard scripts, the first API scaffold, the first protected scope-check route, scaffold-level article draft creation, the first SQLite-backed draft persistence boundary, and duplicate draft slug conflict handling.
 2. The FastAPI service skeleton and auth dependency exist under `services/api/`.
 3. The accepted product direction is API-first and agent-first CMS.
 4. FastAPI is the product capability authority.
-5. Documentation, contracts, guard rules, health endpoint tests, protected scope tests, article draft creation route tests, and draft persistence tests currently pass locally.
+5. Documentation, contracts, guard rules, health endpoint tests, protected scope tests, article draft creation route tests, draft persistence tests, and duplicate slug tests currently pass locally.
 
 ## Confirmed Decisions
 
@@ -31,9 +31,10 @@
 ### Article Draft API Development
 
 1. SQLite-backed draft persistence now creates `Post`, `PostRevision`, and `post.created` audit rows for `POST /api/v1/posts`.
-2. The next small task is Article Draft Duplicate Slug Handling: return a standard conflict/error response before expanding update or publication flow.
-3. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
-4. Preserve scope checks and standard error behavior.
+2. Duplicate draft slug requests now return a standard `409 conflict` response without creating additional persistence side effects.
+3. The next small task is Article Draft Input Validation Boundary: validate required draft content fields before widening into update or publication flow.
+4. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
+5. Preserve scope checks and standard error behavior.
 
 ## Blockers
 

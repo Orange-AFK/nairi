@@ -29,6 +29,11 @@ class CreatedPostDraft:
     created_at: str
 
 
+class DuplicatePostSlugError(Exception):
+    def __init__(self, slug: str) -> None:
+        self.slug = slug
+
+
 class PostStore:
     def __init__(self, database_path: str) -> None:
         self.database_path = database_path
@@ -49,6 +54,12 @@ class PostStore:
 
         with self._connect() as connection:
             self._init_schema(connection)
+            existing_post = connection.execute(
+                "SELECT id FROM posts WHERE slug = ?",
+                (draft.slug,),
+            ).fetchone()
+            if existing_post is not None:
+                raise DuplicatePostSlugError(draft.slug)
             connection.execute(
                 """
                 INSERT INTO posts (id, title, slug, status, content_format, current_revision_id, created_at, updated_at)

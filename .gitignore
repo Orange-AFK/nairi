@@ -21,6 +21,7 @@ logs/
 
 # Build outputs
 .next/
+*.tsbuildinfo
 dist/
 build/
 .coverage/

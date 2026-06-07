@@ -87,6 +87,7 @@ Nairi uses automated guards to enforce documentation boundaries, bilingual synch
 1. Scans tracked and non-ignored untracked files.
 2. Blocks private keys, GitHub tokens, bearer tokens, likely Cloudflare-style tokens, AWS access keys, and suspicious secret assignments.
 3. Allows placeholder-only example values such as `change-me`, `placeholder`, `example`, and `replace-me`.
+4. Skips deterministic dependency lockfiles such as `package-lock.json` because package integrity hashes can resemble provider tokens and are verified by the package manager instead.
 
 ## Shared Guard Utilities
 

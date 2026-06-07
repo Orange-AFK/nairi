@@ -24,6 +24,7 @@ PLACEHOLDER_ALLOWLIST = [
 ]
 
 SKIP_SUFFIXES = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".pdf", ".ico"}
+SKIP_FILENAMES = {"package-lock.json"}
 
 
 def is_placeholder_line(line: str) -> bool:
@@ -35,7 +36,7 @@ def main() -> None:
     guard = Guard("secret_guard", [])
     for rel in sorted(git_tracked_or_untracked_nonignored()):
         path = ROOT / rel
-        if not path.is_file() or path.suffix.lower() in SKIP_SUFFIXES:
+        if not path.is_file() or path.suffix.lower() in SKIP_SUFFIXES or path.name in SKIP_FILENAMES:
             continue
         try:
             text = path.read_text(encoding="utf-8")

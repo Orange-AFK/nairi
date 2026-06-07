@@ -570,6 +570,16 @@
 6. Risks or blockers: Cloudflare request construction, endpoint path/method, zone/tag/path mapping, real HTTP client, CDN purge, `revalidateTag`/`revalidatePath`, webhooks, cache headers, scheduling semantics, external invalidation execution, and job runner remain deferred.
 7. Next recommended named task: Article Public Publish Invalidation Cloudflare Adapter Request Builder Boundary or Article Public Sitemap Additional Shards Boundary.
 
+### Article Public Publish Invalidation Cloudflare Adapter Request Builder Boundary
+
+1. Status: completed.
+2. Scope: added an inert `CloudflarePurgeRequestPlan` and a Cloudflare dispatcher request-plan builder that derives method/path/body from the configured zone id and public invalidation surfaces while keeping dispatch disabled and side-effect-free.
+3. Changed files: `services/api/src/nairi_api/invalidation_dispatch.py`, `services/api/tests/test_public_invalidation_dispatcher.py`, `memory-bank/api-contract.md`, `memory-bank/architecture.md`, `memory-bank/project-state.md`, and `memory-bank/progress-log.md`.
+4. Verification performed: added RED tests for missing request plan type, plan method/path/body, deduplicated ordered surfaces, no token/Authorization in plan repr, missing-settings returning `None`, factory-exposed plan construction, and dispatch remaining `cloudflare_adapter_disabled`; observed RED on missing `CloudflarePurgeRequestPlan`, then implemented the minimal frozen dataclass and builder.
+5. Result: focused dispatcher tests, focused config/dispatcher tests, and full API tests passed; production external-side-effect scan found zero HTTP clients, Cloudflare call execution, purge execution, revalidation, webhook, cache-header, or runner additions.
+6. Risks or blockers: Cloudflare dry-run dispatch result shaping, actual HTTP client wiring, authorization headers, Cloudflare API responses/errors, CDN purge, `revalidateTag`/`revalidatePath`, webhooks, cache headers, scheduling semantics, external invalidation execution, and job runner remain deferred.
+7. Next recommended named task: Article Public Publish Invalidation Cloudflare Adapter Dry-Run Dispatch Boundary or Article Public Sitemap Additional Shards Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

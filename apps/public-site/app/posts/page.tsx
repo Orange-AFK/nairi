@@ -30,7 +30,7 @@ type PublicPostsPageProps = {
 export default async function PublicPostsPage({ searchParams }: PublicPostsPageProps) {
   const resolvedSearchParams = await searchParams;
   const cursor = resolvedSearchParams?.cursor;
-  const { items: posts, nextCursor } = await fetchPublicPosts({
+  const { items: posts, nextCursor, page } = await fetchPublicPosts({
     limit: PUBLIC_POSTS_PAGE_SIZE,
     cursor,
   });
@@ -66,7 +66,7 @@ export default async function PublicPostsPage({ searchParams }: PublicPostsPageP
           ))
         )}
       </section>
-      {nextCursor ? (
+      {page.hasNextPage && nextCursor ? (
         <nav className="post-pagination" aria-label="Article pagination">
           <Link className="surface-card" href={`/posts?cursor=${encodeURIComponent(nextCursor)}`}>
             Load more articles

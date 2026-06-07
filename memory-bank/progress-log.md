@@ -400,6 +400,16 @@
 6. Risks or blockers: frontend display of page metadata, previous-page navigation, total counts, public filters, infinite scroll, sitemap/RSS pagination expansion, CDN headers, and publish-triggered invalidation remain deferred.
 7. Next recommended named task: Article Public Pagination Metadata Frontend Boundary.
 
+### Article Public Pagination Metadata Frontend Boundary
+
+1. Status: completed.
+2. Scope: updated `/posts` to use the public list response `page.hasNextPage` metadata together with `nextCursor` when deciding whether to render the `Load more articles` link, without displaying page metadata or changing pagination UI.
+3. Changed files: `scripts/checks/frontend_public_list_check.py`, `apps/public-site/app/posts/page.tsx`, `memory-bank/frontend-design.md`, `memory-bank/project-state.md`, and `memory-bank/progress-log.md`.
+4. Verification performed: extended `frontend_public_list_check.py` first and observed RED on missing `page` and `hasNextPage` markers in the page; implemented the minimal render-condition change and updated project docs.
+5. Result: passed for the public pagination metadata frontend boundary.
+6. Risks or blockers: previous-page navigation, total counts, public filters, infinite scroll, displaying page metadata, sitemap/RSS pagination expansion, CDN headers, and publish-triggered invalidation remain deferred.
+7. Next recommended named task: Article Public RSS/Sitemap Pagination Policy Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

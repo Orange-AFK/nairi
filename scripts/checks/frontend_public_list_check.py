@@ -22,6 +22,8 @@ required_page = [
     "cursor",
     "PUBLIC_POSTS_PAGE_SIZE",
     "nextCursor",
+    "page",
+    "hasNextPage",
     "Load more articles",
     "/posts?cursor=",
     "/posts/",
@@ -43,6 +45,8 @@ required_client = [
     "fetchPublicPosts",
     "/api/v1/public/posts",
     "nextCursor",
+    "page",
+    "hasNextPage",
 ]
 required_root_page = ["/posts", "Read published posts"]
 

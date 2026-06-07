@@ -45,8 +45,8 @@ The public frontend presents articles, pages, project retrospectives, tags, cate
 5. The page uses the public route family only and must not call authenticated `/api/v1/posts...` management endpoints.
 6. Empty public lists render a stable empty-state message.
 7. Public list fetch failures render a controlled error boundary message.
-8. The page requests a small first page with `limit`, accepts an item-id `cursor` query parameter, and renders a stable `Load more articles` link when `nextCursor` is present.
-9. Filtering UI, infinite scroll, RSS/sitemap pagination expansion, and cache/CDN policy remain deferred.
+8. The page requests a small first page with `limit`, accepts an item-id `cursor` query parameter, and renders a stable `Load more articles` link when `page.hasNextPage` is true and `nextCursor` is present.
+9. Displaying page metadata, filtering UI, infinite scroll, RSS/sitemap pagination expansion, and cache/CDN policy remain deferred.
 
 ## Public Detail Integration
 

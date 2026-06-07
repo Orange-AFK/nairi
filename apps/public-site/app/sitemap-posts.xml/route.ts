@@ -51,14 +51,10 @@ export async function GET() {
   void PUBLIC_SITEMAP_CACHE_POLICY;
   const siteUrl = PUBLIC_SITE_URL();
   const posts = await fetchAllPublicPosts();
-  const entries = [
-    `<url><loc>${escapeXml(`${siteUrl}/`)}</loc></url>`,
-    `<url><loc>${escapeXml(`${siteUrl}/posts`)}</loc></url>`,
-    ...posts.map(
-      (post) =>
-        `<url><loc>${escapeXml(`${siteUrl}/posts/${encodeURIComponent(post.slug)}`)}</loc><lastmod>${post.publishedAt}</lastmod></url>`,
-    ),
-  ];
+  const entries = posts.map(
+    (post) =>
+      `<url><loc>${escapeXml(`${siteUrl}/posts/${encodeURIComponent(post.slug)}`)}</loc><lastmod>${post.publishedAt}</lastmod></url>`,
+  );
   const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${entries.join("")}</urlset>`;
 
   return new Response(body, {

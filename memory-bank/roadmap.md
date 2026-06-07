@@ -79,9 +79,9 @@
 
 ### RSS and Sitemap
 
-1. Status: completed for bounded full-history traversal and split sitemap.
-2. Completed: RSS 2.0 route, sitemap index, posts sitemap, bounded traversal over public list pages, route-level revalidation, and structural checks.
-3. Deferred: Atom, richer feed contents, additional sitemap shards, search-engine sitemap splitting, richer SEO schema, and CDN cache policy.
+1. Status: completed for bounded full-history traversal and static/posts sitemap shards.
+2. Completed: RSS 2.0 route, sitemap index, static sitemap shard, posts sitemap, bounded traversal over public list pages, route-level revalidation, and structural checks.
+3. Deferred: Atom, richer feed contents, search-engine sitemap splitting beyond static/posts shards, richer SEO schema, and CDN cache policy.
 
 ## Publish Invalidation
 
@@ -89,7 +89,7 @@
 
 1. Status: completed through Cloudflare dry-run dispatch boundary.
 2. Completed: public invalidation surfaces, durable recorded execution, dispatch result fields, dispatcher config, dispatcher interface, route integration, dispatch persistence, dispatcher error policy, contract adapter, Cloudflare config adapter, Cloudflare settings, inert Cloudflare request-plan construction, and configured Cloudflare dry-run dispatch bookkeeping.
-3. Active next candidate: Article Public Sitemap Additional Shards Boundary or a separately planned Cloudflare live execution design task.
+3. Active next candidate: Cloudflare Live Execution Design Boundary if live provider behavior is prioritized; otherwise Data Migration Baseline or CMS Admin Console Foundation.
 4. Deferred: live HTTP client, authorization header sending, Cloudflare API response/error mapping, CDN purge, retry policy, external execution switch, and real job runner execution.
 
 ## Cloudflare Provider Adapter

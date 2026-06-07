@@ -7,8 +7,8 @@
 1. Nairi is in early alpha implementation.
 2. The implementation still follows the accepted API-first, agent-first CMS direction.
 3. Core public and management content flows exist as scaffold implementations with verified route tests and guards.
-4. The current development focus is Article Public Publish Invalidation Cloudflare Adapter Dry-Run Dispatch Boundary.
-5. Documentation governance remediation has merged; Cloudflare dry-run dispatch implementation is active on the feature branch.
+4. The current development focus is Article Public Sitemap Additional Shards Boundary.
+5. Cloudflare dry-run dispatch has merged; the sitemap work is now splitting stable public landing routes into a dedicated static sitemap shard.
 
 ### Current Authority Snapshot
 
@@ -51,7 +51,7 @@
 ### Public Frontend
 
 1. `apps/public-site` provides a Next.js public site scaffold.
-2. Implemented routes include home, `/posts`, `/posts/{slug}`, `/rss.xml`, `/sitemap.xml`, and `/sitemap-posts.xml`.
+2. Implemented routes include home, `/posts`, `/posts/{slug}`, `/rss.xml`, `/sitemap.xml`, `/sitemap-static.xml`, and `/sitemap-posts.xml`.
 3. Public pages use public APIs and avoid management routes.
 4. Public list/detail render core fields, summary fallback, tags, machine-readable dates, not-found behavior, empty state, and controlled error state.
 5. Public route metadata and canonical URLs exist.
@@ -61,9 +61,10 @@
 
 1. `/rss.xml` emits RSS 2.0 items from bounded full-history public-list traversal.
 2. `/sitemap.xml` is a sitemap index.
-3. `/sitemap-posts.xml` emits post URLs from bounded full-history public-list traversal.
-4. RSS and sitemap routes use public APIs, route-level revalidation, and explicit page-size/max-page bounds.
-5. Atom, richer feed contents, richer SEO schema, Open Graph image generation, additional sitemap shards, and CDN cache policy remain future work.
+3. `/sitemap-static.xml` emits stable public landing URLs for `/` and `/posts`.
+4. `/sitemap-posts.xml` emits post URLs from bounded full-history public-list traversal.
+5. RSS and sitemap routes use public APIs, route-level revalidation, and explicit page-size/max-page bounds.
+6. Atom, richer feed contents, richer SEO schema, Open Graph image generation, search-engine sitemap splitting, and CDN cache policy remain future work.
 
 ### Publish Invalidation
 
@@ -112,13 +113,13 @@
 
 ## Next Named Work
 
-### Article Public Publish Invalidation Cloudflare Adapter Dry-Run Dispatch Boundary
+### Article Public Sitemap Additional Shards Boundary
 
 1. Status: in progress.
-2. Scope: when Cloudflare settings are complete, dispatch builds or depends on the inert request plan and records `cloudflare_adapter_dry_run` with `attempted=true` and `attemptedAt=publishedAt`.
-3. Boundary: no Cloudflare API call, HTTP client, token/header output, CDN purge, Next.js revalidation, webhook, cache header, scheduling, or job runner execution.
-4. Verification: RED dispatcher tests, focused dispatcher tests, full API tests, guards, side-effect scans, secret scans, and PR CI.
-5. After completion: consider Article Public Sitemap Additional Shards Boundary or a separately planned Cloudflare live execution design task.
+2. Scope: add `/sitemap-static.xml` as a dedicated static public sitemap shard, keep `/sitemap-posts.xml` for post detail URLs, and make `/sitemap.xml` index both shard documents.
+3. Boundary: preserve route-level Next.js revalidation only; do not add RSS logic, management-route access, bearer tokens, CDN headers, purge calls, `revalidateTag`, `revalidatePath`, Cloudflare behavior, or publish-triggered invalidation execution.
+4. Verification: RED sitemap structural check, focused sitemap/RSS checks, public-site typecheck/build, full frontend structural checks, guards, scans, PR CI, and main CI.
+5. After completion: consider Cloudflare Live Execution Design Boundary only if live provider behavior becomes the priority; otherwise continue toward data migrations or admin console foundation.
 
 ## Blockers
 

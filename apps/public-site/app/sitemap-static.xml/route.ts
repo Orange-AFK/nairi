@@ -1,9 +1,9 @@
 const DEFAULT_PUBLIC_SITE_URL = "http://localhost:3000";
-const PUBLIC_SITEMAP_INDEX_SPLIT_POLICY =
-  "Root sitemap is a split sitemap index that points to dedicated sitemap documents.";
+const PUBLIC_SITEMAP_STATIC_SHARD_POLICY =
+  "Static sitemap is a static public sitemap shard that lists stable public landing routes separately from the split posts sitemap.";
 const PUBLIC_SITEMAP_REVALIDATE_SECONDS = 300;
 const PUBLIC_SITEMAP_CACHE_POLICY =
-  "Sitemap index uses Next.js route revalidation only: no CDN headers, no purge, no publish-triggered invalidation execution.";
+  "Static sitemap uses Next.js route revalidation only: no CDN headers, no purge, no publish-triggered invalidation execution.";
 
 function PUBLIC_SITE_URL(): string {
   return (process.env.NEXT_PUBLIC_NAIRI_PUBLIC_SITE_URL ?? DEFAULT_PUBLIC_SITE_URL).replace(/\/$/, "");
@@ -22,14 +22,15 @@ export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 export async function GET() {
-  void PUBLIC_SITEMAP_INDEX_SPLIT_POLICY;
+  void PUBLIC_SITEMAP_STATIC_SHARD_POLICY;
+  void PUBLIC_SITEMAP_REVALIDATE_SECONDS;
   void PUBLIC_SITEMAP_CACHE_POLICY;
   const siteUrl = PUBLIC_SITE_URL();
-  const sitemaps = [
-    `<sitemap><loc>${escapeXml(`${siteUrl}/sitemap-static.xml`)}</loc></sitemap>`,
-    `<sitemap><loc>${escapeXml(`${siteUrl}/sitemap-posts.xml`)}</loc></sitemap>`,
+  const entries = [
+    `<url><loc>${escapeXml(`${siteUrl}/`)}</loc></url>`,
+    `<url><loc>${escapeXml(`${siteUrl}/posts`)}</loc></url>`,
   ];
-  const body = `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${sitemaps.join("")}</sitemapindex>`;
+  const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${entries.join("")}</urlset>`;
 
   return new Response(body, {
     headers: {

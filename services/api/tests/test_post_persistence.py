@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 from nairi_api.config import Settings
 from nairi_api.invalidation_dispatch import PublicInvalidationDispatchResult
 from nairi_api.main import create_app
-from nairi_api.posts import PostStore
+from nairi_api.posts import PostDraftInput, PostStore
 
 
 def build_client(database_path: Path) -> TestClient:
@@ -1892,3 +1892,141 @@ def test_create_post_draft_rejects_invalid_content_fields_without_side_effects(t
         "requestId": "unavailable",
     }
     assert persistence_counts(database_path) == (0, 0, 0)
+
+
+def test_post_store_records_schema_migration_baseline_once(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+
+    PostStore(str(database_path)).create_draft(
+        PostDraftInput(
+            title="Persistent draft",
+            slug="baseline-one",
+            content_format="markdown",
+            content="# Persistent draft\n\nStored body.",
+            summary="Stored summary.",
+            tags=["storage"],
+            category_id=None,
+            series_id=None,
+            metadata={"source": "persistence-test"},
+        ),
+        actor_token="writer",
+    )
+    PostStore(str(database_path)).list_drafts()
+
+    with sqlite3.connect(database_path) as connection:
+        rows = connection.execute(
+            "SELECT id, name FROM schema_migrations ORDER BY id"
+        ).fetchall()
+
+    assert rows == [(1, "post_store_baseline")]
+
+
+def test_post_store_adopts_existing_pre_migration_database_without_data_loss(tmp_path: Path) -> None:
+    database_path = tmp_path / "legacy.db"
+    with sqlite3.connect(database_path) as connection:
+        connection.execute(
+            """
+            CREATE TABLE posts (
+                id TEXT PRIMARY KEY,
+                title TEXT NOT NULL,
+                slug TEXT NOT NULL UNIQUE,
+                status TEXT NOT NULL,
+                content_format TEXT NOT NULL,
+                current_revision_id TEXT NOT NULL,
+                published_at TEXT,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+            """
+        )
+        connection.execute(
+            """
+            CREATE TABLE post_revisions (
+                id TEXT PRIMARY KEY,
+                post_id TEXT NOT NULL REFERENCES posts(id),
+                content TEXT NOT NULL,
+                metadata TEXT NOT NULL,
+                created_by TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+        connection.execute(
+            """
+            CREATE TABLE audit_events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                event_type TEXT NOT NULL,
+                actor_type TEXT NOT NULL,
+                actor_id TEXT NOT NULL,
+                target_type TEXT NOT NULL,
+                target_id TEXT NOT NULL,
+                metadata TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+        connection.execute(
+            """
+            INSERT INTO posts (id, title, slug, status, content_format, current_revision_id, published_at, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                "draft-legacy",
+                "Legacy",
+                "legacy",
+                "draft",
+                "markdown",
+                "revision-legacy-1",
+                None,
+                "2026-06-07T08:11:12Z",
+                "2026-06-07T08:11:12Z",
+            ),
+        )
+        connection.execute(
+            """
+            INSERT INTO post_revisions (id, post_id, content, metadata, created_by, created_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                "revision-legacy-1",
+                "draft-legacy",
+                "Legacy content",
+                '{"summary":"Legacy summary","tags":["old"],"categoryId":null,"seriesId":null}',
+                "token:writer",
+                "2026-06-07T08:11:12Z",
+            ),
+        )
+        connection.execute(
+            """
+            INSERT INTO audit_events (event_type, actor_type, actor_id, target_type, target_id, metadata, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                "post.created",
+                "api_token",
+                "token:writer",
+                "post",
+                "draft-legacy",
+                '{"revisionId":"revision-legacy-1"}',
+                "2026-06-07T08:11:12Z",
+            ),
+        )
+
+    drafts = PostStore(str(database_path)).list_drafts()
+
+    assert [draft.post_id for draft in drafts] == ["draft-legacy"]
+    with sqlite3.connect(database_path) as connection:
+        migration_rows = connection.execute(
+            "SELECT id, name FROM schema_migrations ORDER BY id"
+        ).fetchall()
+        data_counts = connection.execute(
+            """
+            SELECT
+                (SELECT COUNT(*) FROM posts),
+                (SELECT COUNT(*) FROM post_revisions),
+                (SELECT COUNT(*) FROM audit_events)
+            """
+        ).fetchone()
+
+    assert migration_rows == [(1, "post_store_baseline")]
+    assert data_counts == (1, 1, 1)

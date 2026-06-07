@@ -8,6 +8,8 @@ from typing import Callable, Literal, cast
 
 DRAFT_STATUS = "draft"
 PUBLISHED_STATUS = "published"
+POST_STORE_BASELINE_MIGRATION_ID = 1
+POST_STORE_BASELINE_MIGRATION_NAME = "post_store_baseline"
 
 
 def utc_timestamp(value: datetime) -> str:
@@ -532,6 +534,37 @@ class PostStore:
         return connection
 
     def _init_schema(self, connection: sqlite3.Connection) -> None:
+        self._run_schema_migrations(connection)
+
+    def _run_schema_migrations(self, connection: sqlite3.Connection) -> None:
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS schema_migrations (
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL UNIQUE
+            )
+            """
+        )
+        baseline_row = connection.execute(
+            "SELECT id FROM schema_migrations WHERE id = ?",
+            (POST_STORE_BASELINE_MIGRATION_ID,),
+        ).fetchone()
+        if baseline_row is not None:
+            self._apply_baseline_schema(connection)
+            return
+        try:
+            connection.execute("BEGIN")
+            self._apply_baseline_schema(connection)
+            connection.execute(
+                "INSERT INTO schema_migrations (id, name) VALUES (?, ?)",
+                (POST_STORE_BASELINE_MIGRATION_ID, POST_STORE_BASELINE_MIGRATION_NAME),
+            )
+            connection.execute("COMMIT")
+        except Exception:
+            connection.execute("ROLLBACK")
+            raise
+
+    def _apply_baseline_schema(self, connection: sqlite3.Connection) -> None:
         connection.execute(
             """
             CREATE TABLE IF NOT EXISTS posts (

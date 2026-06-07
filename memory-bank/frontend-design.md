@@ -43,7 +43,9 @@ The public frontend presents articles, pages, project retrospectives, tags, cate
 3. Display fields: `title`, `summary`, `publishedAt`, and `tags`.
 4. Each item links to `/posts/{slug}`.
 5. The page uses the public route family only and must not call authenticated `/api/v1/posts...` management endpoints.
-6. Pagination, filtering UI, RSS, sitemap, and cache/CDN policy remain deferred.
+6. Empty public lists render a stable empty-state message.
+7. Public list fetch failures render a controlled error boundary message.
+8. Pagination, filtering UI, RSS, sitemap, and cache/CDN policy remain deferred.
 
 ## Public Detail Integration
 

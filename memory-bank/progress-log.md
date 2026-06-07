@@ -360,6 +360,16 @@
 6. Risks or blockers: canonical URLs, Open Graph image generation, Atom, richer SEO schema, pagination sitemap/RSS expansion, CDN headers, and publish-triggered invalidation remain deferred.
 7. Next recommended named task: Article Public Canonical URL Boundary or Article Public Pagination Boundary.
 
+### Article Public Canonical URL Boundary
+
+1. Status: completed.
+2. Scope: added the smallest canonical metadata boundary for `/`, `/posts`, and `/posts/{slug}` using `metadataBase` from `NEXT_PUBLIC_NAIRI_PUBLIC_SITE_URL` with a localhost fallback; added a structural canonical check to Guards.
+3. Changed files: `.github/workflows/guards.yml`, `apps/public-site/app/page.tsx`, `apps/public-site/app/posts/page.tsx`, `apps/public-site/app/posts/[slug]/page.tsx`, `scripts/checks/frontend_public_canonical_check.py`, `memory-bank/frontend-design.md`, `memory-bank/guard-ci.md`, `memory-bank/project-state.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: added `frontend_public_canonical_check.py` first and observed RED on missing canonical metadata; implemented the minimal metadata boundary; verified canonical/metadata checks, public-site typecheck, and public-site build.
+5. Result: passed for the public canonical URL boundary.
+6. Risks or blockers: Open Graph image generation, Atom, richer SEO schema, pagination sitemap/RSS expansion, CDN headers, and publish-triggered invalidation remain deferred.
+7. Next recommended named task: Article Public Pagination Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

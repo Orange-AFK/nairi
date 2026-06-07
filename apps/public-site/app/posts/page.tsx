@@ -3,9 +3,19 @@ import Link from "next/link";
 
 import { fetchPublicPosts } from "@/lib/public-posts";
 
+const DEFAULT_PUBLIC_SITE_URL = "http://localhost:3000";
+
+function PUBLIC_SITE_URL(): string {
+  return (process.env.NEXT_PUBLIC_NAIRI_PUBLIC_SITE_URL ?? DEFAULT_PUBLIC_SITE_URL).replace(/\/$/, "");
+}
+
 export const metadata: Metadata = {
+  metadataBase: new URL(PUBLIC_SITE_URL()),
   title: "Articles | Nairi",
   description: "Browse published project experience notes from Nairi.",
+  alternates: {
+    canonical: "/posts",
+  },
 };
 
 export const dynamic = "force-dynamic";

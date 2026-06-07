@@ -59,7 +59,8 @@
 27. Article Published Public Render Coverage Boundary is complete: public list/detail rendering now guard machine-readable publish dates, summary fallback, tags, public detail `bodyHtml`, and not-found behavior without calling management routes.
 28. Article Public API / Frontend Cache Policy Boundary is complete: public list/detail fetches use explicit Next.js revalidation constants and the dynamic routes avoid build-time API prerendering.
 29. Article Public Sitemap Boundary is complete: `/sitemap.xml` exposes `/`, `/posts`, and published post detail URLs from public list data without RSS or management-route access.
-30. The next product-development task is Article Public RSS Boundary.
+30. Article Public RSS Boundary is complete: `/rss.xml` exposes RSS 2.0 items from public list data without full body content, Atom, or management-route access.
+31. The next product-development task is Article Public Canonical URL Boundary or Article Public Pagination Boundary.
 17. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
 18. Preserve scope checks and standard error behavior.
 

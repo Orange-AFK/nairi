@@ -64,6 +64,9 @@ jobs:
       - name: Run frontend public sitemap check
         run: python3 scripts/checks/frontend_public_sitemap_check.py
 
+      - name: Run frontend public RSS check
+        run: python3 scripts/checks/frontend_public_rss_check.py
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:

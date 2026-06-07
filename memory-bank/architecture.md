@@ -39,8 +39,9 @@ FastAPI is the single authority for product capabilities. Other modules are clie
 6. Post persistence module: `nairi_api.posts`.
 7. Current public health endpoint: `GET /api/v1/health`.
 8. Current protected contract smoke endpoint: `GET /api/v1/mdx-components`.
-9. Current article draft endpoint: `POST /api/v1/posts`.
-10. Test path: `services/api/tests/`.
+9. Current article draft creation endpoint: `POST /api/v1/posts`.
+10. Current article draft readback endpoint: `GET /api/v1/posts/{post_id}`.
+11. Test path: `services/api/tests/`.
 
 ### Authentication and Scope Boundary
 
@@ -96,9 +97,10 @@ FastAPI is the single authority for product capabilities. Other modules are clie
 4. `PostStore` assigns a request-time UTC timestamp and stores it on the post, revision, and audit event rows.
 5. `PostStore` creates a matching immutable `post_revisions` row.
 6. `PostStore` records a `post.created` audit row.
-7. Admin reviews the draft through the CMS console.
-8. Publish request goes through `/api/v1/posts/{post_id}/publish`.
-9. The job runner performs publication work under documented state rules.
+7. Admin, MCP, or authorized clients read the draft through `GET /api/v1/posts/{post_id}` with `posts:read` scope.
+8. Admin reviews the draft through the CMS console.
+9. Publish request goes through `/api/v1/posts/{post_id}/publish`.
+10. The job runner performs publication work under documented state rules.
 
 ## Security Boundary
 

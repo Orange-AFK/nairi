@@ -50,6 +50,16 @@
 8. Errors: `400` with code `invalid_request` when `title` is blank, `slug` is not lowercase letters/numbers/hyphens, or `content` is blank. The validation response must not create a post, revision, or audit event.
 9. Errors: `409` with code `conflict` when the requested `slug` already exists. The conflict response must not create an additional post revision or audit event.
 
+### Read Post Draft
+
+1. Method: `GET`
+2. Path: `/api/v1/posts/{post_id}`
+3. Scope: `posts:read`
+4. Request body fields: none
+5. Response fields: `postId`, `title`, `slug`, `status`, `contentFormat`, `content`, `summary`, `tags`, `categoryId`, `seriesId`, `metadata`, `revisionId`, `createdAt`, `updatedAt`
+6. Errors: `404` with code `not_found` when `post_id` is unknown or does not identify a draft.
+7. Audit event: none for readback.
+
 ### Update Post Draft
 
 1. Method: `PATCH`

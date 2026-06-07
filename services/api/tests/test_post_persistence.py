@@ -11,7 +11,10 @@ from nairi_api.posts import PostStore
 
 def build_client(database_path: Path) -> TestClient:
     settings = Settings(
-        api_tokens={"post-writer-token": ["posts:write"]},
+        api_tokens={
+            "post-writer-token": ["posts:write"],
+            "post-reader-token": ["posts:read"],
+        },
         database_path=str(database_path),
     )
     return TestClient(create_app(settings=settings))
@@ -76,6 +79,78 @@ def test_create_post_draft_uses_injected_utc_timestamp(tmp_path: Path) -> None:
         "2026-06-07T08:09:10Z",
         "2026-06-07T08:09:10Z",
     )
+
+
+def test_get_post_draft_returns_created_draft_for_reader_scope(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    client = build_client(database_path)
+
+    create_response = client.post(
+        "/api/v1/posts",
+        json=draft_payload(),
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+    post_id = create_response.json()["postId"]
+
+    read_response = client.get(
+        f"/api/v1/posts/{post_id}",
+        headers={"Authorization": "Bearer post-reader-token"},
+    )
+
+    assert create_response.status_code == 201
+    assert read_response.status_code == 200
+    assert read_response.json() == {
+        "postId": post_id,
+        "title": "Persistent draft",
+        "slug": "persistent-draft",
+        "status": "draft",
+        "contentFormat": "markdown",
+        "content": "# Persistent draft\n\nStored body.",
+        "summary": "Stored summary.",
+        "tags": ["storage"],
+        "categoryId": None,
+        "seriesId": None,
+        "metadata": {"source": "persistence-test"},
+        "revisionId": create_response.json()["revisionId"],
+        "createdAt": create_response.json()["createdAt"],
+        "updatedAt": create_response.json()["createdAt"],
+    }
+
+
+def test_get_post_draft_requires_posts_read_scope(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    client = build_client(database_path)
+
+    response = client.get(
+        "/api/v1/posts/draft-persistent-draft",
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {
+        "code": "forbidden",
+        "message": "Missing required scope",
+        "details": {"requiredScope": "posts:read"},
+        "requestId": "unavailable",
+    }
+
+
+def test_get_post_draft_returns_not_found_for_unknown_post(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    client = build_client(database_path)
+
+    response = client.get(
+        "/api/v1/posts/missing-post",
+        headers={"Authorization": "Bearer post-reader-token"},
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "code": "not_found",
+        "message": "Post not found",
+        "details": {"postId": "missing-post"},
+        "requestId": "unavailable",
+    }
 
 
 def test_create_post_draft_persists_post_and_revision(tmp_path: Path) -> None:

@@ -4,11 +4,11 @@
 
 ### Project Status
 
-1. Nairi has completed foundational documentation, guard scripts, the first API scaffold, the first protected scope-check route, scaffold-level article draft creation, the first SQLite-backed draft persistence boundary, duplicate draft slug conflict handling, the first draft input validation boundary, and request-time draft timestamps.
+1. Nairi has completed foundational documentation, guard scripts, the first API scaffold, the first protected scope-check route, scaffold-level article draft creation, the first SQLite-backed draft persistence boundary, duplicate draft slug conflict handling, the first draft input validation boundary, request-time draft timestamps, and the first authenticated draft readback boundary.
 2. The FastAPI service skeleton and auth dependency exist under `services/api/`.
 3. The accepted product direction is API-first and agent-first CMS.
 4. FastAPI is the product capability authority.
-5. Documentation, contracts, guard rules, health endpoint tests, protected scope tests, article draft creation route tests, draft persistence tests, duplicate slug tests, draft input validation tests, and draft timestamp tests currently pass locally.
+5. Documentation, contracts, guard rules, health endpoint tests, protected scope tests, article draft creation route tests, draft persistence tests, duplicate slug tests, draft input validation tests, draft timestamp tests, and draft readback tests currently pass locally.
 
 ## Confirmed Decisions
 
@@ -34,9 +34,10 @@
 2. Duplicate draft slug requests now return a standard `409 conflict` response without creating additional persistence side effects.
 3. Invalid draft input now returns a standard `400 invalid_request` response before persistence side effects.
 4. Draft creation now uses request-time UTC timestamps, with injectable clock support for deterministic tests.
-5. The next small task is Article Draft Response Readback Boundary: expose a minimal authenticated readback route for a created draft before widening into update or publication flow.
-6. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
-7. Preserve scope checks and standard error behavior.
+5. Authenticated draft readback now returns a created draft through `GET /api/v1/posts/{post_id}` with `posts:read` scope.
+6. The next small task is Article Draft List Boundary: expose a minimal authenticated draft list route before widening into update or publication flow.
+7. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
+8. Preserve scope checks and standard error behavior.
 
 ## Blockers
 

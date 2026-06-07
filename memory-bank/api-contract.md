@@ -46,6 +46,7 @@
 4. Request body fields: `title`, `slug`, `contentFormat`, `content`, `summary`, `tags`, `categoryId`, `seriesId`, `metadata`
 5. Response fields: `postId`, `status`, `revisionId`, `createdAt`
 6. Audit event: `post.created`
+7. Errors: `409` with code `conflict` when the requested `slug` already exists. The conflict response must not create an additional post revision or audit event.
 
 ### Update Post Draft
 

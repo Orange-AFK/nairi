@@ -99,3 +99,40 @@ def test_create_post_draft_persists_post_and_revision(tmp_path: Path) -> None:
         f'{{"revisionId":"{body["revisionId"]}"}}',
         body["createdAt"],
     )
+
+
+def test_create_post_draft_duplicate_slug_returns_conflict_without_side_effects(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    client = build_client(database_path)
+
+    first_response = client.post(
+        "/api/v1/posts",
+        json=draft_payload(),
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+    second_response = client.post(
+        "/api/v1/posts",
+        json=draft_payload(),
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+
+    assert first_response.status_code == 201
+    assert second_response.status_code == 409
+    assert second_response.json() == {
+        "code": "conflict",
+        "message": "Post slug already exists",
+        "details": {"slug": "persistent-draft"},
+        "requestId": "unavailable",
+    }
+
+    with sqlite3.connect(database_path) as connection:
+        counts = connection.execute(
+            """
+            SELECT
+                (SELECT COUNT(*) FROM posts),
+                (SELECT COUNT(*) FROM post_revisions),
+                (SELECT COUNT(*) FROM audit_events)
+            """
+        ).fetchone()
+
+    assert counts == (1, 1, 1)

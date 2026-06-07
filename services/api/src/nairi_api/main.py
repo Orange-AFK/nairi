@@ -56,11 +56,17 @@ class PublishPostRequest(BaseModel):
     scheduled_at: str | None = Field(default=None, alias="scheduledAt")
 
 
+class PublicInvalidationContractResponse(BaseModel):
+    mode: Literal["contract_only"]
+    surfaces: list[str]
+
+
 class PublishPostResponse(BaseModel):
     post_id: str = Field(alias="postId")
     status: Literal["published"]
     published_at: str | None = Field(alias="publishedAt")
     job_id: str = Field(alias="jobId")
+    public_invalidation: PublicInvalidationContractResponse = Field(alias="publicInvalidation")
 
 
 class PostDraftSummaryResponse(BaseModel):
@@ -425,6 +431,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             status="published",
             publishedAt=published.published_at,
             jobId=published.job_id,
+            publicInvalidation=PublicInvalidationContractResponse(
+                mode="contract_only",
+                surfaces=published.public_invalidation_surfaces,
+            ),
         )
 
     return app

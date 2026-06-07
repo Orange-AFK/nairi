@@ -107,14 +107,16 @@ FastAPI is the single authority for product capabilities. Other modules are clie
 11. Publish request goes through `/api/v1/posts/{post_id}/publish` with `posts:publish` scope and the current draft `revisionId`.
 12. `PostStore` creates a durable `publish_jobs` row for the immediate publish attempt.
 13. `PostStore` changes the post status to `published`, writes request-time `published_at` and `updated_at`, preserves the current revision, and records `post.published` audit metadata.
-14. Admin, MCP, and authorized clients can read published summaries through `GET /api/v1/posts?status=published` and published detail through `GET /api/v1/posts/{post_id}` with `posts:read` scope in the current scaffold.
-15. Public clients read published summaries through `GET /api/v1/public/posts`, which is anonymous and returns only public-safe fields.
-16. Public clients read published detail through `GET /api/v1/public/posts/{slug}`, which is anonymous, slug-based, published-only, and returns a public-safe detail response.
-17. Public detail includes both authored `content` and a minimal sanitized `bodyHtml` render output. The renderer is intentionally not full MDX execution; it only handles a small Markdown subset and strips script blocks from rendered HTML.
-18. Public clients must not reuse authenticated content-management routes.
-19. Authenticated published summary lists can currently be filtered by tag membership, category id, or series id.
-20. Authenticated and public published summary lists can currently be paginated with `limit` and an item-id `cursor`.
-21. Public filtering inputs, full MDX/component rendering, cache policy, scheduling semantics, and the job runner remain future work under documented state rules.
+14. `PostStore` stores a contract-only public invalidation surface list on the publish job: `/posts`, `/posts/{slug}`, `/rss.xml`, and `/sitemap.xml`.
+15. The publish API returns that invalidation contract with `mode=contract_only`; it does not trigger CDN purge, Next.js tag/path revalidation, webhooks, or cache headers.
+16. Admin, MCP, and authorized clients can read published summaries through `GET /api/v1/posts?status=published` and published detail through `GET /api/v1/posts/{post_id}` with `posts:read` scope in the current scaffold.
+17. Public clients read published summaries through `GET /api/v1/public/posts`, which is anonymous and returns only public-safe fields.
+18. Public clients read published detail through `GET /api/v1/public/posts/{slug}`, which is anonymous, slug-based, published-only, and returns a public-safe detail response.
+19. Public detail includes both authored `content` and a minimal sanitized `bodyHtml` render output. The renderer is intentionally not full MDX execution; it only handles a small Markdown subset and strips script blocks from rendered HTML.
+20. Public clients must not reuse authenticated content-management routes.
+21. Authenticated published summary lists can currently be filtered by tag membership, category id, or series id.
+22. Authenticated and public published summary lists can currently be paginated with `limit` and an item-id `cursor`.
+23. Public filtering inputs, full MDX/component rendering, scheduling semantics, real invalidation execution, and the job runner remain future work under documented state rules.
 
 ## Security Boundary
 

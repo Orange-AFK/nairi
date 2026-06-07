@@ -430,6 +430,16 @@
 6. Risks or blockers: real CDN purge wiring, publish-triggered revalidation webhooks, tag/path invalidation, pagination cache policy, RSS/sitemap cache policy, and deployment/runtime purge configuration remain deferred.
 7. Next recommended named task: Article Public Publish Invalidation Contract Boundary or Article Public RSS/Sitemap Full-History Pagination Boundary.
 
+### Article Public Publish Invalidation Contract Boundary
+
+1. Status: completed.
+2. Scope: added a contract-only public invalidation plan to the publish response and `publish_jobs` storage, covering `/posts`, `/posts/{slug}`, `/rss.xml`, and `/sitemap.xml` for successful immediate publishes.
+3. Changed files: `services/api/src/nairi_api/main.py`, `services/api/src/nairi_api/posts.py`, `services/api/tests/test_post_persistence.py`, `memory-bank/api-contract.md`, `memory-bank/architecture.md`, `memory-bank/project-state.md`, and `memory-bank/progress-log.md`.
+4. Verification performed: extended the publish route/storage test first and observed RED on the missing `publicInvalidation` response contract; implemented the minimal storage/response contract and verified the focused publish success and stale-revision tests.
+5. Result: passed for the public publish invalidation contract boundary.
+6. Risks or blockers: real CDN purge, Next.js `revalidateTag`/`revalidatePath`, webhooks, cache headers, scheduling semantics, and a real job runner remain deferred.
+7. Next recommended named task: Article Public RSS/Sitemap Full-History Pagination Boundary or Article Public Publish Invalidation Execution Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

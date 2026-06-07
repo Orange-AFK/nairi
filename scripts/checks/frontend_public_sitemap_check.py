@@ -14,9 +14,13 @@ client = CLIENT.read_text()
 required_route = [
     "export const dynamic = \"force-dynamic\"",
     "export async function GET()",
-    "fetchPublicPosts",
-    "PUBLIC_SITEMAP_SINGLE_PAGE_POLICY",
-    "single public list page",
+    "fetchAllPublicPosts",
+    "PUBLIC_SITEMAP_FULL_HISTORY_PAGINATION_POLICY",
+    "full-history sitemap pagination",
+    "PUBLIC_POSTS_PAGE_SIZE",
+    "PUBLIC_POSTS_MAX_PAGES",
+    "cursor",
+    "nextCursor",
     "PUBLIC_SITE_URL",
     "application/xml",
     "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">",
@@ -37,10 +41,12 @@ if "Authorization" in route:
     failures.append("sitemap must not send bearer tokens")
 if "rss" in route.lower():
     failures.append("sitemap boundary must not implement RSS")
-if "cursor" in route:
-    failures.append("sitemap pagination policy must not request cursor-based follow-up pages")
-if "while" in route or "for await" in route:
-    failures.append("sitemap pagination policy must not implement implicit multi-page crawling")
+if "while" not in route:
+    failures.append("sitemap full-history pagination must use an explicit bounded loop")
+if "for await" in route:
+    failures.append("sitemap full-history pagination must not use implicit async iteration")
+if "PUBLIC_POSTS_MAX_PAGES" not in route or "page < PUBLIC_POSTS_MAX_PAGES" not in route:
+    failures.append("sitemap full-history pagination must cap page traversal")
 
 if failures:
     raise SystemExit("\n".join(failures))

@@ -1,7 +1,10 @@
-import { fetchPublicPosts } from "../../lib/public-posts";
+import { fetchPublicPosts, type PublicPostSummary } from "../../lib/public-posts";
 
 const DEFAULT_PUBLIC_SITE_URL = "http://localhost:3000";
-const PUBLIC_SITEMAP_SINGLE_PAGE_POLICY = "Sitemap uses one single public list page; full-history sitemap pagination is deferred.";
+const PUBLIC_SITEMAP_FULL_HISTORY_PAGINATION_POLICY =
+  "Sitemap uses bounded full-history sitemap pagination over anonymous public list pages.";
+const PUBLIC_POSTS_PAGE_SIZE = 100;
+const PUBLIC_POSTS_MAX_PAGES = 100;
 
 function PUBLIC_SITE_URL(): string {
   return (process.env.NEXT_PUBLIC_NAIRI_PUBLIC_SITE_URL ?? DEFAULT_PUBLIC_SITE_URL).replace(/\/$/, "");
@@ -18,10 +21,28 @@ function escapeXml(value: string): string {
 
 export const dynamic = "force-dynamic";
 
+async function fetchAllPublicPosts(): Promise<PublicPostSummary[]> {
+  const posts: PublicPostSummary[] = [];
+  let cursor: string | undefined;
+  let page = 0;
+
+  while (page < PUBLIC_POSTS_MAX_PAGES) {
+    const response = await fetchPublicPosts({ limit: PUBLIC_POSTS_PAGE_SIZE, cursor });
+    posts.push(...response.items);
+    page += 1;
+    if (!response.nextCursor) {
+      break;
+    }
+    cursor = response.nextCursor;
+  }
+
+  return posts;
+}
+
 export async function GET() {
-  void PUBLIC_SITEMAP_SINGLE_PAGE_POLICY;
+  void PUBLIC_SITEMAP_FULL_HISTORY_PAGINATION_POLICY;
   const siteUrl = PUBLIC_SITE_URL();
-  const { items: posts } = await fetchPublicPosts();
+  const posts = await fetchAllPublicPosts();
   const entries = [
     `<url><loc>${siteUrl}/</loc></url>`,
     `<url><loc>${siteUrl}/posts</loc></url>`,

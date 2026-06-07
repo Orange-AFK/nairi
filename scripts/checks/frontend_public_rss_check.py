@@ -14,9 +14,13 @@ client = CLIENT.read_text()
 required_route = [
     "export const dynamic = \"force-dynamic\"",
     "export async function GET()",
-    "fetchPublicPosts",
-    "PUBLIC_FEED_SINGLE_PAGE_POLICY",
-    "single public list page",
+    "fetchAllPublicPosts",
+    "PUBLIC_FEED_FULL_HISTORY_PAGINATION_POLICY",
+    "full-history feed pagination",
+    "PUBLIC_POSTS_PAGE_SIZE",
+    "PUBLIC_POSTS_MAX_PAGES",
+    "cursor",
+    "nextCursor",
     "PUBLIC_SITE_URL",
     "application/rss+xml",
     "<rss version=\"2.0\">",
@@ -45,10 +49,12 @@ if "/api/v1/posts" in route or "/api/v1/posts" in client.replace("/api/v1/public
     failures.append("RSS must not call authenticated management posts routes")
 if "Authorization" in route:
     failures.append("RSS must not send bearer tokens")
-if "cursor" in route:
-    failures.append("RSS pagination policy must not request cursor-based follow-up pages")
-if "while" in route or "for await" in route:
-    failures.append("RSS pagination policy must not implement implicit multi-page crawling")
+if "while" not in route:
+    failures.append("RSS full-history pagination must use an explicit bounded loop")
+if "for await" in route:
+    failures.append("RSS full-history pagination must not use implicit async iteration")
+if "PUBLIC_POSTS_MAX_PAGES" not in route or "page < PUBLIC_POSTS_MAX_PAGES" not in route:
+    failures.append("RSS full-history pagination must cap page traversal")
 
 if failures:
     raise SystemExit("\n".join(failures))

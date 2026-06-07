@@ -6,7 +6,16 @@ from pydantic import BaseModel, Field
 
 from nairi_api.auth import ApiError, AuthenticatedActor, api_error_response, require_scope
 from nairi_api.config import Settings, get_settings
-from nairi_api.posts import CreatedPostDraft, DuplicatePostSlugError, PostDraftInput, PostStore, StoredPostDraft
+from nairi_api.posts import (
+    CreatedPostDraft,
+    DuplicatePostSlugError,
+    PostDraftInput,
+    PostDraftNotFoundError,
+    PostRevisionConflictError,
+    PostStore,
+    StoredPostDraft,
+    UpdatedPostDraft,
+)
 
 
 class CreatePostDraftRequest(BaseModel):
@@ -26,6 +35,17 @@ class CreatePostDraftResponse(BaseModel):
     status: Literal["draft"]
     revision_id: str = Field(alias="revisionId")
     created_at: str = Field(alias="createdAt")
+
+
+class UpdatePostDraftRequest(CreatePostDraftRequest):
+    expected_revision_id: str = Field(alias="expectedRevisionId")
+
+
+class UpdatePostDraftResponse(BaseModel):
+    post_id: str = Field(alias="postId")
+    status: Literal["draft"]
+    revision_id: str = Field(alias="revisionId")
+    updated_at: str = Field(alias="updatedAt")
 
 
 class PostDraftSummaryResponse(BaseModel):
@@ -145,6 +165,46 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             status="draft",
             revisionId=created.revision_id,
             createdAt=created.created_at,
+        )
+
+    @app.patch("/api/v1/posts/{post_id}")
+    def update_post_draft(
+        post_id: str,
+        draft: UpdatePostDraftRequest,
+        actor: AuthenticatedActor = Depends(require_scope("posts:write")),
+    ) -> UpdatePostDraftResponse:
+        validate_post_draft_request(draft)
+        try:
+            updated: UpdatedPostDraft = app.state.post_store.update_draft(
+                post_id,
+                PostDraftInput(
+                    title=draft.title,
+                    slug=draft.slug,
+                    content_format=draft.content_format,
+                    content=draft.content,
+                    summary=draft.summary,
+                    tags=draft.tags,
+                    category_id=draft.category_id,
+                    series_id=draft.series_id,
+                    metadata=draft.metadata,
+                ),
+                actor.token,
+                draft.expected_revision_id,
+            )
+        except PostDraftNotFoundError as error:
+            raise ApiError(404, "not_found", "Post not found", {"postId": error.post_id}) from error
+        except PostRevisionConflictError as error:
+            raise ApiError(
+                409,
+                "conflict",
+                "Post revision conflict",
+                {"currentRevisionId": error.current_revision_id},
+            ) from error
+        return UpdatePostDraftResponse(
+            postId=updated.post_id,
+            status="draft",
+            revisionId=updated.revision_id,
+            updatedAt=updated.updated_at,
         )
 
     @app.get("/api/v1/posts/{post_id}")

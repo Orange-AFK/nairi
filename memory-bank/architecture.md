@@ -42,7 +42,8 @@ FastAPI is the single authority for product capabilities. Other modules are clie
 9. Current article draft creation endpoint: `POST /api/v1/posts`.
 10. Current article draft list endpoint: `GET /api/v1/posts?status=draft`.
 11. Current article draft readback endpoint: `GET /api/v1/posts/{post_id}`.
-12. Test path: `services/api/tests/`.
+12. Current article draft update endpoint: `PATCH /api/v1/posts/{post_id}`.
+13. Test path: `services/api/tests/`.
 
 ### Authentication and Scope Boundary
 
@@ -100,9 +101,10 @@ FastAPI is the single authority for product capabilities. Other modules are clie
 6. `PostStore` records a `post.created` audit row.
 7. Admin, MCP, or authorized clients list drafts through `GET /api/v1/posts?status=draft` with `posts:read` scope.
 8. Admin, MCP, or authorized clients read a draft detail through `GET /api/v1/posts/{post_id}` with `posts:read` scope.
-9. Admin reviews the draft through the CMS console.
-10. Publish request goes through `/api/v1/posts/{post_id}/publish`.
-11. The job runner performs publication work under documented state rules.
+9. Admin, MCP, or authorized clients update a draft through `PATCH /api/v1/posts/{post_id}` with `posts:write` scope and `expectedRevisionId` concurrency control.
+10. Admin reviews the draft through the CMS console.
+11. Publish request goes through `/api/v1/posts/{post_id}/publish`.
+12. The job runner performs publication work under documented state rules.
 
 ## Security Boundary
 

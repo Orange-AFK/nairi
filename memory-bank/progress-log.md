@@ -120,6 +120,16 @@
 6. Risks or blockers: list is intentionally limited to draft summary items and omits content; filtering, pagination, update, publish, and SQLAlchemy/Alembic migrations remain deferred.
 7. Next recommended named task: Article Draft Update Boundary.
 
+### Article Draft Update Boundary
+
+1. Status: completed.
+2. Scope: added authenticated `PATCH /api/v1/posts/{post_id}` draft update with `posts:write` scope, new immutable revision creation, current revision pointer update, request-time `updatedAt`, `post.updated` audit event, standard `404 not_found`, and stale `expectedRevisionId` `409 conflict` without side effects.
+3. Changed files: `services/api/src/nairi_api/main.py`, `services/api/src/nairi_api/posts.py`, `services/api/tests/test_post_persistence.py`, `memory-bank/api-contract.md`, `memory-bank/project-state.md`, `memory-bank/architecture.md`, `memory-bank/data-model.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: wrote update route tests first, observed RED on the unwired route returning FastAPI `405`, implemented the smallest store update method and route mapping, then added revision-conflict coverage and verified focused GREEN, persistence tests, full API suite, docs guards, schema guards, and secret guards.
+5. Result: passed for the draft update boundary.
+6. Risks or blockers: update-time duplicate slug conflict handling, broader validation, publication, filtering/pagination, and SQLAlchemy/Alembic migrations remain deferred.
+7. Next recommended named task: Article Draft Update Slug Conflict Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

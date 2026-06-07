@@ -420,6 +420,16 @@
 6. Risks or blockers: full-history RSS/sitemap pagination, Atom, richer SEO schema, CDN headers, and publish-triggered invalidation remain deferred.
 7. Next recommended named task: Article Public RSS/Sitemap Full-History Pagination Boundary or Article Public CDN/Invalidation Boundary.
 
+### Article Public CDN/Invalidation Boundary
+
+1. Status: completed.
+2. Scope: fixed the public CDN/invalidation boundary without wiring a real CDN: public frontend caching remains Next.js revalidation only, and the client explicitly declares no CDN headers, no publish-triggered invalidation, and no tag-based revalidation in this slice.
+3. Changed files: `scripts/checks/frontend_public_cache_check.py`, `apps/public-site/lib/public-posts.ts`, `memory-bank/frontend-design.md`, `memory-bank/project-state.md`, and `memory-bank/progress-log.md`.
+4. Verification performed: extended `frontend_public_cache_check.py` first and observed RED on missing CDN/invalidation policy markers; added the minimal public client policy constant and docs while keeping list/detail revalidation behavior unchanged.
+5. Result: passed for the public CDN/invalidation boundary.
+6. Risks or blockers: real CDN purge wiring, publish-triggered revalidation webhooks, tag/path invalidation, pagination cache policy, RSS/sitemap cache policy, and deployment/runtime purge configuration remain deferred.
+7. Next recommended named task: Article Public Publish Invalidation Contract Boundary or Article Public RSS/Sitemap Full-History Pagination Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

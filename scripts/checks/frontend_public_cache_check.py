@@ -18,6 +18,10 @@ required_client = [
     "PUBLIC_POST_DETAIL_REVALIDATE_SECONDS",
     "next: { revalidate: PUBLIC_POST_LIST_REVALIDATE_SECONDS }",
     "next: { revalidate: PUBLIC_POST_DETAIL_REVALIDATE_SECONDS }",
+    "PUBLIC_CDN_INVALIDATION_POLICY",
+    "no CDN headers",
+    "no publish-triggered invalidation",
+    "no tag-based revalidation",
     "/api/v1/public/posts",
     "/api/v1/public/posts/",
 ]
@@ -38,6 +42,12 @@ if "/api/v1/posts" in client.replace("/api/v1/public/posts/", "").replace("/api/
     failures.append("public frontend cache policy must not call authenticated management posts routes")
 if "Authorization" in client:
     failures.append("public frontend cache policy must not send bearer tokens")
+if "revalidateTag" in client or "revalidatePath" in client:
+    failures.append("public CDN/invalidation boundary must not add Next.js invalidation calls yet")
+if "Cache-Control" in client:
+    failures.append("public CDN/invalidation boundary must not add CDN headers yet")
+if "cloudflare" in client.lower() or "purge" in client.lower():
+    failures.append("public CDN/invalidation boundary must not call CDN purge APIs yet")
 
 if failures:
     raise SystemExit("\n".join(failures))

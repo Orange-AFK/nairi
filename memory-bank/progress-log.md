@@ -200,6 +200,16 @@
 6. Risks or blockers: pagination, unauthenticated public-read policy, public rendering, scheduling semantics, job runner execution, and SQLAlchemy/Alembic migrations remain deferred.
 7. Next recommended named task: Article Draft Published Pagination Boundary.
 
+### Article Draft Published Pagination Boundary
+
+1. Status: completed.
+2. Scope: added the first authenticated published-list pagination behavior for `GET /api/v1/posts?status=published`: `limit` restricts page size and `cursor` resumes after the prior page item id while preserving filters, response item shape, and `posts:read` scope.
+3. Changed files: `services/api/src/nairi_api/main.py`, `services/api/tests/test_post_persistence.py`, `memory-bank/api-contract.md`, `memory-bank/project-state.md`, `memory-bank/architecture.md`, `memory-bank/data-model.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: wrote the published pagination route test first and observed RED because `limit` was ignored and all published posts were returned; implemented the smallest route-level pagination helper; then verified focused GREEN and persistence tests.
+5. Result: passed for the published pagination boundary.
+6. Risks or blockers: pagination is an in-memory scaffold over reconstructed posts; unauthenticated public-read policy, public rendering, scheduling semantics, job runner execution, and SQLAlchemy/Alembic migrations remain deferred.
+7. Next recommended named task: Article Draft Published Public Read Policy Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

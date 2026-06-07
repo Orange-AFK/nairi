@@ -161,6 +161,25 @@ def published_post_summary_response(post: StoredPostDraft) -> PublishedPostSumma
     )
 
 
+def paginate_posts(
+    posts: list[StoredPostDraft],
+    limit: int | None,
+    cursor: str | None,
+) -> tuple[list[StoredPostDraft], str | None]:
+    start_index = 0
+    if cursor is not None:
+        for index, post in enumerate(posts):
+            if post.post_id == cursor:
+                start_index = index + 1
+                break
+    if limit is None or limit < 1:
+        return posts[start_index:], None
+    page = posts[start_index : start_index + limit]
+    next_index = start_index + limit
+    next_cursor = page[-1].post_id if page and next_index < len(posts) else None
+    return page, next_cursor
+
+
 def create_app(settings: Settings | None = None) -> FastAPI:
     if settings is None:
         settings = get_settings()
@@ -187,19 +206,22 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         tag: str | None = None,
         category: str | None = None,
         series: str | None = None,
+        limit: int | None = None,
+        cursor: str | None = None,
         _actor: AuthenticatedActor = Depends(require_scope("posts:read")),
     ) -> ListPostDraftsResponse:
-        drafts: list[StoredPostDraft] = app.state.post_store.list_drafts()
         if status == "published":
             published_posts: list[StoredPostDraft] = app.state.post_store.list_published(
                 tag=tag,
                 category_id=category,
                 series_id=series,
             )
+            published_posts, next_cursor = paginate_posts(published_posts, limit, cursor)
             return ListPostDraftsResponse(
                 items=[published_post_summary_response(post) for post in published_posts],
-                nextCursor=None,
+                nextCursor=next_cursor,
             )
+        drafts: list[StoredPostDraft] = app.state.post_store.list_drafts()
         return ListPostDraftsResponse(
             items=[post_draft_summary_response(draft) for draft in drafts],
             nextCursor=None,

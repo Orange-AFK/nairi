@@ -390,6 +390,16 @@
 6. Risks or blockers: previous-page navigation, richer pagination metadata, public filters, infinite scroll, sitemap/RSS pagination expansion, CDN headers, and publish-triggered invalidation remain deferred.
 7. Next recommended named task: Article Public Pagination Metadata Boundary.
 
+### Article Public Pagination Metadata Boundary
+
+1. Status: completed.
+2. Scope: added minimal public list pagination metadata to `GET /api/v1/public/posts` with a `page` object containing `limit`, `cursor`, and `hasNextPage`, while preserving `items`, `nextCursor`, public-safe item fields, and anonymous public-route access.
+3. Changed files: `services/api/src/nairi_api/main.py`, `services/api/tests/test_post_persistence.py`, `apps/public-site/lib/public-posts.ts`, `memory-bank/api-contract.md`, `memory-bank/project-state.md`, and `memory-bank/progress-log.md`.
+4. Verification performed: extended the public pagination route test first and observed RED on missing `page`; implemented the smallest response model metadata; updated the public-safe list expectation and frontend list response type.
+5. Result: passed for the public pagination metadata boundary.
+6. Risks or blockers: frontend display of page metadata, previous-page navigation, total counts, public filters, infinite scroll, sitemap/RSS pagination expansion, CDN headers, and publish-triggered invalidation remain deferred.
+7. Next recommended named task: Article Public Pagination Metadata Frontend Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

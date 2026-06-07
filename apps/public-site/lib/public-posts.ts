@@ -13,6 +13,24 @@ export type PublicPostDetail = {
   publishedAt: string;
 };
 
+export type PublicPostSummary = {
+  postId: string;
+  title: string;
+  slug: string;
+  status: "published";
+  contentFormat: "markdown" | "mdx";
+  summary: string | null;
+  tags: string[];
+  categoryId: string | null;
+  seriesId: string | null;
+  publishedAt: string;
+};
+
+type ListPublicPostsResponse = {
+  items: PublicPostSummary[];
+  nextCursor: string | null;
+};
+
 type FetchPublicPostOptions = {
   apiBaseUrl?: string;
 };
@@ -39,4 +57,17 @@ export async function fetchPublicPostBySlug(
   }
 
   return (await response.json()) as PublicPostDetail;
+}
+
+export async function fetchPublicPosts(options: FetchPublicPostOptions = {}): Promise<PublicPostSummary[]> {
+  const response = await fetch(`${publicApiBaseUrl(options.apiBaseUrl)}/api/v1/public/posts`, {
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch public posts: ${response.status}`);
+  }
+
+  const payload = (await response.json()) as ListPublicPostsResponse;
+  return payload.items;
 }

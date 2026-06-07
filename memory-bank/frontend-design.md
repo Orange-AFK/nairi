@@ -22,17 +22,28 @@ The public frontend presents articles, pages, project retrospectives, tags, cate
 ### Implemented Routes
 
 1. `/`
-2. `/posts/{slug}`
+2. `/posts`
+3. `/posts/{slug}`
 
 ### Planned Routes
 
-1. `/posts`
-2. `/tags/{slug}`
-3. `/categories/{slug}`
-4. `/series/{slug}`
-5. `/about`
-6. `/rss.xml`
-7. `/sitemap.xml`
+1. `/tags/{slug}`
+2. `/categories/{slug}`
+3. `/series/{slug}`
+4. `/about`
+5. `/rss.xml`
+6. `/sitemap.xml`
+
+## Public List Integration
+
+### Article List Page
+
+1. Route: `/posts`.
+2. Data source: `GET /api/v1/public/posts`.
+3. Display fields: `title`, `summary`, `publishedAt`, and `tags`.
+4. Each item links to `/posts/{slug}`.
+5. The page uses the public route family only and must not call authenticated `/api/v1/posts...` management endpoints.
+6. Pagination, filtering UI, RSS, sitemap, and cache/CDN policy remain deferred.
 
 ## Public Detail Integration
 

@@ -109,6 +109,9 @@ Nairi uses automated guards to enforce documentation boundaries, bilingual synch
 7. Runs contract guard.
 8. Runs API schema guard.
 9. Runs secret guard.
+10. Runs `scripts/checks/frontend_public_detail_check.py`.
+11. Runs `scripts/checks/frontend_public_list_check.py`.
+12. Runs `npm ci`, `npm run typecheck`, and `npm run build` under `apps/public-site`.
 
 ## Completion Rule
 

@@ -79,6 +79,14 @@ The public frontend presents articles, pages, project retrospectives, tags, cate
 6. `/posts` renders published date with a machine-readable `time` element, always shows a summary fallback when `summary` is null, renders tags when present, and links each item to `/posts/{slug}`.
 7. `/posts/{slug}` renders public-safe `bodyHtml`, uses the framework not-found path for unknown slugs, renders published date with a machine-readable `time` element, always shows a summary fallback when `summary` is null, and renders tags when present.
 
+### Public Cache Policy
+
+1. Public list fetches use Next.js revalidation through `PUBLIC_POST_LIST_REVALIDATE_SECONDS`, currently 60 seconds.
+2. Public detail fetches use Next.js revalidation through `PUBLIC_POST_DETAIL_REVALIDATE_SECONDS`, currently 300 seconds.
+3. `/posts` and `/posts/{slug}` opt out of build-time API prerendering with `dynamic = "force-dynamic"` so local and CI builds do not require a live API.
+4. Public frontend fetches must not use `cache: "no-store"` after this boundary unless a later explicit cache-policy task changes the contract.
+5. CDN headers, publish-triggered invalidation, tag-based revalidation, pagination cache policy, RSS, and sitemap remain deferred.
+
 ## SEO
 
 ### Public Metadata

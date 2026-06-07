@@ -57,7 +57,8 @@
 25. Article Public Site Styling Boundary is complete: `/`, `/posts`, `/posts/{slug}`, list empty state, and list error state share a narrow header/card surface rhythm without introducing a full design system.
 26. Article Public Site SEO Metadata Boundary is complete: `/` and `/posts` define stable route metadata while `/posts/{slug}` keeps generating metadata from public detail data.
 27. Article Published Public Render Coverage Boundary is complete: public list/detail rendering now guard machine-readable publish dates, summary fallback, tags, public detail `bodyHtml`, and not-found behavior without calling management routes.
-28. The next product-development task is Article Public API / Frontend Cache Policy Boundary or Article Public Sitemap/RSS Boundary.
+28. Article Public API / Frontend Cache Policy Boundary is complete: public list/detail fetches use explicit Next.js revalidation constants and the dynamic routes avoid build-time API prerendering.
+29. The next product-development task is Article Public Sitemap/RSS Boundary.
 17. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
 18. Preserve scope checks and standard error behavior.
 

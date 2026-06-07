@@ -9,6 +9,8 @@ type PublicPostDetailPageProps = {
   }>;
 };
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({ params }: PublicPostDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
   const post = await fetchPublicPostBySlug(slug);

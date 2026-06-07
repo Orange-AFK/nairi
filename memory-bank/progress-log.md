@@ -480,6 +480,16 @@
 6. Risks or blockers: dispatcher configuration, external dispatch execution, CDN purge, `revalidateTag`/`revalidatePath`, webhooks, cache headers, scheduling semantics, and the real job runner remain deferred.
 7. Next recommended named task: Article Public Publish Invalidation Dispatcher Configuration Boundary or Article Public RSS/Sitemap Split Boundary.
 
+### Article Public Publish Invalidation Dispatcher Configuration Boundary
+
+1. Status: completed.
+2. Scope: added a safe settings-level dispatcher configuration contract for publish invalidation with `public_invalidation_dispatcher=none` as the only supported value and `NAIRI_PUBLIC_INVALIDATION_DISPATCHER=none` env wiring.
+3. Changed files: `services/api/src/nairi_api/config.py`, `services/api/tests/test_config.py`, `memory-bank/api-contract.md`, `memory-bank/architecture.md`, `memory-bank/project-state.md`, and `memory-bank/progress-log.md`.
+4. Verification performed: added config tests first and observed RED on the missing setting and forbidden extra input; implemented the minimal literal setting and verified config tests plus the focused publish route/storage test.
+5. Result: passed for the publish invalidation dispatcher configuration boundary.
+6. Risks or blockers: dispatcher interface, external dispatch execution, CDN purge, `revalidateTag`/`revalidatePath`, webhooks, cache headers, scheduling semantics, and the real job runner remain deferred.
+7. Next recommended named task: Article Public Publish Invalidation Dispatcher Interface Boundary or Article Public RSS/Sitemap Split Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

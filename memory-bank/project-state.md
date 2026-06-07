@@ -7,8 +7,8 @@
 1. Nairi is in early alpha implementation.
 2. The implementation still follows the accepted API-first, agent-first CMS direction.
 3. Core public and management content flows exist as scaffold implementations with verified route tests and guards.
-4. The current development focus is Article Public Sitemap Additional Shards Boundary.
-5. Cloudflare dry-run dispatch has merged; the sitemap work is now splitting stable public landing routes into a dedicated static sitemap shard.
+4. The current development focus is SQLite Schema Migration Baseline Boundary.
+5. Sitemap static/posts shard work has merged; data migration work is now adding migration metadata without changing public API behavior.
 
 ### Current Authority Snapshot
 
@@ -87,9 +87,10 @@
 
 ### Data and Migrations
 
-1. SQLAlchemy and Alembic are target stack components but are not yet introduced in code.
-2. Migration work must preserve current logical entities and route contracts while replacing scaffold schema initialization.
-3. PostgreSQL remains a future production option after managed migrations exist.
+1. SQLite `PostStore` now records a baseline row in `schema_migrations` for the current scaffold schema.
+2. Existing pre-migration SQLite files can be adopted by creating migration metadata without losing posts, revisions, or audit rows.
+3. SQLAlchemy and Alembic are target stack components but are not yet introduced in code.
+4. PostgreSQL remains a future production option after managed migrations exist.
 
 ### Admin Console
 
@@ -113,13 +114,13 @@
 
 ## Next Named Work
 
-### Article Public Sitemap Additional Shards Boundary
+### SQLite Schema Migration Baseline Boundary
 
 1. Status: in progress.
-2. Scope: add `/sitemap-static.xml` as a dedicated static public sitemap shard, keep `/sitemap-posts.xml` for post detail URLs, and make `/sitemap.xml` index both shard documents.
-3. Boundary: preserve route-level Next.js revalidation only; do not add RSS logic, management-route access, bearer tokens, CDN headers, purge calls, `revalidateTag`, `revalidatePath`, Cloudflare behavior, or publish-triggered invalidation execution.
-4. Verification: RED sitemap structural check, focused sitemap/RSS checks, public-site typecheck/build, full frontend structural checks, guards, scans, PR CI, and main CI.
-5. After completion: consider Cloudflare Live Execution Design Boundary only if live provider behavior becomes the priority; otherwise continue toward data migrations or admin console foundation.
+2. Scope: add `schema_migrations` metadata for the current `PostStore` SQLite scaffold schema and record `post_store_baseline` exactly once.
+3. Boundary: preserve current API contracts and route behavior; do not introduce SQLAlchemy, Alembic, PostgreSQL, external migration CLIs, or route/UI changes.
+4. Verification: RED migration tests, focused migration/persistence tests, full API tests, guards, scans, PR CI, and main CI.
+5. After completion: continue toward managed migration tooling, data migration hardening, or CMS Admin Console Foundation.
 
 ## Blockers
 

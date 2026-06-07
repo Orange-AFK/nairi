@@ -605,6 +605,18 @@
 8. Authority-doc impact: updated `frontend-design.md`, `project-state.md`, `roadmap.md`, and this progress log.
 9. Next recommended named task: Data Migration Baseline Boundary, CMS Admin Console Foundation Boundary, or Cloudflare Live Execution Design Boundary if live provider behavior becomes the priority.
 
+### SQLite Schema Migration Baseline Boundary
+
+1. Status: completed.
+2. Scope: added `schema_migrations` metadata for the current `PostStore` SQLite scaffold schema, recorded `post_store_baseline` once, kept reopen idempotency, and adopted existing pre-migration SQLite files without losing posts, revisions, or audit rows.
+3. Changed files: `services/api/src/nairi_api/posts.py`, `services/api/tests/test_post_persistence.py`, `memory-bank/project-state.md`, `memory-bank/roadmap.md`, `memory-bank/tech-stack.md`, `memory-bank/progress-log.md`, and local Chinese companion files.
+4. Verification performed: added migration tests first and observed RED on missing `schema_migrations`; implemented the minimal migrator called from store schema initialization; verified focused migration tests, full post persistence tests, and full API tests.
+5. Result: fresh databases create `schema_migrations`, record `(1, "post_store_baseline")`, and do not duplicate the row on reopen. Existing pre-migration databases receive the baseline metadata while preserving existing `posts`, `post_revisions`, and `audit_events` data. No public API contract, route behavior, SQLAlchemy/Alembic layer, PostgreSQL support, or external migration runner was added.
+6. Risks or blockers: standalone migration tooling, migration rollback/repair policy, Alembic integration, SQLAlchemy models, PostgreSQL support, and live database rehearsal remain deferred.
+7. Decision impact: covered by existing data/migration roadmap and scaffold-to-managed-migrations direction; no new ADR needed.
+8. Authority-doc impact: updated `project-state.md`, `roadmap.md`, `tech-stack.md`, and this progress log.
+9. Next recommended named task: Managed Migration Runner Boundary, Data Migration Rehearsal Boundary, or CMS Admin Console Foundation Boundary.
+
 ## Progress Rule
 
 `progress-log.md` is append-only historical evidence. It is not the current roadmap and it is not the only authority for durable architecture decisions.

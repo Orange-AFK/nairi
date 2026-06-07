@@ -160,6 +160,16 @@
 6. Risks or blockers: actual publication state transition, `post.published` audit persistence, publish job storage, filtering/pagination, and SQLAlchemy/Alembic migrations remain deferred.
 7. Next recommended named task: Article Draft Publish State Transition Boundary.
 
+### Article Draft Publish State Transition Boundary
+
+1. Status: completed.
+2. Scope: changed `POST /api/v1/posts/{post_id}/publish` from a queued-only contract into the first persisted publish transition: draft posts become `published`, `publishedAt` and `updatedAt` use request-time UTC, the current revision is preserved, and `post.published` audit metadata is recorded.
+3. Changed files: `services/api/src/nairi_api/main.py`, `services/api/src/nairi_api/posts.py`, `services/api/tests/test_post_persistence.py`, `memory-bank/api-contract.md`, `memory-bank/project-state.md`, `memory-bank/architecture.md`, `memory-bank/data-model.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: rewrote the publish success test first and observed RED because the route still returned queued `202`; implemented the smallest store transition, response mapping, `published_at` scaffold column, and audit insert; then verified focused GREEN, persistence tests, full API suite, docs guards, schema guards, and secret guards.
+5. Result: passed for the publish state transition boundary.
+6. Risks or blockers: durable `publish_jobs` storage, scheduling semantics, job runner execution, public rendering, filtering/pagination, and SQLAlchemy/Alembic migrations remain deferred.
+7. Next recommended named task: Article Draft Publish Job Storage Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

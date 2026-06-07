@@ -541,16 +541,25 @@ def test_update_post_draft_rejects_invalid_content_fields_without_side_effects(t
     assert post_row == ("Persistent draft", "persistent-draft", revision_id)
 
 
-def test_publish_post_draft_enqueues_publish_job_for_publish_scope(tmp_path: Path) -> None:
+def test_publish_post_draft_transitions_to_published_and_records_audit(tmp_path: Path) -> None:
     database_path = tmp_path / "nairi.db"
     settings = Settings(
         api_tokens={
             "post-writer-token": ["posts:write"],
+            "post-reader-token": ["posts:read"],
             "post-publisher-token": ["posts:publish"],
         },
         database_path=str(database_path),
     )
-    client = TestClient(create_app(settings=settings))
+    timestamps = iter(
+        [
+            datetime(2026, 6, 7, 8, 9, 10, tzinfo=UTC),
+            datetime(2026, 6, 7, 8, 11, 12, tzinfo=UTC),
+        ]
+    )
+    app = create_app(settings=settings)
+    app.state.post_store = PostStore(str(database_path), clock=lambda: next(timestamps))
+    client = TestClient(app)
 
     create_response = client.post(
         "/api/v1/posts",
@@ -567,29 +576,183 @@ def test_publish_post_draft_enqueues_publish_job_for_publish_scope(tmp_path: Pat
     )
 
     assert create_response.status_code == 201
-    assert response.status_code == 202
+    assert response.status_code == 200
     assert response.json() == {
         "postId": post_id,
-        "status": "queued",
-        "publishedAt": None,
+        "status": "published",
+        "publishedAt": "2026-06-07T08:11:12Z",
         "jobId": f"publish-{post_id}-{revision_id}",
     }
+    read_response = client.get(
+        f"/api/v1/posts/{post_id}",
+        headers={"Authorization": "Bearer post-reader-token"},
+    )
+    list_response = client.get(
+        "/api/v1/posts?status=draft",
+        headers={"Authorization": "Bearer post-reader-token"},
+    )
+
+    assert read_response.status_code == 404
+    assert list_response.status_code == 200
+    assert list_response.json() == {"items": [], "nextCursor": None}
     with sqlite3.connect(database_path) as connection:
-        counts = connection.execute(
-            """
-            SELECT
-                (SELECT COUNT(*) FROM posts WHERE status = 'draft'),
-                (SELECT COUNT(*) FROM post_revisions),
-                (SELECT COUNT(*) FROM audit_events)
-            """
-        ).fetchone()
         post_row = connection.execute(
-            "SELECT current_revision_id FROM posts WHERE id = ?",
+            """
+            SELECT status, current_revision_id, published_at, updated_at
+            FROM posts
+            WHERE id = ?
+            """,
             (post_id,),
         ).fetchone()
+        revision_count = connection.execute(
+            "SELECT COUNT(*) FROM post_revisions WHERE post_id = ?",
+            (post_id,),
+        ).fetchone()[0]
+        audit_rows = connection.execute(
+            """
+            SELECT event_type, actor_type, actor_id, target_type, target_id, metadata, created_at
+            FROM audit_events
+            WHERE target_id = ?
+            ORDER BY id ASC
+            """,
+            (post_id,),
+        ).fetchall()
 
-    assert counts == (1, 1, 1)
-    assert post_row == (revision_id,)
+    assert post_row == ("published", revision_id, "2026-06-07T08:11:12Z", "2026-06-07T08:11:12Z")
+    assert revision_count == 1
+    assert audit_rows == [
+        (
+            "post.created",
+            "api_token",
+            "token:post-writer-token",
+            "post",
+            post_id,
+            f'{{"revisionId":"{revision_id}"}}',
+            "2026-06-07T08:09:10Z",
+        ),
+        (
+            "post.published",
+            "api_token",
+            "token:post-publisher-token",
+            "post",
+            post_id,
+            f'{{"revisionId":"{revision_id}","jobId":"publish-{post_id}-{revision_id}"}}',
+            "2026-06-07T08:11:12Z",
+        ),
+    ]
+
+
+def test_publish_post_draft_adds_published_at_column_for_existing_scaffold_database(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    with sqlite3.connect(database_path) as connection:
+        connection.executescript(
+            """
+            CREATE TABLE posts (
+                id TEXT PRIMARY KEY,
+                title TEXT NOT NULL,
+                slug TEXT NOT NULL UNIQUE,
+                status TEXT NOT NULL,
+                content_format TEXT NOT NULL,
+                current_revision_id TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
+            CREATE TABLE post_revisions (
+                id TEXT PRIMARY KEY,
+                post_id TEXT NOT NULL REFERENCES posts(id),
+                content TEXT NOT NULL,
+                metadata TEXT NOT NULL,
+                created_by TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            );
+            CREATE TABLE audit_events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                event_type TEXT NOT NULL,
+                actor_type TEXT NOT NULL,
+                actor_id TEXT NOT NULL,
+                target_type TEXT NOT NULL,
+                target_id TEXT NOT NULL,
+                metadata TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            );
+            """
+        )
+        connection.execute(
+            """
+            INSERT INTO posts (id, title, slug, status, content_format, current_revision_id, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                "draft-persistent-draft",
+                "Persistent draft",
+                "persistent-draft",
+                "draft",
+                "markdown",
+                "revision-persistent-draft-1",
+                "2026-06-07T08:09:10Z",
+                "2026-06-07T08:09:10Z",
+            ),
+        )
+        connection.execute(
+            """
+            INSERT INTO post_revisions (id, post_id, content, metadata, created_by, created_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                "revision-persistent-draft-1",
+                "draft-persistent-draft",
+                "# Persistent draft\n\nStored body.",
+                '{"source":"persistence-test","summary":"Stored summary.","tags":["storage"],"categoryId":null,"seriesId":null}',
+                "token:post-writer-token",
+                "2026-06-07T08:09:10Z",
+            ),
+        )
+        connection.execute(
+            """
+            INSERT INTO audit_events (event_type, actor_type, actor_id, target_type, target_id, metadata, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                "post.created",
+                "api_token",
+                "token:post-writer-token",
+                "post",
+                "draft-persistent-draft",
+                '{"revisionId":"revision-persistent-draft-1"}',
+                "2026-06-07T08:09:10Z",
+            ),
+        )
+    settings = Settings(
+        api_tokens={"post-publisher-token": ["posts:publish"]},
+        database_path=str(database_path),
+    )
+    app = create_app(settings=settings)
+    app.state.post_store = PostStore(
+        str(database_path),
+        clock=lambda: datetime(2026, 6, 7, 8, 11, 12, tzinfo=UTC),
+    )
+    client = TestClient(app, raise_server_exceptions=False)
+
+    response = client.post(
+        "/api/v1/posts/draft-persistent-draft/publish",
+        json={"revisionId": "revision-persistent-draft-1", "publishMode": "immediate", "scheduledAt": None},
+        headers={"Authorization": "Bearer post-publisher-token"},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "postId": "draft-persistent-draft",
+        "status": "published",
+        "publishedAt": "2026-06-07T08:11:12Z",
+        "jobId": "publish-draft-persistent-draft-revision-persistent-draft-1",
+    }
+    with sqlite3.connect(database_path) as connection:
+        post_row = connection.execute(
+            "SELECT status, published_at, updated_at FROM posts WHERE id = ?",
+            ("draft-persistent-draft",),
+        ).fetchone()
+
+    assert post_row == ("published", "2026-06-07T08:11:12Z", "2026-06-07T08:11:12Z")
 
 
 def test_publish_post_draft_requires_posts_publish_scope(tmp_path: Path) -> None:

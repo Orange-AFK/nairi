@@ -1,11 +1,16 @@
 import json
 import sqlite3
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
+from typing import Callable
 
 
 DRAFT_STATUS = "draft"
-SCAFFOLD_CREATED_AT = "1970-01-01T00:00:00Z"
+
+
+def utc_timestamp(value: datetime) -> str:
+    return value.astimezone(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 @dataclass(frozen=True)
@@ -35,13 +40,14 @@ class DuplicatePostSlugError(Exception):
 
 
 class PostStore:
-    def __init__(self, database_path: str) -> None:
+    def __init__(self, database_path: str, clock: Callable[[], datetime] | None = None) -> None:
         self.database_path = database_path
+        self.clock = clock or (lambda: datetime.now(UTC))
 
     def create_draft(self, draft: PostDraftInput, actor_token: str) -> CreatedPostDraft:
         post_id = f"draft-{draft.slug}"
         revision_id = f"revision-{draft.slug}-1"
-        created_at = SCAFFOLD_CREATED_AT
+        created_at = utc_timestamp(self.clock())
         metadata = dict(draft.metadata)
         metadata.update(
             {

@@ -1,3 +1,5 @@
+import re
+
 from fastapi.testclient import TestClient
 
 from nairi_api.config import Settings
@@ -71,12 +73,12 @@ def test_create_post_draft_accepts_posts_write_scope() -> None:
     )
 
     assert response.status_code == 201
-    assert response.json() == {
-        "postId": "draft-first-nairi-draft",
-        "status": "draft",
-        "revisionId": "revision-first-nairi-draft-1",
-        "createdAt": "1970-01-01T00:00:00Z",
-    }
+    body = response.json()
+    assert body["postId"] == "draft-first-nairi-draft"
+    assert body["status"] == "draft"
+    assert body["revisionId"] == "revision-first-nairi-draft-1"
+    assert re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", body["createdAt"])
+    assert body["createdAt"] != "1970-01-01T00:00:00Z"
 
 
 def test_create_post_draft_accepts_admin_all_scope() -> None:

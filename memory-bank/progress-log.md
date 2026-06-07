@@ -90,6 +90,16 @@
 6. Risks or blockers: validation remains intentionally limited to create-draft content fields; SQLAlchemy/Alembic migrations and production timestamp generation remain deferred.
 7. Next recommended named task: Article Draft Store Timestamp Boundary.
 
+### Article Draft Store Timestamp Boundary
+
+1. Status: completed.
+2. Scope: replaced the fixed scaffold draft timestamp with request-time UTC timestamps in `POST /api/v1/posts`, with injectable clock support for deterministic tests.
+3. Changed files: `services/api/src/nairi_api/posts.py`, `services/api/tests/test_post_persistence.py`, `services/api/tests/test_post_drafts.py`, `memory-bank/api-contract.md`, `memory-bank/project-state.md`, `memory-bank/architecture.md`, `memory-bank/data-model.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: wrote the injected UTC timestamp persistence test first, observed RED because `PostStore` lacked a `clock` parameter, implemented the smallest clock/timestamp helper, updated route scaffold timestamp expectations, then verified focused GREEN and full API test suite.
+5. Result: passed for the draft timestamp boundary.
+6. Risks or blockers: timestamp precision is intentionally seconds-only for the current API contract; SQLAlchemy/Alembic migrations and draft readback remain deferred.
+7. Next recommended named task: Article Draft Response Readback Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

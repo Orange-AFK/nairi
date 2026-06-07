@@ -1,10 +1,12 @@
 import sqlite3
+from datetime import UTC, datetime
 from pathlib import Path
 
 from fastapi.testclient import TestClient
 
 from nairi_api.config import Settings
 from nairi_api.main import create_app
+from nairi_api.posts import PostStore
 
 
 def build_client(database_path: Path) -> TestClient:
@@ -27,6 +29,53 @@ def draft_payload() -> dict[str, object]:
         "seriesId": None,
         "metadata": {"source": "persistence-test"},
     }
+
+
+def test_create_post_draft_uses_injected_utc_timestamp(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    settings = Settings(
+        api_tokens={"post-writer-token": ["posts:write"]},
+        database_path=str(database_path),
+    )
+    app = create_app(settings=settings)
+    app.state.post_store = PostStore(
+        str(database_path),
+        clock=lambda: datetime(2026, 6, 7, 8, 9, 10, tzinfo=UTC),
+    )
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/v1/posts",
+        json=draft_payload(),
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+
+    assert response.status_code == 201
+    body = response.json()
+    assert body["createdAt"] == "2026-06-07T08:09:10Z"
+
+    with sqlite3.connect(database_path) as connection:
+        timestamps = connection.execute(
+            """
+            SELECT
+                posts.created_at,
+                posts.updated_at,
+                post_revisions.created_at,
+                audit_events.created_at
+            FROM posts
+            JOIN post_revisions ON post_revisions.post_id = posts.id
+            JOIN audit_events ON audit_events.target_id = posts.id
+            WHERE posts.id = ?
+            """,
+            (body["postId"],),
+        ).fetchone()
+
+    assert timestamps == (
+        "2026-06-07T08:09:10Z",
+        "2026-06-07T08:09:10Z",
+        "2026-06-07T08:09:10Z",
+        "2026-06-07T08:09:10Z",
+    )
 
 
 def test_create_post_draft_persists_post_and_revision(tmp_path: Path) -> None:

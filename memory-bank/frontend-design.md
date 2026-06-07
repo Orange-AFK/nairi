@@ -100,8 +100,9 @@ The public frontend presents articles, pages, project retrospectives, tags, cate
 2. `/posts` defines route metadata with title `Articles | Nairi` and a stable published-list description.
 3. `/posts/{slug}` generates metadata from `GET /api/v1/public/posts/{slug}` using the public title and summary.
 4. Unknown public detail slugs return `Post not found | Nairi` metadata.
-5. `/sitemap.xml` returns XML with `/`, `/posts`, and published post detail URLs from bounded full-history public-list pagination; detail entries use `publishedAt` as `lastmod`.
-6. `/rss.xml` returns RSS 2.0 XML with items from bounded full-history public-list pagination; items include title, link, guid, `pubDate` from `publishedAt`, and summary as description, and must not include full `bodyHtml`.
-7. RSS/sitemap full-history traversal uses anonymous public list pages only, with explicit `PUBLIC_POSTS_PAGE_SIZE` and `PUBLIC_POSTS_MAX_PAGES` bounds to avoid unbounded crawling.
-8. The public site URL defaults to localhost for local builds and is overridable through `NEXT_PUBLIC_NAIRI_PUBLIC_SITE_URL`.
-9. Open Graph image generation, Atom, richer SEO schema, sitemap splitting, and CDN invalidation remain deferred.
+5. `/sitemap.xml` returns a sitemap index that points to `/sitemap-posts.xml`.
+6. `/sitemap-posts.xml` returns XML with `/`, `/posts`, and published post detail URLs from bounded full-history public-list pagination; detail entries use `publishedAt` as `lastmod`.
+7. `/rss.xml` returns RSS 2.0 XML with items from bounded full-history public-list pagination; items include title, link, guid, `pubDate` from `publishedAt`, and summary as description, and must not include full `bodyHtml`.
+8. RSS/sitemap full-history traversal uses anonymous public list pages only, with explicit `PUBLIC_POSTS_PAGE_SIZE` and `PUBLIC_POSTS_MAX_PAGES` bounds to avoid unbounded crawling.
+9. The public site URL defaults to localhost for local builds and is overridable through `NEXT_PUBLIC_NAIRI_PUBLIC_SITE_URL`.
+10. Open Graph image generation, Atom, richer SEO schema, additional sitemap shards, and CDN invalidation remain deferred.

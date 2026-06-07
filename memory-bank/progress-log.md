@@ -540,6 +540,16 @@
 6. Risks or blockers: concrete external adapters, CDN purge, `revalidateTag`/`revalidatePath`, webhooks, cache headers, scheduling semantics, external invalidation execution, and the real job runner remain deferred.
 7. Next recommended named task: Article Public Publish Invalidation Concrete Adapter Boundary or Article Public RSS/Sitemap Split Boundary.
 
+### Article Public RSS/Sitemap Split Boundary
+
+1. Status: completed.
+2. Scope: split the public sitemap surface so `/sitemap.xml` is a sitemap index and `/sitemap-posts.xml` owns the bounded full-history public posts sitemap.
+3. Changed files: `apps/public-site/app/sitemap.xml/route.ts`, `apps/public-site/app/sitemap-posts.xml/route.ts`, `scripts/checks/frontend_public_sitemap_check.py`, `memory-bank/frontend-design.md`, `memory-bank/project-state.md`, and `memory-bank/progress-log.md`.
+4. Verification performed: extended the sitemap structural check first and observed RED on the missing `sitemap-posts.xml` route; implemented the minimal sitemap index plus posts sitemap route while preserving anonymous public-list pagination, RSS separation, route-level revalidation only, and no CDN/purge/tag/path invalidation behavior; then verified sitemap/RSS checks, public-site typecheck, and the full API test suite.
+5. Result: passed for the RSS/sitemap split boundary.
+6. Risks or blockers: additional sitemap shards, concrete invalidation adapters, CDN purge, `revalidateTag`/`revalidatePath`, webhooks, cache headers, Atom, richer SEO schema, and the real job runner remain deferred.
+7. Next recommended named task: Article Public Publish Invalidation Concrete Adapter Boundary or Article Public Sitemap Additional Shards Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

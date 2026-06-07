@@ -320,6 +320,16 @@
 6. Risks or blockers: canonical URLs, Open Graph image generation, RSS, sitemap, cache/CDN policy, and richer SEO schema remain deferred.
 7. Next recommended named task: Article Published Public Render Coverage Boundary.
 
+### Article Published Public Render Coverage Boundary
+
+1. Status: completed.
+2. Scope: added structural coverage for published public list/detail rendering, including machine-readable published dates, summary fallback, tag rendering, public detail `bodyHtml`, not-found behavior, and public-route-only access.
+3. Changed files: `.github/workflows/guards.yml`, `apps/public-site/app/posts/page.tsx`, `apps/public-site/app/posts/[slug]/page.tsx`, `scripts/checks/frontend_public_render_check.py`, `memory-bank/frontend-design.md`, `memory-bank/guard-ci.md`, `memory-bank/project-state.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: added `frontend_public_render_check.py` first and observed RED on missing `time` date coverage, summary fallback, and detail tag rendering; implemented the smallest render coverage additions; verified render/metadata/style/detail/list checks, public-site typecheck, and public-site build.
+5. Result: passed for the published public render coverage boundary.
+6. Risks or blockers: pagination, filters, cache/CDN policy, canonical URLs, RSS, sitemap, Open Graph image generation, and richer SEO schema remain deferred.
+7. Next recommended named task: Article Public API / Frontend Cache Policy Boundary or Article Public Sitemap/RSS Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

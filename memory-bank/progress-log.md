@@ -80,6 +80,16 @@
 6. Risks or blockers: broader input validation remains mostly Pydantic/default behavior; SQLAlchemy/Alembic migrations remain deferred.
 7. Next recommended named task: Article Draft Input Validation Boundary.
 
+### Article Draft Input Validation Boundary
+
+1. Status: completed.
+2. Scope: added route-level validation for blank `title`, invalid `slug`, and blank `content` in `POST /api/v1/posts`, with a standard `400 invalid_request` error and no persistence side effects.
+3. Changed files: `services/api/src/nairi_api/main.py`, `services/api/tests/test_post_persistence.py`, `memory-bank/api-contract.md`, `memory-bank/project-state.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: wrote the invalid draft input test first, observed RED because invalid input returned `201`, implemented the smallest route validation helper, then verified focused GREEN and full API test suite.
+5. Result: passed for the draft input validation boundary.
+6. Risks or blockers: validation remains intentionally limited to create-draft content fields; SQLAlchemy/Alembic migrations and production timestamp generation remain deferred.
+7. Next recommended named task: Article Draft Store Timestamp Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

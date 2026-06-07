@@ -1,3 +1,4 @@
+import re
 from typing import Literal
 
 from fastapi import Depends, FastAPI
@@ -27,6 +28,21 @@ class CreatePostDraftResponse(BaseModel):
     created_at: str = Field(alias="createdAt")
 
 
+SLUG_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+
+
+def validate_post_draft_request(draft: CreatePostDraftRequest) -> None:
+    details: dict[str, str] = {}
+    if not draft.title.strip():
+        details["title"] = "Title is required"
+    if not SLUG_PATTERN.fullmatch(draft.slug):
+        details["slug"] = "Slug must contain only lowercase letters, numbers, and hyphens"
+    if not draft.content.strip():
+        details["content"] = "Content is required"
+    if details:
+        raise ApiError(400, "invalid_request", "Invalid post draft request", details)
+
+
 def create_app(settings: Settings | None = None) -> FastAPI:
     if settings is None:
         settings = get_settings()
@@ -52,6 +68,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         draft: CreatePostDraftRequest,
         actor: AuthenticatedActor = Depends(require_scope("posts:write")),
     ) -> CreatePostDraftResponse:
+        validate_post_draft_request(draft)
         try:
             created: CreatedPostDraft = app.state.post_store.create_draft(
                 PostDraftInput(

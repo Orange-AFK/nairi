@@ -136,3 +136,52 @@ def test_create_post_draft_duplicate_slug_returns_conflict_without_side_effects(
         ).fetchone()
 
     assert counts == (1, 1, 1)
+
+
+def persistence_counts(database_path: Path) -> tuple[int, int, int]:
+    if not database_path.exists():
+        return (0, 0, 0)
+    with sqlite3.connect(database_path) as connection:
+        table_count = connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM sqlite_master
+            WHERE type = 'table' AND name IN ('posts', 'post_revisions', 'audit_events')
+            """
+        ).fetchone()[0]
+        if table_count == 0:
+            return (0, 0, 0)
+        return connection.execute(
+            """
+            SELECT
+                (SELECT COUNT(*) FROM posts),
+                (SELECT COUNT(*) FROM post_revisions),
+                (SELECT COUNT(*) FROM audit_events)
+            """
+        ).fetchone()
+
+
+def test_create_post_draft_rejects_invalid_content_fields_without_side_effects(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    client = build_client(database_path)
+    payload = draft_payload()
+    payload.update({"title": "   ", "slug": "Invalid Slug", "content": ""})
+
+    response = client.post(
+        "/api/v1/posts",
+        json=payload,
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {
+        "code": "invalid_request",
+        "message": "Invalid post draft request",
+        "details": {
+            "title": "Title is required",
+            "slug": "Slug must contain only lowercase letters, numbers, and hyphens",
+            "content": "Content is required",
+        },
+        "requestId": "unavailable",
+    }
+    assert persistence_counts(database_path) == (0, 0, 0)

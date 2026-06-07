@@ -73,9 +73,10 @@
 5. Response fields: `postId`, `status`, `revisionId`, `updatedAt`
 6. Timestamp rule: `updatedAt` is a request-time UTC timestamp serialized as `YYYY-MM-DDTHH:MM:SSZ`.
 7. Audit event: `post.updated`
-8. Errors: `404` with code `not_found` when `post_id` is unknown or does not identify a draft.
-9. Errors: `409` with code `conflict` when `expectedRevisionId` does not match the current draft revision. The conflict response must not create a post revision or audit event.
-10. Errors: `409` with code `conflict` when the requested `slug` belongs to another post. The conflict response must not create a post revision or audit event, and must not mutate either post.
+8. Errors: `400` with code `invalid_request` when `title` is blank, `slug` is not lowercase letters/numbers/hyphens, or `content` is blank. The validation response must not create a post revision or audit event, and must not mutate the post.
+9. Errors: `404` with code `not_found` when `post_id` is unknown or does not identify a draft.
+10. Errors: `409` with code `conflict` when `expectedRevisionId` does not match the current draft revision. The conflict response must not create a post revision or audit event.
+11. Errors: `409` with code `conflict` when the requested `slug` belongs to another post. The conflict response must not create a post revision or audit event, and must not mutate either post.
 
 ### Publish Post
 

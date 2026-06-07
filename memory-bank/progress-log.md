@@ -140,6 +140,16 @@
 6. Risks or blockers: broader update validation, publication, filtering/pagination, and SQLAlchemy/Alembic migrations remain deferred.
 7. Next recommended named task: Article Draft Update Validation Boundary.
 
+### Article Draft Update Validation Boundary
+
+1. Status: completed.
+2. Scope: added explicit update-time invalid content field coverage for `PATCH /api/v1/posts/{post_id}`, proving blank `title`, invalid `slug`, and blank `content` return the standard `400 invalid_request` before creating a revision, audit event, or mutating the post.
+3. Changed files: `services/api/tests/test_post_persistence.py`, `memory-bank/api-contract.md`, `memory-bank/project-state.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: wrote the invalid-update route test first and observed it pass because the update route already reused `validate_post_draft_request`; no production code change was needed. Verified focused GREEN, persistence tests, full API suite, docs guards, schema guards, and secret guards.
+5. Result: passed for update validation coverage.
+6. Risks or blockers: publication state changes, filtering/pagination, and SQLAlchemy/Alembic migrations remain deferred.
+7. Next recommended named task: Article Draft Publish Contract Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

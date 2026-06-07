@@ -50,6 +50,11 @@ class PublishedPost:
     published_at: str | None
     job_id: str
     public_invalidation_surfaces: list[str]
+    public_invalidation_status: str
+    public_invalidation_executor: str
+    public_invalidation_executed_at: str | None
+    public_invalidation_error_code: str | None
+    public_invalidation_error_message: str | None
 
 
 @dataclass(frozen=True)
@@ -275,6 +280,9 @@ class PostStore:
             if current_revision_id != revision_id:
                 raise PostRevisionConflictError(current_revision_id)
             public_invalidation_surfaces = public_invalidation_surfaces_for_post(slug)
+            public_invalidation_status = "recorded"
+            public_invalidation_executor = "none"
+            public_invalidation_executed_at = published_at
             connection.execute(
                 """
                 INSERT INTO publish_jobs (
@@ -287,9 +295,14 @@ class PostStore:
                     completed_at,
                     error_code,
                     error_message,
-                    public_invalidation_surfaces
+                    public_invalidation_surfaces,
+                    public_invalidation_status,
+                    public_invalidation_executor,
+                    public_invalidation_executed_at,
+                    public_invalidation_error_code,
+                    public_invalidation_error_message
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     job_id,
@@ -302,6 +315,11 @@ class PostStore:
                     None,
                     None,
                     json.dumps(public_invalidation_surfaces, separators=(",", ":")),
+                    public_invalidation_status,
+                    public_invalidation_executor,
+                    public_invalidation_executed_at,
+                    None,
+                    None,
                 ),
             )
             connection.execute(
@@ -334,6 +352,11 @@ class PostStore:
             published_at=published_at,
             job_id=job_id,
             public_invalidation_surfaces=public_invalidation_surfaces,
+            public_invalidation_status=public_invalidation_status,
+            public_invalidation_executor=public_invalidation_executor,
+            public_invalidation_executed_at=public_invalidation_executed_at,
+            public_invalidation_error_code=None,
+            public_invalidation_error_message=None,
         )
 
     def list_drafts(self) -> list[StoredPostDraft]:
@@ -513,10 +536,25 @@ class PostStore:
                 completed_at TEXT,
                 error_code TEXT,
                 error_message TEXT,
-                public_invalidation_surfaces TEXT NOT NULL DEFAULT '[]'
+                public_invalidation_surfaces TEXT NOT NULL DEFAULT '[]',
+                public_invalidation_status TEXT NOT NULL DEFAULT 'contract_only',
+                public_invalidation_executor TEXT NOT NULL DEFAULT 'none',
+                public_invalidation_executed_at TEXT,
+                public_invalidation_error_code TEXT,
+                public_invalidation_error_message TEXT
             )
             """
         )
         publish_job_columns = {cast(str, row[1]) for row in connection.execute("PRAGMA table_info(publish_jobs)").fetchall()}
         if "public_invalidation_surfaces" not in publish_job_columns:
             connection.execute("ALTER TABLE publish_jobs ADD COLUMN public_invalidation_surfaces TEXT NOT NULL DEFAULT '[]'")
+        if "public_invalidation_status" not in publish_job_columns:
+            connection.execute("ALTER TABLE publish_jobs ADD COLUMN public_invalidation_status TEXT NOT NULL DEFAULT 'contract_only'")
+        if "public_invalidation_executor" not in publish_job_columns:
+            connection.execute("ALTER TABLE publish_jobs ADD COLUMN public_invalidation_executor TEXT NOT NULL DEFAULT 'none'")
+        if "public_invalidation_executed_at" not in publish_job_columns:
+            connection.execute("ALTER TABLE publish_jobs ADD COLUMN public_invalidation_executed_at TEXT")
+        if "public_invalidation_error_code" not in publish_job_columns:
+            connection.execute("ALTER TABLE publish_jobs ADD COLUMN public_invalidation_error_code TEXT")
+        if "public_invalidation_error_message" not in publish_job_columns:
+            connection.execute("ALTER TABLE publish_jobs ADD COLUMN public_invalidation_error_message TEXT")

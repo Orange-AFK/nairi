@@ -56,9 +56,18 @@ class PublishPostRequest(BaseModel):
     scheduled_at: str | None = Field(default=None, alias="scheduledAt")
 
 
+class PublicInvalidationExecutionResponse(BaseModel):
+    status: Literal["recorded"]
+    executor: Literal["none"]
+    executed_at: str | None = Field(alias="executedAt")
+    error_code: str | None = Field(alias="errorCode")
+    error_message: str | None = Field(alias="errorMessage")
+
+
 class PublicInvalidationContractResponse(BaseModel):
-    mode: Literal["contract_only"]
+    mode: Literal["recorded"]
     surfaces: list[str]
+    execution: PublicInvalidationExecutionResponse
 
 
 class PublishPostResponse(BaseModel):
@@ -432,8 +441,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             publishedAt=published.published_at,
             jobId=published.job_id,
             publicInvalidation=PublicInvalidationContractResponse(
-                mode="contract_only",
+                mode="recorded",
                 surfaces=published.public_invalidation_surfaces,
+                execution=PublicInvalidationExecutionResponse(
+                    status="recorded",
+                    executor="none",
+                    executedAt=published.public_invalidation_executed_at,
+                    errorCode=published.public_invalidation_error_code,
+                    errorMessage=published.public_invalidation_error_message,
+                ),
             ),
         )
 

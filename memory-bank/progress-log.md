@@ -460,6 +460,16 @@
 6. Risks or blockers: real CDN purge, publish-triggered invalidation execution, `revalidateTag`/`revalidatePath`, cache headers, sitemap splitting, Atom, and richer feed contents remain deferred.
 7. Next recommended named task: Article Public Publish Invalidation Execution Boundary or Article Public RSS/Sitemap Split Boundary.
 
+### Article Public Publish Invalidation Execution Boundary
+
+1. Status: completed.
+2. Scope: promoted publish invalidation from contract-only surfaces to a durable recorded execution state on successful immediate publishes, while keeping invalidation side effects disabled.
+3. Changed files: `services/api/src/nairi_api/main.py`, `services/api/src/nairi_api/posts.py`, `services/api/tests/test_post_persistence.py`, `memory-bank/api-contract.md`, `memory-bank/architecture.md`, `memory-bank/project-state.md`, and `memory-bank/progress-log.md`.
+4. Verification performed: extended the publish route/storage test first and observed RED on missing `mode=recorded`, missing execution response fields, and missing durable publish-job execution columns; implemented the minimal recorded execution state and verified the focused publish test.
+5. Result: passed for the publish invalidation execution boundary.
+6. Risks or blockers: external invalidation dispatch, CDN purge, `revalidateTag`/`revalidatePath`, webhooks, cache headers, scheduling semantics, and the real job runner remain deferred.
+7. Next recommended named task: Article Public Publish Invalidation Dispatch Boundary or Article Public RSS/Sitemap Split Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

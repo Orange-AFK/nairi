@@ -112,6 +112,7 @@ Nairi uses automated guards to enforce documentation boundaries, bilingual synch
 10. Runs `scripts/checks/frontend_public_detail_check.py`.
 11. Runs `scripts/checks/frontend_public_list_check.py`.
 12. Runs `npm ci`, `npm run typecheck`, and `npm run build` under `apps/public-site`.
+13. Does not publish Docker or GHCR images; image publishing remains a separate future deployment workflow.
 
 ## Completion Rule
 

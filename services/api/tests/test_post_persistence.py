@@ -988,6 +988,100 @@ def test_list_public_posts_returns_public_safe_published_summaries_without_auth(
     assert "Published body is still omitted" not in serialized_response
 
 
+def test_get_public_post_by_slug_returns_public_safe_published_detail_without_auth(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    settings = Settings(
+        api_tokens={
+            "post-writer-token": ["posts:write"],
+            "post-publisher-token": ["posts:publish"],
+        },
+        database_path=str(database_path),
+    )
+    timestamps = iter(
+        [
+            datetime(2026, 6, 7, 8, 1, 0, tzinfo=UTC),
+            datetime(2026, 6, 7, 8, 2, 0, tzinfo=UTC),
+            datetime(2026, 6, 7, 8, 3, 0, tzinfo=UTC),
+        ]
+    )
+    app = create_app(settings=settings)
+    app.state.post_store = PostStore(str(database_path), clock=lambda: next(timestamps))
+    client = TestClient(app)
+
+    draft_only_payload = draft_payload()
+    draft_only_payload.update(
+        {
+            "title": "Hidden draft detail",
+            "slug": "hidden-draft-detail",
+            "content": "Draft detail body must not leak.",
+            "summary": "Hidden draft detail summary.",
+            "metadata": {"source": "draft-detail-only"},
+        }
+    )
+    draft_response = client.post(
+        "/api/v1/posts",
+        json=draft_only_payload,
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+    published_payload = draft_payload()
+    published_payload.update(
+        {
+            "title": "Public detail post",
+            "slug": "public-detail-post",
+            "content": "Published Markdown detail body.",
+            "summary": "Public detail summary.",
+            "tags": ["public", "detail"],
+            "categoryId": "category-public-detail",
+            "seriesId": "series-public-detail",
+            "metadata": {"source": "public-detail-test", "internalNote": "do-not-leak"},
+        }
+    )
+    create_response = client.post(
+        "/api/v1/posts",
+        json=published_payload,
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+    post_id = create_response.json()["postId"]
+    revision_id = create_response.json()["revisionId"]
+    publish_response = client.post(
+        f"/api/v1/posts/{post_id}/publish",
+        json={"revisionId": revision_id, "publishMode": "immediate", "scheduledAt": None},
+        headers={"Authorization": "Bearer post-publisher-token"},
+    )
+
+    detail_response = client.get("/api/v1/public/posts/public-detail-post")
+    draft_detail_response = client.get("/api/v1/public/posts/hidden-draft-detail")
+    unknown_response = client.get("/api/v1/public/posts/missing-public-detail")
+
+    assert draft_response.status_code == 201
+    assert create_response.status_code == 201
+    assert publish_response.status_code == 200
+    assert detail_response.status_code == 200
+    assert detail_response.json() == {
+        "postId": post_id,
+        "title": "Public detail post",
+        "slug": "public-detail-post",
+        "status": "published",
+        "contentFormat": "markdown",
+        "content": "Published Markdown detail body.",
+        "summary": "Public detail summary.",
+        "tags": ["public", "detail"],
+        "categoryId": "category-public-detail",
+        "seriesId": "series-public-detail",
+        "publishedAt": "2026-06-07T08:03:00Z",
+    }
+    serialized_response = str(detail_response.json())
+    assert "revisionId" not in serialized_response
+    assert "metadata" not in serialized_response
+    assert "internalNote" not in serialized_response
+    assert "createdAt" not in serialized_response
+    assert "updatedAt" not in serialized_response
+    assert draft_detail_response.status_code == 404
+    assert draft_detail_response.json()["code"] == "not_found"
+    assert unknown_response.status_code == 404
+    assert unknown_response.json()["code"] == "not_found"
+
+
 def test_get_published_post_returns_published_detail_for_reader_scope(tmp_path: Path) -> None:
     database_path = tmp_path / "nairi.db"
     settings = Settings(

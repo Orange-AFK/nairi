@@ -230,6 +230,16 @@
 6. Risks or blockers: public detail, public filtering/pagination inputs, public rendering, cache policy, scheduling semantics, job runner execution, and SQLAlchemy/Alembic migrations remain deferred.
 7. Next recommended named task: Article Published Public Detail Boundary.
 
+### Article Published Public Detail Boundary
+
+1. Status: completed.
+2. Scope: added the first anonymous public published detail readback at `GET /api/v1/public/posts/{slug}` with a public-safe response schema while preserving authenticated `/api/v1/posts/{post_id}` management detail and `posts:read` scope semantics.
+3. Changed files: `services/api/src/nairi_api/main.py`, `services/api/src/nairi_api/posts.py`, `services/api/tests/test_post_persistence.py`, `memory-bank/api-contract.md`, `memory-bank/project-state.md`, `memory-bank/architecture.md`, `memory-bank/data-model.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: wrote the public detail route test first and observed RED on missing slug route `404`; implemented the smallest public detail response model, route, and published-by-slug store lookup; then verified focused GREEN and related public/authenticated readback tests.
+5. Result: passed for the public published detail boundary.
+6. Risks or blockers: public rendering/sanitization, public filtering/pagination inputs, cache policy, scheduling semantics, job runner execution, and SQLAlchemy/Alembic migrations remain deferred.
+7. Next recommended named task: Article Published Public Render Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

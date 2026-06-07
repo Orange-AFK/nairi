@@ -4,6 +4,7 @@ import Link from "next/link";
 import { fetchPublicPosts } from "@/lib/public-posts";
 
 const DEFAULT_PUBLIC_SITE_URL = "http://localhost:3000";
+const PUBLIC_POSTS_PAGE_SIZE = 10;
 
 function PUBLIC_SITE_URL(): string {
   return (process.env.NEXT_PUBLIC_NAIRI_PUBLIC_SITE_URL ?? DEFAULT_PUBLIC_SITE_URL).replace(/\/$/, "");
@@ -20,8 +21,19 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function PublicPostsPage() {
-  const posts = await fetchPublicPosts();
+type PublicPostsPageProps = {
+  searchParams?: Promise<{
+    cursor?: string;
+  }>;
+};
+
+export default async function PublicPostsPage({ searchParams }: PublicPostsPageProps) {
+  const resolvedSearchParams = await searchParams;
+  const cursor = resolvedSearchParams?.cursor;
+  const { items: posts, nextCursor } = await fetchPublicPosts({
+    limit: PUBLIC_POSTS_PAGE_SIZE,
+    cursor,
+  });
 
   return (
     <main className="article-shell">
@@ -54,6 +66,13 @@ export default async function PublicPostsPage() {
           ))
         )}
       </section>
+      {nextCursor ? (
+        <nav className="post-pagination" aria-label="Article pagination">
+          <Link className="surface-card" href={`/posts?cursor=${encodeURIComponent(nextCursor)}`}>
+            Load more articles
+          </Link>
+        </nav>
+      ) : null}
     </main>
   );
 }

@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const siteUrl = PUBLIC_SITE_URL();
-  const posts = await fetchPublicPosts();
+  const { items: posts } = await fetchPublicPosts();
   const items = posts.map((post) => {
     const postUrl = `${siteUrl}/posts/${encodeURIComponent(post.slug)}`;
     return `<item><title>${escapeXml(post.title)}</title><link>${postUrl}</link><guid>${postUrl}</guid><pubDate>${new Date(post.publishedAt).toUTCString()}</pubDate><description>${escapeXml(post.summary ?? "")}</description></item>`;

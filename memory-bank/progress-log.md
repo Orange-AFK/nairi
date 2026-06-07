@@ -380,6 +380,16 @@
 6. Risks or blockers: frontend pagination controls, public filters, sitemap/RSS pagination expansion, CDN headers, and publish-triggered invalidation remain deferred.
 7. Next recommended named task: Article Public Frontend Pagination Boundary.
 
+### Article Public Frontend Pagination Boundary
+
+1. Status: completed.
+2. Scope: wired `/posts` to request `GET /api/v1/public/posts` with a small `limit`, accept an item-id `cursor` from query params, and render a `Load more articles` link when `nextCursor` is present while preserving public-route-only access.
+3. Changed files: `scripts/checks/frontend_public_list_check.py`, `apps/public-site/lib/public-posts.ts`, `apps/public-site/app/posts/page.tsx`, `apps/public-site/app/rss.xml/route.ts`, `apps/public-site/app/sitemap.xml/route.ts`, `memory-bank/frontend-design.md`, `memory-bank/project-state.md`, and `memory-bank/progress-log.md`.
+4. Verification performed: extended `frontend_public_list_check.py` first and observed RED on missing `searchParams`, `cursor`, page size, `nextCursor`, and pagination link markers; implemented the minimal frontend pagination link; fixed RSS/sitemap callers after `fetchPublicPosts` began returning the full list response; verified list check, typecheck, and public-site build.
+5. Result: passed for the public frontend pagination boundary.
+6. Risks or blockers: previous-page navigation, richer pagination metadata, public filters, infinite scroll, sitemap/RSS pagination expansion, CDN headers, and publish-triggered invalidation remain deferred.
+7. Next recommended named task: Article Public Pagination Metadata Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

@@ -29,6 +29,11 @@ export type PublicPostSummary = {
 type ListPublicPostsResponse = {
   items: PublicPostSummary[];
   nextCursor: string | null;
+  page: {
+    limit: number | null;
+    cursor: string | null;
+    hasNextPage: boolean;
+  };
 };
 
 type FetchPublicPostOptions = {

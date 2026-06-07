@@ -951,9 +951,19 @@ def test_list_public_posts_paginates_with_limit_and_cursor_without_auth(tmp_path
     assert first_page_response.status_code == 200
     assert [item["postId"] for item in first_page_response.json()["items"]] == created_posts[:2]
     assert first_page_response.json()["nextCursor"] == created_posts[1]
+    assert first_page_response.json()["page"] == {
+        "limit": 2,
+        "cursor": None,
+        "hasNextPage": True,
+    }
     assert second_page_response.status_code == 200
     assert [item["postId"] for item in second_page_response.json()["items"]] == [created_posts[2]]
     assert second_page_response.json()["nextCursor"] is None
+    assert second_page_response.json()["page"] == {
+        "limit": 2,
+        "cursor": created_posts[1],
+        "hasNextPage": False,
+    }
     for item in first_page_response.json()["items"]:
         assert "content" not in item
         assert "revisionId" not in item
@@ -1043,6 +1053,11 @@ def test_list_public_posts_returns_public_safe_published_summaries_without_auth(
             }
         ],
         "nextCursor": None,
+        "page": {
+            "limit": None,
+            "cursor": None,
+            "hasNextPage": False,
+        },
     }
     serialized_response = str(public_response.json())
     assert "revisionId" not in serialized_response

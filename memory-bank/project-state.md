@@ -63,7 +63,8 @@
 31. Article Public Canonical URL Boundary is complete: `/`, `/posts`, and `/posts/{slug}` define canonical metadata using the public site URL setting without management-route access.
 32. Article Public Pagination Boundary is complete: anonymous `GET /api/v1/public/posts` supports minimal `limit` and item-id `cursor` pagination while preserving public-safe fields.
 33. Article Public Frontend Pagination Boundary is complete: `/posts` requests a limited public list page, accepts `cursor` from query params, and renders a `Load more articles` link when `nextCursor` exists.
-34. The next product-development task is Article Public Pagination Metadata Boundary.
+34. Article Public Pagination Metadata Boundary is complete: anonymous `GET /api/v1/public/posts` now returns minimal `page` metadata (`limit`, `cursor`, `hasNextPage`) alongside `items` and `nextCursor`.
+35. The next product-development task is Article Public Pagination Metadata Frontend Boundary.
 17. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
 18. Preserve scope checks and standard error behavior.
 

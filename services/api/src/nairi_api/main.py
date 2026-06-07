@@ -114,9 +114,16 @@ class ListPostDraftsResponse(BaseModel):
     next_cursor: str | None = Field(default=None, alias="nextCursor")
 
 
+class PageMetadataResponse(BaseModel):
+    limit: int | None = None
+    cursor: str | None = None
+    has_next_page: bool = Field(alias="hasNextPage")
+
+
 class ListPublicPostsResponse(BaseModel):
     items: list[PublicPostSummaryResponse]
     next_cursor: str | None = Field(default=None, alias="nextCursor")
+    page: PageMetadataResponse
 
 
 class ReadPublicPostResponse(PublicPostSummaryResponse):
@@ -264,6 +271,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return ListPublicPostsResponse(
             items=[public_post_summary_response(post) for post in published_posts],
             nextCursor=next_cursor,
+            page=PageMetadataResponse(limit=limit, cursor=cursor, hasNextPage=next_cursor is not None),
         )
 
     @app.get("/api/v1/public/posts/{slug}")

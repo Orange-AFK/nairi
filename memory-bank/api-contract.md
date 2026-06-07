@@ -59,12 +59,13 @@
 2. Path: `/api/v1/public/posts`
 3. Scope: `public:read`
 4. Query parameters: `limit`, `cursor`
-5. Current scaffold boundary: anonymous published summary list with minimal item-id cursor pagination; no filters, Markdown/MDX rendering, or cache headers yet.
-6. Response fields: `items`, `nextCursor`
-7. Item fields: `postId`, `title`, `slug`, `status`, `contentFormat`, `summary`, `tags`, `categoryId`, `seriesId`, `publishedAt`.
-8. Public list items intentionally omit `content`, `revisionId`, `metadata`, `createdAt`, `updatedAt`, audit state, job state, and agent traces.
-9. Audit event: none for public list readback.
-10. Clients: public frontend, anonymous readers, and future CDN-cacheable public routes.
+5. Current scaffold boundary: anonymous published summary list with minimal item-id cursor pagination and page metadata; no filters, Markdown/MDX rendering, or cache headers yet.
+6. Response fields: `items`, `nextCursor`, `page`
+7. `page` fields: `limit`, `cursor`, `hasNextPage`.
+8. Item fields: `postId`, `title`, `slug`, `status`, `contentFormat`, `summary`, `tags`, `categoryId`, `seriesId`, `publishedAt`.
+9. Public list items intentionally omit `content`, `revisionId`, `metadata`, `createdAt`, `updatedAt`, audit state, job state, and agent traces.
+10. Audit event: none for public list readback.
+11. Clients: public frontend, anonymous readers, and future CDN-cacheable public routes.
 
 ### Read Public Post
 

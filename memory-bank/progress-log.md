@@ -410,6 +410,16 @@
 6. Risks or blockers: previous-page navigation, total counts, public filters, infinite scroll, displaying page metadata, sitemap/RSS pagination expansion, CDN headers, and publish-triggered invalidation remain deferred.
 7. Next recommended named task: Article Public RSS/Sitemap Pagination Policy Boundary.
 
+### Article Public RSS/Sitemap Pagination Policy Boundary
+
+1. Status: completed.
+2. Scope: fixed the RSS and sitemap pagination policy boundary without expanding functionality: `/rss.xml` and `/sitemap.xml` intentionally consume one single public list page only, do not request cursor follow-up pages, and do not perform implicit multi-page crawling.
+3. Changed files: `scripts/checks/frontend_public_rss_check.py`, `scripts/checks/frontend_public_sitemap_check.py`, `apps/public-site/app/rss.xml/route.ts`, `apps/public-site/app/sitemap.xml/route.ts`, `memory-bank/frontend-design.md`, `memory-bank/project-state.md`, and `memory-bank/progress-log.md`.
+4. Verification performed: extended RSS/sitemap structural checks first and observed RED on missing single-page policy markers; added minimal explicit route policy constants and docs while keeping the existing one-page fetch behavior unchanged.
+5. Result: passed for the RSS/sitemap pagination policy boundary.
+6. Risks or blockers: full-history RSS/sitemap pagination, Atom, richer SEO schema, CDN headers, and publish-triggered invalidation remain deferred.
+7. Next recommended named task: Article Public RSS/Sitemap Full-History Pagination Boundary or Article Public CDN/Invalidation Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

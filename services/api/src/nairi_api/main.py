@@ -64,10 +64,18 @@ class PublicInvalidationExecutionResponse(BaseModel):
     error_message: str | None = Field(alias="errorMessage")
 
 
+class PublicInvalidationDispatchResponse(BaseModel):
+    status: Literal["dispatch_skipped"]
+    reason: Literal["no_dispatcher_configured"]
+    attempted: bool
+    attempted_at: str | None = Field(alias="attemptedAt")
+
+
 class PublicInvalidationContractResponse(BaseModel):
     mode: Literal["recorded"]
     surfaces: list[str]
     execution: PublicInvalidationExecutionResponse
+    dispatch: PublicInvalidationDispatchResponse
 
 
 class PublishPostResponse(BaseModel):
@@ -449,6 +457,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     executedAt=published.public_invalidation_executed_at,
                     errorCode=published.public_invalidation_error_code,
                     errorMessage=published.public_invalidation_error_message,
+                ),
+                dispatch=PublicInvalidationDispatchResponse(
+                    status="dispatch_skipped",
+                    reason="no_dispatcher_configured",
+                    attempted=published.public_invalidation_dispatch_attempted,
+                    attemptedAt=published.public_invalidation_dispatch_attempted_at,
                 ),
             ),
         )

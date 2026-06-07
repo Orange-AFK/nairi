@@ -55,6 +55,10 @@ class PublishedPost:
     public_invalidation_executed_at: str | None
     public_invalidation_error_code: str | None
     public_invalidation_error_message: str | None
+    public_invalidation_dispatch_status: str
+    public_invalidation_dispatch_reason: str | None
+    public_invalidation_dispatch_attempted: bool
+    public_invalidation_dispatch_attempted_at: str | None
 
 
 @dataclass(frozen=True)
@@ -283,6 +287,10 @@ class PostStore:
             public_invalidation_status = "recorded"
             public_invalidation_executor = "none"
             public_invalidation_executed_at = published_at
+            public_invalidation_dispatch_status = "dispatch_skipped"
+            public_invalidation_dispatch_reason = "no_dispatcher_configured"
+            public_invalidation_dispatch_attempted = False
+            public_invalidation_dispatch_attempted_at = None
             connection.execute(
                 """
                 INSERT INTO publish_jobs (
@@ -300,9 +308,13 @@ class PostStore:
                     public_invalidation_executor,
                     public_invalidation_executed_at,
                     public_invalidation_error_code,
-                    public_invalidation_error_message
+                    public_invalidation_error_message,
+                    public_invalidation_dispatch_status,
+                    public_invalidation_dispatch_reason,
+                    public_invalidation_dispatch_attempted,
+                    public_invalidation_dispatch_attempted_at
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     job_id,
@@ -320,6 +332,10 @@ class PostStore:
                     public_invalidation_executed_at,
                     None,
                     None,
+                    public_invalidation_dispatch_status,
+                    public_invalidation_dispatch_reason,
+                    int(public_invalidation_dispatch_attempted),
+                    public_invalidation_dispatch_attempted_at,
                 ),
             )
             connection.execute(
@@ -357,6 +373,10 @@ class PostStore:
             public_invalidation_executed_at=public_invalidation_executed_at,
             public_invalidation_error_code=None,
             public_invalidation_error_message=None,
+            public_invalidation_dispatch_status=public_invalidation_dispatch_status,
+            public_invalidation_dispatch_reason=public_invalidation_dispatch_reason,
+            public_invalidation_dispatch_attempted=public_invalidation_dispatch_attempted,
+            public_invalidation_dispatch_attempted_at=public_invalidation_dispatch_attempted_at,
         )
 
     def list_drafts(self) -> list[StoredPostDraft]:
@@ -541,7 +561,11 @@ class PostStore:
                 public_invalidation_executor TEXT NOT NULL DEFAULT 'none',
                 public_invalidation_executed_at TEXT,
                 public_invalidation_error_code TEXT,
-                public_invalidation_error_message TEXT
+                public_invalidation_error_message TEXT,
+                public_invalidation_dispatch_status TEXT NOT NULL DEFAULT 'dispatch_skipped',
+                public_invalidation_dispatch_reason TEXT,
+                public_invalidation_dispatch_attempted INTEGER NOT NULL DEFAULT 0,
+                public_invalidation_dispatch_attempted_at TEXT
             )
             """
         )
@@ -558,3 +582,11 @@ class PostStore:
             connection.execute("ALTER TABLE publish_jobs ADD COLUMN public_invalidation_error_code TEXT")
         if "public_invalidation_error_message" not in publish_job_columns:
             connection.execute("ALTER TABLE publish_jobs ADD COLUMN public_invalidation_error_message TEXT")
+        if "public_invalidation_dispatch_status" not in publish_job_columns:
+            connection.execute("ALTER TABLE publish_jobs ADD COLUMN public_invalidation_dispatch_status TEXT NOT NULL DEFAULT 'dispatch_skipped'")
+        if "public_invalidation_dispatch_reason" not in publish_job_columns:
+            connection.execute("ALTER TABLE publish_jobs ADD COLUMN public_invalidation_dispatch_reason TEXT")
+        if "public_invalidation_dispatch_attempted" not in publish_job_columns:
+            connection.execute("ALTER TABLE publish_jobs ADD COLUMN public_invalidation_dispatch_attempted INTEGER NOT NULL DEFAULT 0")
+        if "public_invalidation_dispatch_attempted_at" not in publish_job_columns:
+            connection.execute("ALTER TABLE publish_jobs ADD COLUMN public_invalidation_dispatch_attempted_at TEXT")

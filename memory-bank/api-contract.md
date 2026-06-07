@@ -126,14 +126,15 @@
 3. Scope: `posts:publish`
 4. Request body fields: `revisionId`, `publishMode`, `scheduledAt`
 5. Response fields: `postId`, `status`, `publishedAt`, `jobId`, `publicInvalidation`
-6. Current job storage boundary: validates the authenticated publish request, creates a durable `publish_jobs` row, changes the post status from `draft` to `published`, stores request-time `publishedAt`/`updatedAt`, and returns a published job-shaped response with a recorded public invalidation execution record.
+6. Current job storage boundary: validates the authenticated publish request, creates a durable `publish_jobs` row, changes the post status from `draft` to `published`, stores request-time `publishedAt`/`updatedAt`, and returns a published job-shaped response with a recorded public invalidation execution record and dispatch bookkeeping.
 7. Errors: `404` with code `not_found` when `post_id` is unknown or does not identify a draft.
 8. Errors: `409` with code `conflict` when `revisionId` does not match the current draft revision. The conflict response must not create a revision or audit event, and must not mutate the post.
 9. Audit event: `post.published` with `revisionId` and `jobId` metadata.
-10. Publish job storage: immediate publish currently stores a `publish_jobs` row with deterministic `id`, `postId`, `revisionId`, `status=succeeded`, `scheduledAt=null`, `startedAt=publishedAt`, `completedAt=publishedAt`, `errorCode=null`, `errorMessage=null`, `publicInvalidationSurfaces` for `/posts`, `/posts/{slug}`, `/rss.xml`, and `/sitemap.xml`, plus public invalidation execution fields.
+10. Publish job storage: immediate publish currently stores a `publish_jobs` row with deterministic `id`, `postId`, `revisionId`, `status=succeeded`, `scheduledAt=null`, `startedAt=publishedAt`, `completedAt=publishedAt`, `errorCode=null`, `errorMessage=null`, `publicInvalidationSurfaces` for `/posts`, `/posts/{slug}`, `/rss.xml`, and `/sitemap.xml`, plus public invalidation execution and dispatch fields.
 11. Public invalidation mode: `recorded`; the API records and returns intended public surfaces plus `execution.status=recorded`, `execution.executor=none`, `execution.executedAt=publishedAt`, `execution.errorCode=null`, and `execution.errorMessage=null`.
-12. Public invalidation execution boundary: recorded execution is durable bookkeeping only; it does not trigger CDN purge, `revalidateTag`, `revalidatePath`, webhooks, cache headers, or any external invalidation side effect.
-13. Duplicate capability warning: admin, MCP, and agents must use this capability instead of creating parallel publish endpoints.
+12. Public invalidation dispatch boundary: the API records `dispatch.status=dispatch_skipped`, `dispatch.reason=no_dispatcher_configured`, `dispatch.attempted=false`, and `dispatch.attemptedAt=null` as future-safe dispatch semantics when no dispatcher is configured.
+13. Public invalidation execution boundary: recorded execution and dispatch bookkeeping are durable bookkeeping only; they do not trigger CDN purge, `revalidateTag`, `revalidatePath`, webhooks, cache headers, or any external invalidation side effect.
+14. Duplicate capability warning: admin, MCP, and agents must use this capability instead of creating parallel publish endpoints.
 
 ## MDX Component API
 

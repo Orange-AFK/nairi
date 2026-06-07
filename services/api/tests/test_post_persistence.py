@@ -597,6 +597,12 @@ def test_publish_post_draft_transitions_to_published_and_records_audit(tmp_path:
                 "errorCode": None,
                 "errorMessage": None,
             },
+            "dispatch": {
+                "status": "dispatch_skipped",
+                "reason": "no_dispatcher_configured",
+                "attempted": False,
+                "attemptedAt": None,
+            },
         },
     }
     read_response = client.get(
@@ -652,7 +658,11 @@ def test_publish_post_draft_transitions_to_published_and_records_audit(tmp_path:
                 public_invalidation_executor,
                 public_invalidation_executed_at,
                 public_invalidation_error_code,
-                public_invalidation_error_message
+                public_invalidation_error_message,
+                public_invalidation_dispatch_status,
+                public_invalidation_dispatch_reason,
+                public_invalidation_dispatch_attempted,
+                public_invalidation_dispatch_attempted_at
             FROM publish_jobs
             WHERE id = ?
             """,
@@ -676,6 +686,10 @@ def test_publish_post_draft_transitions_to_published_and_records_audit(tmp_path:
         "none",
         "2026-06-07T08:11:12Z",
         None,
+        None,
+        "dispatch_skipped",
+        "no_dispatcher_configured",
+        0,
         None,
     )
     assert audit_rows == [
@@ -1380,6 +1394,12 @@ def test_publish_post_draft_adds_published_at_column_for_existing_scaffold_datab
                 "errorCode": None,
                 "errorMessage": None,
             },
+            "dispatch": {
+                "status": "dispatch_skipped",
+                "reason": "no_dispatcher_configured",
+                "attempted": False,
+                "attemptedAt": None,
+            },
         },
     }
     with sqlite3.connect(database_path) as connection:
@@ -1395,7 +1415,11 @@ def test_publish_post_draft_adds_published_at_column_for_existing_scaffold_datab
                 public_invalidation_executor,
                 public_invalidation_executed_at,
                 public_invalidation_error_code,
-                public_invalidation_error_message
+                public_invalidation_error_message,
+                public_invalidation_dispatch_status,
+                public_invalidation_dispatch_reason,
+                public_invalidation_dispatch_attempted,
+                public_invalidation_dispatch_attempted_at
             FROM publish_jobs
             WHERE id = ?
             """,
@@ -1409,6 +1433,10 @@ def test_publish_post_draft_adds_published_at_column_for_existing_scaffold_datab
         "none",
         "2026-06-07T08:11:12Z",
         None,
+        None,
+        "dispatch_skipped",
+        "no_dispatcher_configured",
+        0,
         None,
     )
 

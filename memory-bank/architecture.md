@@ -107,8 +107,8 @@ FastAPI is the single authority for product capabilities. Other modules are clie
 11. Publish request goes through `/api/v1/posts/{post_id}/publish` with `posts:publish` scope and the current draft `revisionId`.
 12. `PostStore` creates a durable `publish_jobs` row for the immediate publish attempt.
 13. `PostStore` changes the post status to `published`, writes request-time `published_at` and `updated_at`, preserves the current revision, and records `post.published` audit metadata.
-14. `PostStore` stores a recorded public invalidation execution row on the publish job, including surfaces `/posts`, `/posts/{slug}`, `/rss.xml`, and `/sitemap.xml`, `status=recorded`, `executor=none`, `executed_at=published_at`, and no error fields.
-15. The publish API returns that invalidation record with `mode=recorded`; it does not trigger CDN purge, Next.js tag/path revalidation, webhooks, cache headers, or any external invalidation side effect.
+14. `PostStore` stores a recorded public invalidation execution and dispatch row on the publish job, including surfaces `/posts`, `/posts/{slug}`, `/rss.xml`, and `/sitemap.xml`, `status=recorded`, `executor=none`, `executed_at=published_at`, no error fields, `dispatch_status=dispatch_skipped`, `dispatch_reason=no_dispatcher_configured`, `dispatch_attempted=false`, and `dispatch_attempted_at=null`.
+15. The publish API returns that invalidation record with `mode=recorded` plus dispatch bookkeeping; it does not trigger CDN purge, Next.js tag/path revalidation, webhooks, cache headers, or any external invalidation side effect.
 16. Admin, MCP, and authorized clients can read published summaries through `GET /api/v1/posts?status=published` and published detail through `GET /api/v1/posts/{post_id}` with `posts:read` scope in the current scaffold.
 17. Public clients read published summaries through `GET /api/v1/public/posts`, which is anonymous and returns only public-safe fields.
 18. Public clients read published detail through `GET /api/v1/public/posts/{slug}`, which is anonymous, slug-based, published-only, and returns a public-safe detail response.

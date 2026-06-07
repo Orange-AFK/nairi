@@ -260,6 +260,16 @@
 6. Risks or blockers: public list navigation, frontend API base deployment configuration hardening, cache/CDN policy, styling system integration, full MDX/component rendering, and admin console remain deferred.
 7. Next recommended named task: Article Frontend Public List Integration Boundary or Article Public Site Styling Boundary.
 
+### Article Frontend Public List Integration Boundary
+
+1. Status: completed.
+2. Scope: added `/posts` to the Next.js public site, reading `GET /api/v1/public/posts`, rendering title/summary/publishedAt/tags, and linking each item to `/posts/{slug}`.
+3. Changed files: `.github/workflows/guards.yml`, `apps/public-site/app/globals.css`, `apps/public-site/app/page.tsx`, `apps/public-site/app/posts/page.tsx`, `apps/public-site/lib/public-posts.ts`, `scripts/checks/frontend_public_list_check.py`, `memory-bank/frontend-design.md`, `memory-bank/integration-map.md`, `memory-bank/guard-ci.md`, `memory-bank/project-state.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: wrote `frontend_public_list_check.py` first and observed RED because `apps/public-site/app/posts/page.tsx` did not exist; implemented the list client/page/root link; verified detail/list checks, public-site typecheck, and public-site build.
+5. Result: passed for the frontend public list integration boundary.
+6. Risks or blockers: pagination, filter UI, list error-state design, cache/CDN policy, RSS, sitemap, full styling system, and deployment configuration remain deferred.
+7. Next recommended named task: Article Public Site Styling Boundary or Article Frontend Public List Empty/Error State Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

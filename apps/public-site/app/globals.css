@@ -67,3 +67,59 @@ main {
 .article-body p:last-child {
   margin-bottom: 0;
 }
+
+.primary-link {
+  border-bottom: 1px solid currentColor;
+  color: #0f172a;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.post-list {
+  display: grid;
+  gap: 20px;
+}
+
+.post-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 24px;
+}
+
+.post-title {
+  font-size: 1.5rem;
+  letter-spacing: -0.025em;
+  margin: 0 0 12px;
+}
+
+.post-title a {
+  text-decoration: none;
+}
+
+.post-summary {
+  color: #475569;
+  line-height: 1.7;
+  margin: 0 0 16px;
+}
+
+.post-empty {
+  color: #64748b;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tag-list li {
+  background: #f1f5f9;
+  border-radius: 999px;
+  color: #475569;
+  font-size: 0.875rem;
+  padding: 4px 10px;
+}

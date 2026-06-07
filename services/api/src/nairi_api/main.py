@@ -255,11 +255,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return {"items": []}
 
     @app.get("/api/v1/public/posts")
-    def list_public_posts() -> ListPublicPostsResponse:
+    def list_public_posts(
+        limit: int | None = None,
+        cursor: str | None = None,
+    ) -> ListPublicPostsResponse:
         published_posts: list[StoredPostDraft] = app.state.post_store.list_published()
+        published_posts, next_cursor = paginate_posts(published_posts, limit, cursor)
         return ListPublicPostsResponse(
             items=[public_post_summary_response(post) for post in published_posts],
-            nextCursor=None,
+            nextCursor=next_cursor,
         )
 
     @app.get("/api/v1/public/posts/{slug}")

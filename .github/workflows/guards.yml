@@ -55,6 +55,9 @@ jobs:
       - name: Run frontend public metadata check
         run: python3 scripts/checks/frontend_public_metadata_check.py
 
+      - name: Run frontend public canonical check
+        run: python3 scripts/checks/frontend_public_canonical_check.py
+
       - name: Run frontend public render check
         run: python3 scripts/checks/frontend_public_render_check.py
 

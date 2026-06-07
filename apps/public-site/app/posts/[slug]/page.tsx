@@ -3,6 +3,12 @@ import { notFound } from "next/navigation";
 
 import { fetchPublicPostBySlug } from "@/lib/public-posts";
 
+const DEFAULT_PUBLIC_SITE_URL = "http://localhost:3000";
+
+function PUBLIC_SITE_URL(): string {
+  return (process.env.NEXT_PUBLIC_NAIRI_PUBLIC_SITE_URL ?? DEFAULT_PUBLIC_SITE_URL).replace(/\/$/, "");
+}
+
 type PublicPostDetailPageProps = {
   params: Promise<{
     slug: string;
@@ -21,8 +27,12 @@ export async function generateMetadata({ params }: PublicPostDetailPageProps): P
   }
 
   return {
+    metadataBase: new URL(PUBLIC_SITE_URL()),
     title: `${post.title} | Nairi`,
     description: post.summary ?? undefined,
+    alternates: {
+      canonical: `/posts/${encodeURIComponent(post.slug)}`,
+    },
   };
 }
 

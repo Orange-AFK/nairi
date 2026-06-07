@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 from nairi_api.auth import ApiError, AuthenticatedActor, api_error_response, require_scope
 from nairi_api.config import Settings, get_settings
+from nairi_api.invalidation_dispatch import build_public_invalidation_dispatcher
 from nairi_api.posts import (
     CreatedPostDraft,
     DuplicatePostSlugError,
@@ -270,6 +271,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app = FastAPI(title="Nairi API", version=settings.version)
     app.state.settings = settings
     app.state.post_store = PostStore(settings.database_path)
+    app.state.public_invalidation_dispatcher = build_public_invalidation_dispatcher(settings)
     app.add_exception_handler(ApiError, api_error_response)
 
     @app.get("/api/v1/health")

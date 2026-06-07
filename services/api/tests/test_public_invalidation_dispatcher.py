@@ -35,8 +35,40 @@ def test_contract_dispatcher_records_contract_only_attempt_without_external_inva
     )
 
 
-def test_cloudflare_dispatcher_records_configured_but_disabled_without_external_invalidation() -> None:
+def test_cloudflare_dispatcher_records_missing_settings_without_external_invalidation() -> None:
     dispatcher = CloudflarePublicInvalidationDispatcher()
+
+    result = dispatcher.dispatch(surfaces=["/posts", "/rss.xml"], published_at="2026-06-07T08:11:12Z")
+
+    assert result == PublicInvalidationDispatchResult(
+        status="dispatch_skipped",
+        reason="cloudflare_adapter_missing_settings",
+        attempted=False,
+        attempted_at=None,
+    )
+
+
+def test_cloudflare_factory_records_missing_settings_without_external_invalidation() -> None:
+    settings = Settings(public_invalidation_dispatcher="cloudflare")
+    dispatcher = build_public_invalidation_dispatcher(settings)
+
+    result = dispatcher.dispatch(surfaces=["/posts", "/rss.xml"], published_at="2026-06-07T08:11:12Z")
+
+    assert result == PublicInvalidationDispatchResult(
+        status="dispatch_skipped",
+        reason="cloudflare_adapter_missing_settings",
+        attempted=False,
+        attempted_at=None,
+    )
+
+
+def test_cloudflare_factory_keeps_configured_settings_disabled_without_external_invalidation() -> None:
+    settings = Settings(
+        public_invalidation_dispatcher="cloudflare",
+        public_invalidation_cloudflare_zone_id="zone-test",
+        public_invalidation_cloudflare_api_token="stub",
+    )
+    dispatcher = build_public_invalidation_dispatcher(settings)
 
     result = dispatcher.dispatch(surfaces=["/posts", "/rss.xml"], published_at="2026-06-07T08:11:12Z")
 
@@ -46,6 +78,35 @@ def test_cloudflare_dispatcher_records_configured_but_disabled_without_external_
         attempted=False,
         attempted_at=None,
     )
+
+
+def test_cloudflare_factory_records_missing_settings_for_partial_cloudflare_configuration() -> None:
+    partial_settings = [
+        Settings(
+            public_invalidation_dispatcher="cloudflare",
+            public_invalidation_cloudflare_zone_id="zone-test",
+        ),
+        Settings(
+            public_invalidation_dispatcher="cloudflare",
+            public_invalidation_cloudflare_api_token="stub",
+        ),
+        Settings(
+            public_invalidation_dispatcher="cloudflare",
+            public_invalidation_cloudflare_zone_id="zone-test",
+            public_invalidation_cloudflare_api_token="",
+        ),
+    ]
+
+    for settings in partial_settings:
+        dispatcher = build_public_invalidation_dispatcher(settings)
+        result = dispatcher.dispatch(surfaces=["/posts"], published_at="2026-06-07T08:11:12Z")
+
+        assert result == PublicInvalidationDispatchResult(
+            status="dispatch_skipped",
+            reason="cloudflare_adapter_missing_settings",
+            attempted=False,
+            attempted_at=None,
+        )
 
 
 def test_dispatcher_factory_builds_noop_dispatcher_for_none_configuration() -> None:

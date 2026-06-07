@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     api_tokens: dict[str, list[str]] = Field(default_factory=dict)
     database_path: str = ":memory:"
     public_invalidation_dispatcher: Literal["none", "contract", "cloudflare"] = "none"
+    public_invalidation_cloudflare_zone_id: str | None = None
+    public_invalidation_cloudflare_api_token: SecretStr | None = None
 
     model_config = SettingsConfigDict(env_prefix="NAIRI_")
 

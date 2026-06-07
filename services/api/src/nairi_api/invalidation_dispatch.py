@@ -13,6 +13,7 @@ class PublicInvalidationDispatchResult:
         "dispatcher_exception",
         "contract_only_adapter",
         "cloudflare_adapter_disabled",
+        "cloudflare_adapter_missing_settings",
     ]
     attempted: bool
     attempted_at: str | None
@@ -44,10 +45,19 @@ class ContractPublicInvalidationDispatcher:
 
 
 class CloudflarePublicInvalidationDispatcher:
+    def __init__(self, *, zone_id: str | None = None, api_token_configured: bool = False) -> None:
+        self._zone_id = zone_id
+        self._api_token_configured = api_token_configured
+
     def dispatch(self, *, surfaces: Sequence[str], published_at: str | None) -> PublicInvalidationDispatchResult:
+        reason: Literal["cloudflare_adapter_disabled", "cloudflare_adapter_missing_settings"] = (
+            "cloudflare_adapter_disabled"
+            if self._zone_id and self._api_token_configured
+            else "cloudflare_adapter_missing_settings"
+        )
         return PublicInvalidationDispatchResult(
             status="dispatch_skipped",
-            reason="cloudflare_adapter_disabled",
+            reason=reason,
             attempted=False,
             attempted_at=None,
         )
@@ -59,5 +69,11 @@ def build_public_invalidation_dispatcher(settings: Settings) -> PublicInvalidati
     if settings.public_invalidation_dispatcher == "contract":
         return ContractPublicInvalidationDispatcher()
     if settings.public_invalidation_dispatcher == "cloudflare":
-        return CloudflarePublicInvalidationDispatcher()
+        return CloudflarePublicInvalidationDispatcher(
+            zone_id=settings.public_invalidation_cloudflare_zone_id,
+            api_token_configured=bool(
+                settings.public_invalidation_cloudflare_api_token
+                and settings.public_invalidation_cloudflare_api_token.get_secret_value()
+            ),
+        )
     raise ValueError(f"Unsupported public invalidation dispatcher: {settings.public_invalidation_dispatcher}")

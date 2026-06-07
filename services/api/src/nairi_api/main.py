@@ -72,6 +72,7 @@ class PublicInvalidationDispatchResponse(BaseModel):
         "dispatcher_exception",
         "contract_only_adapter",
         "cloudflare_adapter_disabled",
+        "cloudflare_adapter_missing_settings",
     ]
     attempted: bool
     attempted_at: str | None = Field(alias="attemptedAt")

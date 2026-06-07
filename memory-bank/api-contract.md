@@ -85,10 +85,10 @@
 3. Scope: `posts:publish`
 4. Request body fields: `revisionId`, `publishMode`, `scheduledAt`
 5. Response fields: `postId`, `status`, `publishedAt`, `jobId`
-6. Current contract boundary: validates the authenticated publish request and returns a queued publish job response without changing post status.
+6. Current state transition boundary: validates the authenticated publish request, changes the post status from `draft` to `published`, stores request-time `publishedAt`/`updatedAt`, and returns a published job-shaped response.
 7. Errors: `404` with code `not_found` when `post_id` is unknown or does not identify a draft.
 8. Errors: `409` with code `conflict` when `revisionId` does not match the current draft revision. The conflict response must not create a revision or audit event, and must not mutate the post.
-9. Audit event: future publication execution records `post.published`; the current queued contract boundary does not yet create this event.
+9. Audit event: `post.published` with `revisionId` and `jobId` metadata.
 10. Duplicate capability warning: admin, MCP, and agents must use this capability instead of creating parallel publish endpoints.
 
 ## MDX Component API

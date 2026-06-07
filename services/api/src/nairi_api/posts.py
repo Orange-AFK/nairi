@@ -7,6 +7,7 @@ from typing import Callable, Literal, cast
 
 
 DRAFT_STATUS = "draft"
+PUBLISHED_STATUS = "published"
 
 
 def utc_timestamp(value: datetime) -> str:
@@ -43,7 +44,7 @@ class UpdatedPostDraft:
 
 
 @dataclass(frozen=True)
-class QueuedPostPublish:
+class PublishedPost:
     post_id: str
     status: str
     published_at: str | None
@@ -248,7 +249,9 @@ class PostStore:
             updated_at=updated_at,
         )
 
-    def queue_publish(self, post_id: str, revision_id: str) -> QueuedPostPublish:
+    def publish_draft(self, post_id: str, revision_id: str, actor_token: str) -> PublishedPost:
+        published_at = utc_timestamp(self.clock())
+        job_id = f"publish-{post_id}-{revision_id}"
         with self._connect() as connection:
             self._init_schema(connection)
             row = connection.execute(
@@ -264,12 +267,35 @@ class PostStore:
             current_revision_id = cast(str, row[0])
             if current_revision_id != revision_id:
                 raise PostRevisionConflictError(current_revision_id)
+            connection.execute(
+                """
+                UPDATE posts
+                SET status = ?, published_at = ?, updated_at = ?
+                WHERE id = ?
+                """,
+                (PUBLISHED_STATUS, published_at, published_at, post_id),
+            )
+            connection.execute(
+                """
+                INSERT INTO audit_events (event_type, actor_type, actor_id, target_type, target_id, metadata, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    "post.published",
+                    "api_token",
+                    f"token:{actor_token}",
+                    "post",
+                    post_id,
+                    json.dumps({"revisionId": revision_id, "jobId": job_id}, separators=(",", ":")),
+                    published_at,
+                ),
+            )
 
-        return QueuedPostPublish(
+        return PublishedPost(
             post_id=post_id,
-            status="queued",
-            published_at=None,
-            job_id=f"publish-{post_id}-{revision_id}",
+            status=PUBLISHED_STATUS,
+            published_at=published_at,
+            job_id=job_id,
         )
 
     def list_drafts(self) -> list[StoredPostDraft]:
@@ -366,11 +392,15 @@ class PostStore:
                 status TEXT NOT NULL,
                 content_format TEXT NOT NULL,
                 current_revision_id TEXT NOT NULL,
+                published_at TEXT,
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             )
             """
         )
+        post_columns = {cast(str, row[1]) for row in connection.execute("PRAGMA table_info(posts)").fetchall()}
+        if "published_at" not in post_columns:
+            connection.execute("ALTER TABLE posts ADD COLUMN published_at TEXT")
         connection.execute(
             """
             CREATE TABLE IF NOT EXISTS post_revisions (

@@ -13,7 +13,7 @@ from nairi_api.posts import (
     PostDraftNotFoundError,
     PostRevisionConflictError,
     PostStore,
-    QueuedPostPublish,
+    PublishedPost,
     StoredPostDraft,
     UpdatedPostDraft,
 )
@@ -57,7 +57,7 @@ class PublishPostRequest(BaseModel):
 
 class PublishPostResponse(BaseModel):
     post_id: str = Field(alias="postId")
-    status: Literal["queued"]
+    status: Literal["published"]
     published_at: str | None = Field(alias="publishedAt")
     job_id: str = Field(alias="jobId")
 
@@ -236,14 +236,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             content=draft.content,
         )
 
-    @app.post("/api/v1/posts/{post_id}/publish", status_code=202)
+    @app.post("/api/v1/posts/{post_id}/publish")
     def publish_post(
         post_id: str,
         request: PublishPostRequest,
-        _actor: AuthenticatedActor = Depends(require_scope("posts:publish")),
+        actor: AuthenticatedActor = Depends(require_scope("posts:publish")),
     ) -> PublishPostResponse:
         try:
-            queued: QueuedPostPublish = app.state.post_store.queue_publish(post_id, request.revision_id)
+            published: PublishedPost = app.state.post_store.publish_draft(post_id, request.revision_id, actor.token)
         except PostDraftNotFoundError as error:
             raise ApiError(404, "not_found", "Post not found", {"postId": error.post_id}) from error
         except PostRevisionConflictError as error:
@@ -254,10 +254,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 {"currentRevisionId": error.current_revision_id},
             ) from error
         return PublishPostResponse(
-            postId=queued.post_id,
-            status="queued",
-            publishedAt=queued.published_at,
-            jobId=queued.job_id,
+            postId=published.post_id,
+            status="published",
+            publishedAt=published.published_at,
+            jobId=published.job_id,
         )
 
     return app

@@ -440,6 +440,16 @@
 6. Risks or blockers: real CDN purge, Next.js `revalidateTag`/`revalidatePath`, webhooks, cache headers, scheduling semantics, and a real job runner remain deferred.
 7. Next recommended named task: Article Public RSS/Sitemap Full-History Pagination Boundary or Article Public Publish Invalidation Execution Boundary.
 
+### Article Public RSS/Sitemap Full-History Pagination Boundary
+
+1. Status: completed.
+2. Scope: changed `/rss.xml` and `/sitemap.xml` from a single public list page to bounded full-history traversal over anonymous public list pages, using explicit page-size and max-page limits.
+3. Changed files: `apps/public-site/app/rss.xml/route.ts`, `apps/public-site/app/sitemap.xml/route.ts`, `scripts/checks/frontend_public_rss_check.py`, `scripts/checks/frontend_public_sitemap_check.py`, `memory-bank/frontend-design.md`, `memory-bank/project-state.md`, and `memory-bank/progress-log.md`.
+4. Verification performed: extended RSS/sitemap structural checks first and observed RED on missing `fetchAllPublicPosts`, pagination policy constants, cursor/nextCursor use, and bounded loop markers; implemented the minimal bounded traversal and verified RSS/sitemap checks plus public-site typecheck.
+5. Result: passed for the RSS/sitemap full-history pagination boundary.
+6. Risks or blockers: RSS/sitemap cache policy, CDN headers, publish-triggered invalidation execution, Atom, richer feed contents, and search-engine sitemap splitting remain deferred.
+7. Next recommended named task: Article Public Publish Invalidation Execution Boundary or Article Public RSS/Sitemap Cache Policy Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

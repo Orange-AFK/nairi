@@ -270,6 +270,16 @@
 6. Risks or blockers: pagination, filter UI, list error-state design, cache/CDN policy, RSS, sitemap, full styling system, and deployment configuration remain deferred.
 7. Next recommended named task: Article Public Site Styling Boundary or Article Frontend Public List Empty/Error State Boundary.
 
+### PostCSS Dependabot Advisory Maintenance
+
+1. Status: completed.
+2. Scope: resolved the `GHSA-qx2v-qp2m-jg93` PostCSS advisory for `apps/public-site/package-lock.json` by adding an npm override so the public site resolves `postcss` to patched version `8.5.10`.
+3. Changed files: `apps/public-site/package.json`, `apps/public-site/package-lock.json`, `memory-bank/deployment.md`, `memory-bank/guard-ci.md`, `memory-bank/project-state.md`, `memory-bank/tech-stack.md`, and local Chinese pairs.
+4. Verification performed: confirmed `npm update postcss` could not move the transitive dependency because `next@15.5.19` depended on `postcss@8.4.31`; added the override; verified `npm ls postcss --prefix apps/public-site` showed `postcss@8.5.10 overridden`; verified `npm audit --prefix apps/public-site --audit-level=moderate` reported no vulnerabilities; verified frontend checks, public-site typecheck/build, API tests, guards, runtime artifact scan, secret-shaped scan, PR CI, main CI, and Dependabot alert readback.
+5. Result: passed; Dependabot alert #1 became fixed after the default branch was rescanned.
+6. Risks or blockers: the override should be revisited when Next.js directly depends on a patched PostCSS version; current CI still has a Node.js 20 actions deprecation annotation until CI hygiene is completed.
+7. Next recommended named task: CI Hygiene / Node 24 Actions Boundary, then Article Frontend Public List Empty/Error State Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

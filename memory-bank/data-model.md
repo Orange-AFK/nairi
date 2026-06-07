@@ -68,8 +68,9 @@
 6. Draft list readback returns summary-shaped items and intentionally omits revision `content` from each item.
 7. Draft update creates a new immutable `post_revisions` row, updates `posts.current_revision_id`, changes draft fields on `posts`, stores one request-time UTC `updated_at`, and records a `post.updated` audit event.
 8. Draft update rejects stale `expectedRevisionId` values before creating a revision or audit event.
-9. This boundary is intentionally smaller than the final SQLAlchemy/Alembic model layer.
-10. Future migration work must preserve these logical entities while replacing scaffold schema initialization with managed migrations.
+9. The current publish contract boundary verifies a draft and current `revisionId`, then returns a deterministic queued job-shaped response without changing post status, creating revisions, or writing audit events.
+10. This boundary is intentionally smaller than the final SQLAlchemy/Alembic model layer.
+11. Future migration work must preserve these logical entities while replacing scaffold schema initialization with managed migrations.
 
 ## Database Support
 

@@ -150,6 +150,16 @@
 6. Risks or blockers: publication state changes, filtering/pagination, and SQLAlchemy/Alembic migrations remain deferred.
 7. Next recommended named task: Article Draft Publish Contract Boundary.
 
+### Article Draft Publish Contract Boundary
+
+1. Status: completed.
+2. Scope: added the first authenticated `POST /api/v1/posts/{post_id}/publish` route contract with `posts:publish` scope, queued job-shaped `202` response, standard `404 not_found`, and stale `revisionId` `409 conflict` without post, revision, or audit mutation.
+3. Changed files: `services/api/src/nairi_api/main.py`, `services/api/src/nairi_api/posts.py`, `services/api/tests/test_post_persistence.py`, `memory-bank/api-contract.md`, `memory-bank/project-state.md`, `memory-bank/data-model.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: wrote publish route tests first and observed RED on the unwired route returning FastAPI `404`; implemented the smallest request/response models, route mapping, and `PostStore.queue_publish` contract; then verified focused GREEN, persistence tests, full API suite, docs guards, schema guards, and secret guards.
+5. Result: passed for the publish contract boundary.
+6. Risks or blockers: actual publication state transition, `post.published` audit persistence, publish job storage, filtering/pagination, and SQLAlchemy/Alembic migrations remain deferred.
+7. Next recommended named task: Article Draft Publish State Transition Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

@@ -541,6 +541,151 @@ def test_update_post_draft_rejects_invalid_content_fields_without_side_effects(t
     assert post_row == ("Persistent draft", "persistent-draft", revision_id)
 
 
+def test_publish_post_draft_enqueues_publish_job_for_publish_scope(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    settings = Settings(
+        api_tokens={
+            "post-writer-token": ["posts:write"],
+            "post-publisher-token": ["posts:publish"],
+        },
+        database_path=str(database_path),
+    )
+    client = TestClient(create_app(settings=settings))
+
+    create_response = client.post(
+        "/api/v1/posts",
+        json=draft_payload(),
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+    post_id = create_response.json()["postId"]
+    revision_id = create_response.json()["revisionId"]
+
+    response = client.post(
+        f"/api/v1/posts/{post_id}/publish",
+        json={"revisionId": revision_id, "publishMode": "immediate", "scheduledAt": None},
+        headers={"Authorization": "Bearer post-publisher-token"},
+    )
+
+    assert create_response.status_code == 201
+    assert response.status_code == 202
+    assert response.json() == {
+        "postId": post_id,
+        "status": "queued",
+        "publishedAt": None,
+        "jobId": f"publish-{post_id}-{revision_id}",
+    }
+    with sqlite3.connect(database_path) as connection:
+        counts = connection.execute(
+            """
+            SELECT
+                (SELECT COUNT(*) FROM posts WHERE status = 'draft'),
+                (SELECT COUNT(*) FROM post_revisions),
+                (SELECT COUNT(*) FROM audit_events)
+            """
+        ).fetchone()
+        post_row = connection.execute(
+            "SELECT current_revision_id FROM posts WHERE id = ?",
+            (post_id,),
+        ).fetchone()
+
+    assert counts == (1, 1, 1)
+    assert post_row == (revision_id,)
+
+
+def test_publish_post_draft_requires_posts_publish_scope(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    client = build_client(database_path)
+
+    response = client.post(
+        "/api/v1/posts/draft-persistent-draft/publish",
+        json={"revisionId": "revision-persistent-draft-1", "publishMode": "immediate", "scheduledAt": None},
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {
+        "code": "forbidden",
+        "message": "Missing required scope",
+        "details": {"requiredScope": "posts:publish"},
+        "requestId": "unavailable",
+    }
+
+
+def test_publish_post_draft_returns_not_found_for_unknown_post(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    settings = Settings(
+        api_tokens={"post-publisher-token": ["posts:publish"]},
+        database_path=str(database_path),
+    )
+    client = TestClient(create_app(settings=settings))
+
+    response = client.post(
+        "/api/v1/posts/missing-post/publish",
+        json={"revisionId": "missing-revision", "publishMode": "immediate", "scheduledAt": None},
+        headers={"Authorization": "Bearer post-publisher-token"},
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "code": "not_found",
+        "message": "Post not found",
+        "details": {"postId": "missing-post"},
+        "requestId": "unavailable",
+    }
+    assert persistence_counts(database_path) == (0, 0, 0)
+
+
+def test_publish_post_draft_rejects_revision_conflict_without_side_effects(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    settings = Settings(
+        api_tokens={
+            "post-writer-token": ["posts:write"],
+            "post-publisher-token": ["posts:publish"],
+        },
+        database_path=str(database_path),
+    )
+    client = TestClient(create_app(settings=settings))
+
+    create_response = client.post(
+        "/api/v1/posts",
+        json=draft_payload(),
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+    post_id = create_response.json()["postId"]
+    current_revision_id = create_response.json()["revisionId"]
+
+    response = client.post(
+        f"/api/v1/posts/{post_id}/publish",
+        json={"revisionId": "stale-revision", "publishMode": "immediate", "scheduledAt": None},
+        headers={"Authorization": "Bearer post-publisher-token"},
+    )
+
+    assert create_response.status_code == 201
+    assert response.status_code == 409
+    assert response.json() == {
+        "code": "conflict",
+        "message": "Post revision conflict",
+        "details": {"currentRevisionId": current_revision_id},
+        "requestId": "unavailable",
+    }
+    with sqlite3.connect(database_path) as connection:
+        counts = connection.execute(
+            """
+            SELECT
+                (SELECT COUNT(*) FROM posts WHERE status = 'draft'),
+                (SELECT COUNT(*) FROM post_revisions),
+                (SELECT COUNT(*) FROM audit_events)
+            """
+        ).fetchone()
+        post_row = connection.execute(
+            "SELECT current_revision_id FROM posts WHERE id = ?",
+            (post_id,),
+        ).fetchone()
+
+    assert counts == (1, 1, 1)
+    assert post_row == (current_revision_id,)
+
+
 def test_get_post_draft_returns_created_draft_for_reader_scope(tmp_path: Path) -> None:
     database_path = tmp_path / "nairi.db"
     client = build_client(database_path)

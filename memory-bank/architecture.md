@@ -107,10 +107,11 @@ FastAPI is the single authority for product capabilities. Other modules are clie
 11. Publish request goes through `/api/v1/posts/{post_id}/publish` with `posts:publish` scope and the current draft `revisionId`.
 12. `PostStore` creates a durable `publish_jobs` row for the immediate publish attempt.
 13. `PostStore` changes the post status to `published`, writes request-time `published_at` and `updated_at`, preserves the current revision, and records `post.published` audit metadata.
-14. Admin, MCP, authorized clients, and later public clients can read published summaries through `GET /api/v1/posts?status=published` and published detail through `GET /api/v1/posts/{post_id}` with `posts:read` scope in the current scaffold.
-15. Published summary lists can currently be filtered by tag membership, category id, or series id.
-16. Published summary lists can currently be paginated with `limit` and an item-id `cursor`.
-17. Scheduling semantics, public rendering, public-read policy, and the job runner remain future work under documented state rules.
+14. Admin, MCP, and authorized clients can read published summaries through `GET /api/v1/posts?status=published` and published detail through `GET /api/v1/posts/{post_id}` with `posts:read` scope in the current scaffold.
+15. Public clients must not reuse authenticated content-management routes; future public read must use a dedicated public endpoint with public-safe response fields.
+16. Published summary lists can currently be filtered by tag membership, category id, or series id.
+17. Published summary lists can currently be paginated with `limit` and an item-id `cursor`.
+18. Scheduling semantics, public rendering, public-read endpoint implementation, and the job runner remain future work under documented state rules.
 
 ## Security Boundary
 

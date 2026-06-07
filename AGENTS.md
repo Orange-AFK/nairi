@@ -123,6 +123,8 @@ FastAPI API contracts are the source of truth for product capabilities.
 
 No client may bypass documented API authentication, permission scopes, status transitions, or audit logging.
 
+Public frontend and anonymous-reader APIs must use dedicated public route contracts. Do not make authenticated management routes such as `/api/v1/posts...` conditionally public based on `status=published`, bearer-token absence, or caller type.
+
 This applies to:
 
 1. Public frontend

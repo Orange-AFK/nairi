@@ -40,6 +40,14 @@
 
 任何客户端都不能绕过 API 鉴权、scope 检查、状态机和审计日志。
 
+## Public API 边界
+
+1. Public read endpoints 是 anonymous-read contracts，必须与 authenticated management endpoints 分开文档化。
+2. Public content endpoints 必须使用专用 public paths，例如 `/api/v1/public/posts`。
+3. `/api/v1/posts` 和 `/api/v1/posts/{post_id}` 这类 authenticated management endpoints 必须继续要求 content scopes，即使查询 `status=published`。
+4. Public responses 必须省略 revision identifiers、internal metadata、audit/job state、agent traces、draft content 和其他 management-only fields。
+5. CDN-cacheable public responses 不得复用授权行为依赖 bearer-token presence 或 `status` query parameters 的 route handlers。
+
 ## 当前骨架行为
 
 ### 受保护 Route 契约

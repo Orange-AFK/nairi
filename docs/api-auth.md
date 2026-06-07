@@ -40,6 +40,14 @@ This guide explains the planned API authentication and authorization model.
 
 No client may bypass API auth, scope checks, status transitions, or audit logging.
 
+## Public API Boundary
+
+1. Public read endpoints are anonymous-read contracts and must be documented separately from authenticated management endpoints.
+2. Public content endpoints must use dedicated public paths such as `/api/v1/public/posts`.
+3. Authenticated management endpoints such as `/api/v1/posts` and `/api/v1/posts/{post_id}` must continue to require content scopes, including for `status=published`.
+4. Public responses must omit revision identifiers, internal metadata, audit/job state, agent traces, draft content, and other management-only fields.
+5. CDN-cacheable public responses must not share route handlers whose authorization behavior depends on bearer-token presence or `status` query parameters.
+
 ## Current Scaffold Behavior
 
 ### Protected Route Contract

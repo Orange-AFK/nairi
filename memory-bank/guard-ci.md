@@ -116,11 +116,12 @@ Nairi uses automated guards to enforce documentation boundaries, bilingual synch
 14. Runs `scripts/checks/frontend_public_render_check.py`.
 15. Runs `scripts/checks/frontend_public_cache_check.py`.
 16. Runs `scripts/checks/frontend_public_sitemap_check.py`.
-17. Runs `npm ci`, `npm run typecheck`, and `npm run build` under `apps/public-site`.
-18. Does not publish Docker or GHCR images; image publishing remains a separate future deployment workflow.
-19. Uses `permissions: contents: read` so the workflow has read-only repository permissions.
-20. Uses concurrency cancellation so superseded Guards runs on the same ref are cancelled.
-21. Sets `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'` to opt JavaScript actions into Node.js 24 before GitHub's Node 20 removal.
+17. Runs `scripts/checks/frontend_public_rss_check.py`.
+18. Runs `npm ci`, `npm run typecheck`, and `npm run build` under `apps/public-site`.
+19. Does not publish Docker or GHCR images; image publishing remains a separate future deployment workflow.
+20. Uses `permissions: contents: read` so the workflow has read-only repository permissions.
+21. Uses concurrency cancellation so superseded Guards runs on the same ref are cancelled.
+22. Sets `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'` to opt JavaScript actions into Node.js 24 before GitHub's Node 20 removal.
 
 ## Completion Rule
 

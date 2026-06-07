@@ -96,4 +96,5 @@ The public frontend presents articles, pages, project retrospectives, tags, cate
 3. `/posts/{slug}` generates metadata from `GET /api/v1/public/posts/{slug}` using the public title and summary.
 4. Unknown public detail slugs return `Post not found | Nairi` metadata.
 5. `/sitemap.xml` returns XML with `/`, `/posts`, and published post detail URLs from the public post list; detail entries include `publishedAt` as `lastmod`.
-6. Canonical URL, Open Graph image generation, RSS, richer SEO schema, pagination sitemap expansion, and CDN invalidation remain deferred.
+6. `/rss.xml` returns RSS 2.0 XML with public list items containing title, link, guid, `publishedAt` as `pubDate`, and summary as description; it does not include full `bodyHtml`.
+7. Canonical URL, Open Graph image generation, Atom, richer SEO schema, pagination sitemap/RSS expansion, and CDN invalidation remain deferred.

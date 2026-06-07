@@ -350,6 +350,16 @@
 6. Risks or blockers: RSS, canonical URLs, Open Graph image generation, richer SEO schema, pagination sitemap expansion, CDN headers, and publish-triggered invalidation remain deferred.
 7. Next recommended named task: Article Public RSS Boundary.
 
+### Article Public RSS Boundary
+
+1. Status: completed.
+2. Scope: added the smallest `/rss.xml` public route with RSS 2.0 items from public list data, including title, link, guid, `publishedAt` as `pubDate`, and summary fallback as description; added a structural RSS check to Guards.
+3. Changed files: `.github/workflows/guards.yml`, `apps/public-site/app/rss.xml/route.ts`, `scripts/checks/frontend_public_rss_check.py`, `memory-bank/frontend-design.md`, `memory-bank/guard-ci.md`, `memory-bank/project-state.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: added `frontend_public_rss_check.py` first and observed RED on the missing route file; implemented the minimal dynamic route; verified RSS check, public-site typecheck, and public-site build.
+5. Result: passed for the public RSS boundary.
+6. Risks or blockers: canonical URLs, Open Graph image generation, Atom, richer SEO schema, pagination sitemap/RSS expansion, CDN headers, and publish-triggered invalidation remain deferred.
+7. Next recommended named task: Article Public Canonical URL Boundary or Article Public Pagination Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

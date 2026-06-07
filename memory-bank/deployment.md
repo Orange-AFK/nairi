@@ -33,10 +33,11 @@ Docker Compose is the primary deployment interface for self-hosted users.
 
 ### GitHub Actions
 
-1. Build linux/amd64 images.
-2. Build linux/arm64 images.
-3. Publish to GHCR.
-4. Support local source build from GitHub clone.
+1. The current Guards workflow validates the public site build but does not publish container images.
+2. Automatic GHCR image publishing remains deferred until Dockerfile, Compose, runtime configuration, smoke-test, and deployment readiness contracts exist.
+3. The first image publishing workflow should be manually triggered or release/tag-triggered before any automatic `main` image publishing is enabled.
+4. Future production image publishing should build linux/amd64 and linux/arm64 images.
+5. Local source builds from GitHub clone remain supported.
 
 ## Environment Variables
 

@@ -50,7 +50,9 @@
 18. `GET /api/v1/public/posts/{slug}` now includes `bodyHtml`, a minimal sanitized render output for public detail content. It preserves the original authored `content` and keeps management detail unchanged.
 19. `apps/public-site` now provides the first Next.js public frontend scaffold with `/posts/{slug}` reading `GET /api/v1/public/posts/{slug}` and rendering `bodyHtml` while preserving the public/management API boundary.
 20. `/posts` now provides the first public article list page, reads `GET /api/v1/public/posts`, displays title/summary/publishedAt/tags, and links each item to `/posts/{slug}` without using management routes.
-21. The next small task is Article Public Site Styling Boundary or Article Frontend Public List Empty/Error State Boundary.
+21. Current CI validates the public-site build but intentionally does not publish Docker or GHCR images until deployment readiness contracts exist.
+22. The current maintenance task is resolving the Dependabot PostCSS advisory for `apps/public-site/package-lock.json` by updating to a patched `postcss` version.
+23. The next product-development task is Article Public Site Styling Boundary or Article Frontend Public List Empty/Error State Boundary.
 17. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
 18. Preserve scope checks and standard error behavior.
 

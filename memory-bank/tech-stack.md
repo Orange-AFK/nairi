@@ -51,9 +51,10 @@
 ### Self-Hosted Deployment
 
 1. Docker Compose is the primary deployment interface.
-2. GitHub Actions builds multi-architecture images.
-3. GHCR is the planned container registry.
-4. Local source builds from GitHub are supported.
+2. The current GitHub Actions workflow validates code, contracts, and the public-site build; it does not publish container images.
+3. GHCR is the planned container registry after deployment contracts, runtime configuration, and smoke tests are ready.
+4. Automatic image publishing should start as manual or release/tag-triggered before any automatic `main` publishing.
+5. Local source builds from GitHub are supported.
 
 ## Rejected Alternatives
 

@@ -35,7 +35,7 @@
 2. Path: `/api/v1/posts`
 3. Scope: `posts:read`
 4. Query parameters: `status`, `tag`, `category`, `series`, `limit`, `cursor`
-5. Current scaffold boundary: authenticated list for `status=draft` and `status=published`.
+5. Current scaffold boundary: authenticated list for `status=draft` and `status=published`; published lists support minimal `tag`, `category`, and `series` filters.
 6. Response fields: `items`, `nextCursor`
 7. Item fields for draft list: `postId`, `title`, `slug`, `status`, `contentFormat`, `summary`, `tags`, `categoryId`, `seriesId`, `metadata`, `revisionId`, `createdAt`, `updatedAt`.
 8. Item fields for published list: `postId`, `title`, `slug`, `status`, `contentFormat`, `summary`, `tags`, `categoryId`, `seriesId`, `metadata`, `revisionId`, `publishedAt`, `createdAt`, `updatedAt`.

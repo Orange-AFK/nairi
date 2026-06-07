@@ -727,6 +727,105 @@ def test_list_published_posts_returns_published_summaries_for_reader_scope(tmp_p
     }
 
 
+def test_list_published_posts_filters_by_tag_category_and_series(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    settings = Settings(
+        api_tokens={
+            "post-writer-token": ["posts:write"],
+            "post-reader-token": ["posts:read"],
+            "post-publisher-token": ["posts:publish"],
+        },
+        database_path=str(database_path),
+    )
+    timestamps = iter(
+        [
+            datetime(2026, 6, 7, 8, 1, 0, tzinfo=UTC),
+            datetime(2026, 6, 7, 8, 2, 0, tzinfo=UTC),
+            datetime(2026, 6, 7, 8, 3, 0, tzinfo=UTC),
+            datetime(2026, 6, 7, 8, 4, 0, tzinfo=UTC),
+            datetime(2026, 6, 7, 8, 5, 0, tzinfo=UTC),
+            datetime(2026, 6, 7, 8, 6, 0, tzinfo=UTC),
+        ]
+    )
+    app = create_app(settings=settings)
+    app.state.post_store = PostStore(str(database_path), clock=lambda: next(timestamps))
+    client = TestClient(app)
+
+    matching_payload = draft_payload()
+    matching_payload.update(
+        {
+            "title": "Matching published post",
+            "slug": "matching-published-post",
+            "summary": "Matching summary.",
+            "tags": ["storage", "featured"],
+            "categoryId": "category-guides",
+            "seriesId": "series-api-core",
+            "metadata": {"source": "matching-filter-test"},
+        }
+    )
+    tag_only_payload = draft_payload()
+    tag_only_payload.update(
+        {
+            "title": "Tag only published post",
+            "slug": "tag-only-published-post",
+            "summary": "Tag only summary.",
+            "tags": ["featured"],
+            "categoryId": "category-not-guides",
+            "seriesId": "series-other",
+            "metadata": {"source": "tag-filter-test"},
+        }
+    )
+    unrelated_payload = draft_payload()
+    unrelated_payload.update(
+        {
+            "title": "Unrelated published post",
+            "slug": "unrelated-published-post",
+            "summary": "Unrelated summary.",
+            "tags": ["other"],
+            "categoryId": "category-other",
+            "seriesId": "series-other",
+            "metadata": {"source": "unrelated-filter-test"},
+        }
+    )
+
+    created_posts = []
+    for payload in (matching_payload, tag_only_payload, unrelated_payload):
+        create_response = client.post(
+            "/api/v1/posts",
+            json=payload,
+            headers={"Authorization": "Bearer post-writer-token"},
+        )
+        post_id = create_response.json()["postId"]
+        revision_id = create_response.json()["revisionId"]
+        publish_response = client.post(
+            f"/api/v1/posts/{post_id}/publish",
+            json={"revisionId": revision_id, "publishMode": "immediate", "scheduledAt": None},
+            headers={"Authorization": "Bearer post-publisher-token"},
+        )
+        assert create_response.status_code == 201
+        assert publish_response.status_code == 200
+        created_posts.append((post_id, revision_id))
+
+    tag_response = client.get(
+        "/api/v1/posts?status=published&tag=featured",
+        headers={"Authorization": "Bearer post-reader-token"},
+    )
+    category_response = client.get(
+        "/api/v1/posts?status=published&category=category-guides",
+        headers={"Authorization": "Bearer post-reader-token"},
+    )
+    series_response = client.get(
+        "/api/v1/posts?status=published&series=series-api-core",
+        headers={"Authorization": "Bearer post-reader-token"},
+    )
+
+    assert tag_response.status_code == 200
+    assert [item["postId"] for item in tag_response.json()["items"]] == [created_posts[0][0], created_posts[1][0]]
+    assert category_response.status_code == 200
+    assert [item["postId"] for item in category_response.json()["items"]] == [created_posts[0][0]]
+    assert series_response.status_code == 200
+    assert [item["postId"] for item in series_response.json()["items"]] == [created_posts[0][0]]
+
 
 def test_get_published_post_returns_published_detail_for_reader_scope(tmp_path: Path) -> None:
     database_path = tmp_path / "nairi.db"

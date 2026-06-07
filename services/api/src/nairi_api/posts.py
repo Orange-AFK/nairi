@@ -319,8 +319,20 @@ class PostStore:
     def list_drafts(self) -> list[StoredPostDraft]:
         return self._list_posts_by_status(DRAFT_STATUS)
 
-    def list_published(self) -> list[StoredPostDraft]:
-        return self._list_posts_by_status(PUBLISHED_STATUS)
+    def list_published(
+        self,
+        tag: str | None = None,
+        category_id: str | None = None,
+        series_id: str | None = None,
+    ) -> list[StoredPostDraft]:
+        posts = self._list_posts_by_status(PUBLISHED_STATUS)
+        if tag is not None:
+            posts = [post for post in posts if tag in post.tags]
+        if category_id is not None:
+            posts = [post for post in posts if post.category_id == category_id]
+        if series_id is not None:
+            posts = [post for post in posts if post.series_id == series_id]
+        return posts
 
     def _list_posts_by_status(self, status: str) -> list[StoredPostDraft]:
         with self._connect() as connection:

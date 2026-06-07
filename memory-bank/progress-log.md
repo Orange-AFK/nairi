@@ -130,6 +130,16 @@
 6. Risks or blockers: update-time duplicate slug conflict handling, broader validation, publication, filtering/pagination, and SQLAlchemy/Alembic migrations remain deferred.
 7. Next recommended named task: Article Draft Update Slug Conflict Boundary.
 
+### Article Draft Update Slug Conflict Boundary
+
+1. Status: completed.
+2. Scope: added update-time duplicate slug conflict handling for `PATCH /api/v1/posts/{post_id}`, returning the standard `409 conflict` response before creating a new revision, audit event, or mutating either post.
+3. Changed files: `services/api/src/nairi_api/main.py`, `services/api/src/nairi_api/posts.py`, `services/api/tests/test_post_persistence.py`, `memory-bank/api-contract.md`, `memory-bank/project-state.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: wrote the duplicate-slug update test first, observed RED as `500 Internal Server Error` from the raw SQLite unique constraint, implemented the smallest store slug ownership check and API mapping, then verified focused GREEN, persistence tests, full API suite, docs guards, schema guards, and secret guards.
+5. Result: passed for the update slug conflict boundary.
+6. Risks or blockers: broader update validation, publication, filtering/pagination, and SQLAlchemy/Alembic migrations remain deferred.
+7. Next recommended named task: Article Draft Update Validation Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

@@ -95,4 +95,5 @@ The public frontend presents articles, pages, project retrospectives, tags, cate
 2. `/posts` defines route metadata with title `Articles | Nairi` and a stable published-list description.
 3. `/posts/{slug}` generates metadata from `GET /api/v1/public/posts/{slug}` using the public title and summary.
 4. Unknown public detail slugs return `Post not found | Nairi` metadata.
-5. Canonical URL, Open Graph image generation, RSS, sitemap, and cache/CDN policy remain deferred.
+5. `/sitemap.xml` returns XML with `/`, `/posts`, and published post detail URLs from the public post list; detail entries include `publishedAt` as `lastmod`.
+6. Canonical URL, Open Graph image generation, RSS, richer SEO schema, pagination sitemap expansion, and CDN invalidation remain deferred.

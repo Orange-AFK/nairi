@@ -340,6 +340,16 @@
 6. Risks or blockers: CDN headers, publish-triggered invalidation, tag-based revalidation, pagination cache policy, RSS, and sitemap remain deferred.
 7. Next recommended named task: Article Public Sitemap/RSS Boundary.
 
+### Article Public Sitemap Boundary
+
+1. Status: completed.
+2. Scope: added the smallest `/sitemap.xml` public route with `/`, `/posts`, and published post detail URLs from public list data, including published timestamps as `lastmod`; added a structural sitemap check to Guards.
+3. Changed files: `.github/workflows/guards.yml`, `apps/public-site/app/sitemap.xml/route.ts`, `scripts/checks/frontend_public_sitemap_check.py`, `memory-bank/frontend-design.md`, `memory-bank/guard-ci.md`, `memory-bank/project-state.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: added `frontend_public_sitemap_check.py` first and observed RED on the missing route file; implemented the minimal dynamic route; verified sitemap check, public-site typecheck, and public-site build.
+5. Result: passed for the public sitemap boundary.
+6. Risks or blockers: RSS, canonical URLs, Open Graph image generation, richer SEO schema, pagination sitemap expansion, CDN headers, and publish-triggered invalidation remain deferred.
+7. Next recommended named task: Article Public RSS Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

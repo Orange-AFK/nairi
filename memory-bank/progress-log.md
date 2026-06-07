@@ -629,6 +629,18 @@
 8. Authority-doc impact: updated `project-state.md`, `roadmap.md`, and this progress log.
 9. Next recommended named task: Data Migration Rehearsal Boundary, Migration Repair Policy Boundary, or CMS Admin Console Foundation Boundary.
 
+### Data Migration Rehearsal Boundary
+
+1. Status: completed.
+2. Scope: added a local `rehearse_post_store_migration` helper that copies a SQLite source file to both backup and rehearsal paths, triggers `PostStore` migration on the rehearsal copy, and verifies migration metadata, row counts, and `PostStore` readback.
+3. Changed files: `services/api/src/nairi_api/posts.py`, `services/api/tests/test_post_persistence.py`, `memory-bank/project-state.md`, `memory-bank/roadmap.md`, and `memory-bank/progress-log.md`.
+4. Verification performed: added rehearsal test first and observed RED on missing `rehearse_post_store_migration`; implemented SQLite backup-API copy, path-alias rejection, exclusive destination creation, no-overwrite artifact safety, pre-state inspection, migration trigger, post-state metadata/count checks, and readback IDs; verified focused rehearsal test, full post persistence tests, and full API tests.
+5. Result: migration rehearsal can prove backup existence, source immutability, backup count immutability, migrated rehearsal metadata, preserved `posts`/`post_revisions`/`audit_events` counts, and `PostStore` readback without touching any live database. No public API contract, route behavior, SQLAlchemy/Alembic layer, PostgreSQL support, external migration CLI, deployment change, or live database operation was added.
+6. Risks or blockers: standalone migration/rehearsal CLI, migration repair policy, backup retention policy, multi-package migration coordination, SQLAlchemy models, Alembic integration, PostgreSQL support, and live database execution remain deferred.
+7. Decision impact: covered by existing data/migration roadmap and scaffold-to-managed-migrations direction; no new ADR needed.
+8. Authority-doc impact: updated `project-state.md`, `roadmap.md`, and this progress log.
+9. Next recommended named task: Migration Repair Policy Boundary, Standalone Migration Rehearsal CLI Boundary, or CMS Admin Console Foundation Boundary.
+
 ## Progress Rule
 
 `progress-log.md` is append-only historical evidence. It is not the current roadmap and it is not the only authority for durable architecture decisions.

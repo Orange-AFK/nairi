@@ -1,4 +1,5 @@
 import json
+import os
 import sqlite3
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -89,6 +90,18 @@ class PostStoreMigration:
     apply: Callable[[sqlite3.Connection], None]
 
 
+@dataclass(frozen=True)
+class PostStoreMigrationRehearsalResult:
+    backup_path: Path
+    rehearsal_path: Path
+    pre_migration_tables: list[str]
+    pre_migration_has_schema_migrations: bool
+    pre_migration_counts: dict[str, int]
+    post_migration_counts: dict[str, int]
+    post_migration_rows: list[tuple[int, str]]
+    readback_post_ids: list[str]
+
+
 def run_schema_migrations(connection: sqlite3.Connection, migrations: list[PostStoreMigration]) -> None:
     connection.execute(
         """
@@ -120,6 +133,86 @@ def run_schema_migrations(connection: sqlite3.Connection, migrations: list[PostS
             connection.execute("ROLLBACK")
             raise
         applied[migration.id] = migration.name
+
+
+def _sqlite_tables(connection: sqlite3.Connection) -> list[str]:
+    rows = connection.execute(
+        """
+        SELECT name FROM sqlite_master
+        WHERE type = 'table' AND name NOT LIKE 'sqlite_%'
+        ORDER BY name
+        """
+    ).fetchall()
+    return [cast(str, row[0]) for row in rows]
+
+
+def _table_counts(connection: sqlite3.Connection, table_names: list[str]) -> dict[str, int]:
+    existing_tables = set(_sqlite_tables(connection))
+    return {
+        table_name: cast(int, connection.execute(f"SELECT COUNT(*) FROM {table_name}").fetchone()[0])
+        for table_name in table_names
+        if table_name in existing_tables
+    }
+
+
+def _copy_sqlite_database(source_path: Path, destination_path: Path) -> None:
+    descriptor = os.open(destination_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+    os.close(descriptor)
+    try:
+        with sqlite3.connect(source_path) as source:
+            with sqlite3.connect(destination_path) as destination:
+                source.backup(destination)
+    except Exception:
+        destination_path.unlink(missing_ok=True)
+        raise
+
+
+def rehearse_post_store_migration(
+    *,
+    source_path: Path,
+    rehearsal_path: Path,
+    backup_path: Path,
+) -> PostStoreMigrationRehearsalResult:
+    resolved_source = source_path.resolve()
+    resolved_backup = backup_path.resolve()
+    resolved_rehearsal = rehearsal_path.resolve()
+    if len({resolved_source, resolved_backup, resolved_rehearsal}) != 3:
+        raise ValueError("source_path, backup_path, and rehearsal_path must be distinct")
+    if backup_path.exists():
+        raise FileExistsError(backup_path)
+    if rehearsal_path.exists():
+        raise FileExistsError(rehearsal_path)
+
+    backup_path.parent.mkdir(parents=True, exist_ok=True)
+    rehearsal_path.parent.mkdir(parents=True, exist_ok=True)
+    _copy_sqlite_database(source_path, backup_path)
+    _copy_sqlite_database(source_path, rehearsal_path)
+
+    counted_tables = ["posts", "post_revisions", "audit_events"]
+    with sqlite3.connect(rehearsal_path) as connection:
+        pre_migration_tables = _sqlite_tables(connection)
+        pre_migration_has_schema_migrations = "schema_migrations" in pre_migration_tables
+        pre_migration_counts = _table_counts(connection, counted_tables)
+
+    readback_post_ids = [draft.post_id for draft in PostStore(str(rehearsal_path)).list_drafts()]
+
+    with sqlite3.connect(rehearsal_path) as connection:
+        post_migration_counts = _table_counts(connection, counted_tables)
+        post_migration_rows = [
+            (cast(int, row[0]), cast(str, row[1]))
+            for row in connection.execute("SELECT id, name FROM schema_migrations ORDER BY id").fetchall()
+        ]
+
+    return PostStoreMigrationRehearsalResult(
+        backup_path=backup_path,
+        rehearsal_path=rehearsal_path,
+        pre_migration_tables=pre_migration_tables,
+        pre_migration_has_schema_migrations=pre_migration_has_schema_migrations,
+        pre_migration_counts=pre_migration_counts,
+        post_migration_counts=post_migration_counts,
+        post_migration_rows=post_migration_rows,
+        readback_post_ids=readback_post_ids,
+    )
 
 
 def public_invalidation_surfaces_for_post(slug: str) -> list[str]:

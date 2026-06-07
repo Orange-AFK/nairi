@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 from nairi_api.config import Settings
 from nairi_api.invalidation_dispatch import PublicInvalidationDispatchResult
 from nairi_api.main import create_app
-from nairi_api.posts import PostDraftInput, PostStore, PostStoreMigration, run_schema_migrations
+from nairi_api.posts import PostDraftInput, PostStore, PostStoreMigration, rehearse_post_store_migration, run_schema_migrations
 
 
 def build_client(database_path: Path) -> TestClient:
@@ -2119,3 +2119,188 @@ def test_schema_migration_runner_rolls_back_failed_pending_migration() -> None:
 
     assert migration_rows == []
     assert marker_row is None
+
+
+def test_post_store_migration_rehearsal_backs_up_migrates_and_reads_back(tmp_path: Path) -> None:
+    source_path = tmp_path / "pre-migration.db"
+    rehearsal_path = tmp_path / "rehearsal" / "working.db"
+    backup_path = tmp_path / "backups" / "pre-migration.db.bak"
+    with sqlite3.connect(source_path) as connection:
+        connection.execute(
+            """
+            CREATE TABLE posts (
+                id TEXT PRIMARY KEY,
+                title TEXT NOT NULL,
+                slug TEXT NOT NULL UNIQUE,
+                status TEXT NOT NULL,
+                content_format TEXT NOT NULL,
+                current_revision_id TEXT NOT NULL,
+                published_at TEXT,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+            """
+        )
+        connection.execute(
+            """
+            CREATE TABLE post_revisions (
+                id TEXT PRIMARY KEY,
+                post_id TEXT NOT NULL REFERENCES posts(id),
+                content TEXT NOT NULL,
+                metadata TEXT NOT NULL,
+                created_by TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+        connection.execute(
+            """
+            CREATE TABLE audit_events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                event_type TEXT NOT NULL,
+                actor_type TEXT NOT NULL,
+                actor_id TEXT NOT NULL,
+                target_type TEXT NOT NULL,
+                target_id TEXT NOT NULL,
+                metadata TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+        connection.execute(
+            """
+            INSERT INTO posts (id, title, slug, status, content_format, current_revision_id, published_at, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                "draft-rehearsal",
+                "Rehearsal",
+                "rehearsal",
+                "draft",
+                "markdown",
+                "revision-rehearsal-1",
+                None,
+                "2026-06-07T08:11:12Z",
+                "2026-06-07T08:11:12Z",
+            ),
+        )
+        connection.execute(
+            """
+            INSERT INTO post_revisions (id, post_id, content, metadata, created_by, created_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                "revision-rehearsal-1",
+                "draft-rehearsal",
+                "Rehearsal content",
+                '{"summary":"Rehearsal summary","tags":["migration"],"categoryId":null,"seriesId":null}',
+                "token:writer",
+                "2026-06-07T08:11:12Z",
+            ),
+        )
+        connection.execute(
+            """
+            INSERT INTO audit_events (event_type, actor_type, actor_id, target_type, target_id, metadata, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                "post.created",
+                "api_token",
+                "token:writer",
+                "post",
+                "draft-rehearsal",
+                '{"revisionId":"revision-rehearsal-1"}',
+                "2026-06-07T08:11:12Z",
+            ),
+        )
+
+    result = rehearse_post_store_migration(
+        source_path=source_path,
+        rehearsal_path=rehearsal_path,
+        backup_path=backup_path,
+    )
+
+    assert source_path.exists()
+    assert backup_path.exists()
+    assert rehearsal_path.exists()
+    assert result.backup_path == backup_path
+    assert result.rehearsal_path == rehearsal_path
+    assert result.pre_migration_tables == ["audit_events", "post_revisions", "posts"]
+    assert result.pre_migration_has_schema_migrations is False
+    assert result.post_migration_rows == [(1, "post_store_baseline")]
+    assert result.pre_migration_counts == {"posts": 1, "post_revisions": 1, "audit_events": 1}
+    assert result.post_migration_counts == {"posts": 1, "post_revisions": 1, "audit_events": 1}
+    assert result.readback_post_ids == ["draft-rehearsal"]
+
+    with sqlite3.connect(source_path) as connection:
+        source_migration_table = connection.execute(
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'schema_migrations'"
+        ).fetchone()
+        source_counts = connection.execute(
+            """
+            SELECT
+                (SELECT COUNT(*) FROM posts),
+                (SELECT COUNT(*) FROM post_revisions),
+                (SELECT COUNT(*) FROM audit_events)
+            """
+        ).fetchone()
+    with sqlite3.connect(backup_path) as connection:
+        backup_migration_table = connection.execute(
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'schema_migrations'"
+        ).fetchone()
+        backup_counts = connection.execute(
+            """
+            SELECT
+                (SELECT COUNT(*) FROM posts),
+                (SELECT COUNT(*) FROM post_revisions),
+                (SELECT COUNT(*) FROM audit_events)
+            """
+        ).fetchone()
+
+    assert source_migration_table is None
+    assert backup_migration_table is None
+    assert source_counts == (1, 1, 1)
+    assert backup_counts == (1, 1, 1)
+
+
+def test_post_store_migration_rehearsal_rejects_path_aliases_and_existing_artifacts(tmp_path: Path) -> None:
+    source_path = tmp_path / "source.db"
+    backup_path = tmp_path / "backup.db"
+    rehearsal_path = tmp_path / "rehearsal.db"
+    source_path.write_bytes(b"not used before alias validation")
+
+    try:
+        rehearse_post_store_migration(
+            source_path=source_path,
+            backup_path=backup_path,
+            rehearsal_path=backup_path,
+        )
+    except ValueError as error:
+        assert str(error) == "source_path, backup_path, and rehearsal_path must be distinct"
+    else:
+        raise AssertionError("path aliases should be rejected before copying")
+
+    backup_path.write_bytes(b"existing backup")
+    try:
+        rehearse_post_store_migration(
+            source_path=source_path,
+            backup_path=backup_path,
+            rehearsal_path=rehearsal_path,
+        )
+    except FileExistsError as error:
+        assert error.args == (backup_path,)
+    else:
+        raise AssertionError("existing backup artifacts should not be overwritten")
+
+    backup_path.unlink()
+    rehearsal_path.write_bytes(b"existing rehearsal")
+    try:
+        rehearse_post_store_migration(
+            source_path=source_path,
+            backup_path=backup_path,
+            rehearsal_path=rehearsal_path,
+        )
+    except FileExistsError as error:
+        assert error.args == (rehearsal_path,)
+    else:
+        raise AssertionError("existing rehearsal artifacts should not be overwritten")

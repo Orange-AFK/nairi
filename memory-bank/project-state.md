@@ -73,7 +73,8 @@
 41. Article Public Publish Invalidation Execution Boundary is complete: publish responses and `publish_jobs` now record public invalidation execution status as durable bookkeeping with `mode=recorded`, `status=recorded`, and `executor=none`, without CDN purge, webhooks, cache headers, or Next.js tag/path invalidation.
 42. Article Public Publish Invalidation Dispatch Boundary is complete: publish responses and `publish_jobs` now record dispatch semantics with `dispatch_skipped`, `no_dispatcher_configured`, `attempted=false`, and no external invalidation side effects.
 43. Article Public Publish Invalidation Dispatcher Configuration Boundary is complete: API settings now expose `public_invalidation_dispatcher` with the only supported value `none`, including `NAIRI_PUBLIC_INVALIDATION_DISPATCHER=none` env wiring and validation that rejects unsupported dispatcher values.
-44. The next product-development task is Article Public Publish Invalidation Dispatcher Interface Boundary or Article Public RSS/Sitemap Split Boundary.
+44. Article Public Publish Invalidation Dispatcher Interface Boundary is complete: app creation now builds a configured `PublicInvalidationDispatcher`, with a `none` no-op implementation that returns skipped dispatch bookkeeping without external side effects.
+45. The next product-development task is Article Public Publish Invalidation Dispatcher Route Integration Boundary or Article Public RSS/Sitemap Split Boundary.
 17. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
 18. Preserve scope checks and standard error behavior.
 

@@ -67,7 +67,7 @@ class PublicInvalidationExecutionResponse(BaseModel):
 
 class PublicInvalidationDispatchResponse(BaseModel):
     status: Literal["dispatch_skipped", "dispatch_failed"]
-    reason: Literal["no_dispatcher_configured", "dispatcher_exception"]
+    reason: Literal["no_dispatcher_configured", "dispatcher_exception", "contract_only_adapter"]
     attempted: bool
     attempted_at: str | None = Field(alias="attemptedAt")
 

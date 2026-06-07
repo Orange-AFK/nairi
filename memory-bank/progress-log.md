@@ -530,6 +530,16 @@
 6. Risks or blockers: external invalidation execution, CDN purge, `revalidateTag`/`revalidatePath`, webhooks, cache headers, scheduling semantics, concrete adapters, and the real job runner remain deferred.
 7. Next recommended named task: Article Public Publish Invalidation Adapter Contract Boundary or Article Public RSS/Sitemap Split Boundary.
 
+### Article Public Publish Invalidation Adapter Contract Boundary
+
+1. Status: completed.
+2. Scope: added a contract-only public invalidation dispatcher adapter configuration that records deterministic attempted dispatch bookkeeping without external invalidation side effects.
+3. Changed files: `services/api/src/nairi_api/config.py`, `services/api/src/nairi_api/invalidation_dispatch.py`, `services/api/src/nairi_api/main.py`, `services/api/tests/test_config.py`, `services/api/tests/test_public_invalidation_dispatcher.py`, `memory-bank/api-contract.md`, `memory-bank/architecture.md`, `memory-bank/project-state.md`, and `memory-bank/progress-log.md`.
+4. Verification performed: added RED settings/factory/app-state tests for `public_invalidation_dispatcher=contract` and a contract dispatcher result, observed RED on the previous `none`-only literal and missing dispatcher class, then implemented the minimal settings literal, dispatcher class, factory branch, and response reason support before verifying focused config/dispatcher tests plus the full API test suite.
+5. Result: passed for the publish invalidation adapter contract boundary.
+6. Risks or blockers: concrete external adapters, CDN purge, `revalidateTag`/`revalidatePath`, webhooks, cache headers, scheduling semantics, external invalidation execution, and the real job runner remain deferred.
+7. Next recommended named task: Article Public Publish Invalidation Concrete Adapter Boundary or Article Public RSS/Sitemap Split Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

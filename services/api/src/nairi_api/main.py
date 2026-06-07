@@ -67,7 +67,12 @@ class PublicInvalidationExecutionResponse(BaseModel):
 
 class PublicInvalidationDispatchResponse(BaseModel):
     status: Literal["dispatch_skipped", "dispatch_failed"]
-    reason: Literal["no_dispatcher_configured", "dispatcher_exception", "contract_only_adapter"]
+    reason: Literal[
+        "no_dispatcher_configured",
+        "dispatcher_exception",
+        "contract_only_adapter",
+        "cloudflare_adapter_disabled",
+    ]
     attempted: bool
     attempted_at: str | None = Field(alias="attemptedAt")
 

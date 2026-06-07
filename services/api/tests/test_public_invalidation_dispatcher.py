@@ -1,5 +1,6 @@
 from nairi_api.config import Settings
 from nairi_api.invalidation_dispatch import (
+    CloudflarePublicInvalidationDispatcher,
     ContractPublicInvalidationDispatcher,
     NoopPublicInvalidationDispatcher,
     PublicInvalidationDispatchResult,
@@ -34,6 +35,19 @@ def test_contract_dispatcher_records_contract_only_attempt_without_external_inva
     )
 
 
+def test_cloudflare_dispatcher_records_configured_but_disabled_without_external_invalidation() -> None:
+    dispatcher = CloudflarePublicInvalidationDispatcher()
+
+    result = dispatcher.dispatch(surfaces=["/posts", "/rss.xml"], published_at="2026-06-07T08:11:12Z")
+
+    assert result == PublicInvalidationDispatchResult(
+        status="dispatch_skipped",
+        reason="cloudflare_adapter_disabled",
+        attempted=False,
+        attempted_at=None,
+    )
+
+
 def test_dispatcher_factory_builds_noop_dispatcher_for_none_configuration() -> None:
     dispatcher = build_public_invalidation_dispatcher(Settings(public_invalidation_dispatcher="none"))
 
@@ -46,6 +60,12 @@ def test_dispatcher_factory_builds_contract_dispatcher_for_contract_configuratio
     assert isinstance(dispatcher, ContractPublicInvalidationDispatcher)
 
 
+def test_dispatcher_factory_builds_cloudflare_dispatcher_for_cloudflare_configuration() -> None:
+    dispatcher = build_public_invalidation_dispatcher(Settings(public_invalidation_dispatcher="cloudflare"))
+
+    assert isinstance(dispatcher, CloudflarePublicInvalidationDispatcher)
+
+
 def test_create_app_exposes_configured_public_invalidation_dispatcher() -> None:
     app = create_app(settings=Settings(public_invalidation_dispatcher="none"))
 
@@ -56,3 +76,9 @@ def test_create_app_exposes_contract_public_invalidation_dispatcher() -> None:
     app = create_app(settings=Settings(public_invalidation_dispatcher="contract"))
 
     assert isinstance(app.state.public_invalidation_dispatcher, ContractPublicInvalidationDispatcher)
+
+
+def test_create_app_exposes_cloudflare_public_invalidation_dispatcher() -> None:
+    app = create_app(settings=Settings(public_invalidation_dispatcher="cloudflare"))
+
+    assert isinstance(app.state.public_invalidation_dispatcher, CloudflarePublicInvalidationDispatcher)

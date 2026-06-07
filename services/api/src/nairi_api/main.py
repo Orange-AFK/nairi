@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 from nairi_api.auth import ApiError, AuthenticatedActor, api_error_response, require_scope
 from nairi_api.config import Settings, get_settings
-from nairi_api.posts import CreatedPostDraft, DuplicatePostSlugError, PostDraftInput, PostStore
+from nairi_api.posts import CreatedPostDraft, DuplicatePostSlugError, PostDraftInput, PostStore, StoredPostDraft
 
 
 class CreatePostDraftRequest(BaseModel):
@@ -28,7 +28,25 @@ class CreatePostDraftResponse(BaseModel):
     created_at: str = Field(alias="createdAt")
 
 
+class ReadPostDraftResponse(BaseModel):
+    post_id: str = Field(alias="postId")
+    title: str
+    slug: str
+    status: Literal["draft"]
+    content_format: Literal["markdown", "mdx"] = Field(alias="contentFormat")
+    content: str
+    summary: str | None = None
+    tags: list[str]
+    category_id: str | None = Field(alias="categoryId")
+    series_id: str | None = Field(alias="seriesId")
+    metadata: dict[str, object]
+    revision_id: str = Field(alias="revisionId")
+    created_at: str = Field(alias="createdAt")
+    updated_at: str = Field(alias="updatedAt")
+
+
 SLUG_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+
 
 
 def validate_post_draft_request(draft: CreatePostDraftRequest) -> None:
@@ -91,6 +109,31 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             status="draft",
             revisionId=created.revision_id,
             createdAt=created.created_at,
+        )
+
+    @app.get("/api/v1/posts/{post_id}")
+    def read_post_draft(
+        post_id: str,
+        _actor: AuthenticatedActor = Depends(require_scope("posts:read")),
+    ) -> ReadPostDraftResponse:
+        draft: StoredPostDraft | None = app.state.post_store.get_draft(post_id)
+        if draft is None:
+            raise ApiError(404, "not_found", "Post not found", {"postId": post_id})
+        return ReadPostDraftResponse(
+            postId=draft.post_id,
+            title=draft.title,
+            slug=draft.slug,
+            status="draft",
+            contentFormat=draft.content_format,
+            content=draft.content,
+            summary=draft.summary,
+            tags=draft.tags,
+            categoryId=draft.category_id,
+            seriesId=draft.series_id,
+            metadata=draft.metadata,
+            revisionId=draft.revision_id,
+            createdAt=draft.created_at,
+            updatedAt=draft.updated_at,
         )
 
     return app

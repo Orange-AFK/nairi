@@ -3,7 +3,7 @@ import sqlite3
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Literal
 
 
 DRAFT_STATUS = "draft"
@@ -34,7 +34,26 @@ class CreatedPostDraft:
     created_at: str
 
 
+@dataclass(frozen=True)
+class StoredPostDraft:
+    post_id: str
+    title: str
+    slug: str
+    status: str
+    content_format: Literal["markdown", "mdx"]
+    content: str
+    summary: str | None
+    tags: list[str]
+    category_id: str | None
+    series_id: str | None
+    metadata: dict[str, object]
+    revision_id: str
+    created_at: str
+    updated_at: str
+
+
 class DuplicatePostSlugError(Exception):
+
     def __init__(self, slug: str) -> None:
         self.slug = slug
 
@@ -108,6 +127,52 @@ class PostStore:
             status=DRAFT_STATUS,
             revision_id=revision_id,
             created_at=created_at,
+        )
+
+    def get_draft(self, post_id: str) -> StoredPostDraft | None:
+        with self._connect() as connection:
+            self._init_schema(connection)
+            row = connection.execute(
+                """
+                SELECT
+                    posts.id,
+                    posts.title,
+                    posts.slug,
+                    posts.status,
+                    posts.content_format,
+                    post_revisions.content,
+                    post_revisions.metadata,
+                    posts.current_revision_id,
+                    posts.created_at,
+                    posts.updated_at
+                FROM posts
+                JOIN post_revisions ON post_revisions.id = posts.current_revision_id
+                WHERE posts.id = ? AND posts.status = ?
+                """,
+                (post_id, DRAFT_STATUS),
+            ).fetchone()
+        if row is None:
+            return None
+        metadata = json.loads(row[6])
+        summary = metadata.pop("summary", None)
+        tags = metadata.pop("tags", [])
+        category_id = metadata.pop("categoryId", None)
+        series_id = metadata.pop("seriesId", None)
+        return StoredPostDraft(
+            post_id=row[0],
+            title=row[1],
+            slug=row[2],
+            status=row[3],
+            content_format="mdx" if row[4] == "mdx" else "markdown",
+            content=row[5],
+            summary=summary,
+            tags=tags,
+            category_id=category_id,
+            series_id=series_id,
+            metadata=metadata,
+            revision_id=row[7],
+            created_at=row[8],
+            updated_at=row[9],
         )
 
     def _connect(self) -> sqlite3.Connection:

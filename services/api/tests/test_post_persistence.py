@@ -484,6 +484,63 @@ def test_update_post_draft_rejects_duplicate_slug_without_side_effects(tmp_path:
     )
 
 
+def test_update_post_draft_rejects_invalid_content_fields_without_side_effects(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    client = build_client(database_path)
+
+    create_response = client.post(
+        "/api/v1/posts",
+        json=draft_payload(),
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+    post_id = create_response.json()["postId"]
+    revision_id = create_response.json()["revisionId"]
+    payload = draft_payload()
+    payload.update(
+        {
+            "title": "   ",
+            "slug": "Invalid Slug",
+            "content": "",
+            "expectedRevisionId": revision_id,
+        }
+    )
+
+    response = client.patch(
+        f"/api/v1/posts/{post_id}",
+        json=payload,
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+
+    assert create_response.status_code == 201
+    assert response.status_code == 400
+    assert response.json() == {
+        "code": "invalid_request",
+        "message": "Invalid post draft request",
+        "details": {
+            "title": "Title is required",
+            "slug": "Slug must contain only lowercase letters, numbers, and hyphens",
+            "content": "Content is required",
+        },
+        "requestId": "unavailable",
+    }
+    with sqlite3.connect(database_path) as connection:
+        counts = connection.execute(
+            """
+            SELECT
+                (SELECT COUNT(*) FROM posts),
+                (SELECT COUNT(*) FROM post_revisions),
+                (SELECT COUNT(*) FROM audit_events)
+            """
+        ).fetchone()
+        post_row = connection.execute(
+            "SELECT title, slug, current_revision_id FROM posts WHERE id = ?",
+            (post_id,),
+        ).fetchone()
+
+    assert counts == (1, 1, 1)
+    assert post_row == ("Persistent draft", "persistent-draft", revision_id)
+
+
 def test_get_post_draft_returns_created_draft_for_reader_scope(tmp_path: Path) -> None:
     database_path = tmp_path / "nairi.db"
     client = build_client(database_path)

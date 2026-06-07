@@ -4,11 +4,11 @@
 
 ### Project Status
 
-1. Nairi has completed foundational documentation, guard scripts, the first API scaffold, the first protected scope-check route, scaffold-level article draft creation, the first SQLite-backed draft persistence boundary, duplicate draft slug conflict handling, the first draft input validation boundary, request-time draft timestamps, the first authenticated draft readback boundary, the first authenticated draft list boundary, the first authenticated draft update boundary, and update-time duplicate slug conflict handling.
+1. Nairi has completed foundational documentation, guard scripts, the first API scaffold, the first protected scope-check route, scaffold-level article draft creation, the first SQLite-backed draft persistence boundary, duplicate draft slug conflict handling, the first draft input validation boundary, request-time draft timestamps, the first authenticated draft readback boundary, the first authenticated draft list boundary, the first authenticated draft update boundary, update-time duplicate slug conflict handling, and update-time input validation coverage.
 2. The FastAPI service skeleton and auth dependency exist under `services/api/`.
 3. The accepted product direction is API-first and agent-first CMS.
 4. FastAPI is the product capability authority.
-5. Documentation, contracts, guard rules, health endpoint tests, protected scope tests, article draft creation route tests, draft persistence tests, duplicate slug tests, draft input validation tests, draft timestamp tests, draft readback tests, draft list tests, draft update tests, and update duplicate slug tests currently pass locally.
+5. Documentation, contracts, guard rules, health endpoint tests, protected scope tests, article draft creation route tests, draft persistence tests, duplicate slug tests, draft input validation tests, draft timestamp tests, draft readback tests, draft list tests, draft update tests, update duplicate slug tests, and update input validation tests currently pass locally.
 
 ## Confirmed Decisions
 
@@ -38,9 +38,10 @@
 6. Authenticated draft list now returns summary-shaped draft items through `GET /api/v1/posts?status=draft` with `posts:read` scope.
 7. Authenticated draft update now creates a new immutable revision through `PATCH /api/v1/posts/{post_id}` with `posts:write` scope and `expectedRevisionId` conflict protection.
 8. Update-time duplicate slug requests now return a standard `409 conflict` response before creating a new revision, audit event, or post mutation.
-9. The next small task is Article Draft Update Validation Boundary: ensure invalid update payloads are explicitly rejected before widening into publication flow.
-10. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
-11. Preserve scope checks and standard error behavior.
+9. Invalid update payloads now have explicit test coverage proving `400 invalid_request` before revision, audit, or post mutation side effects.
+10. The next small task is Article Draft Publish Contract Boundary: add the first authenticated publish route contract before implementing publication state changes.
+11. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
+12. Preserve scope checks and standard error behavior.
 
 ## Blockers
 

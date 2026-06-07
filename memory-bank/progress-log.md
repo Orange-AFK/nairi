@@ -582,6 +582,8 @@
 
 ## Progress Rule
 
+`progress-log.md` is append-only historical evidence. It is not the current roadmap and it is not the only authority for durable architecture decisions.
+
 Every completed named task must add a progress entry with:
 
 1. Task name.
@@ -590,4 +592,8 @@ Every completed named task must add a progress entry with:
 4. Verification performed.
 5. Result.
 6. Risks or blockers.
-7. Next recommended named task.
+7. Decision impact: added ADR, updated ADR, covered by existing ADR, or no durable decision.
+8. Authority-doc impact: which source-of-truth documents changed, or why none changed.
+9. Next recommended named task.
+
+If a task creates or changes durable architecture decisions, update `decisions.md` in the same task. If a task completes, defers, splits, or reorders functional work, update `roadmap.md`. If a task changes current capabilities, blockers, or current focus, update `project-state.md`.

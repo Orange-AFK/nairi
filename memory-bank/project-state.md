@@ -4,90 +4,124 @@
 
 ### Project Status
 
-1. Nairi has completed foundational documentation, guard scripts, the first API scaffold, the first protected scope-check route, scaffold-level article draft creation, the first SQLite-backed draft persistence boundary, duplicate draft slug conflict handling, the first draft input validation boundary, request-time draft timestamps, the first authenticated draft readback boundary, the first authenticated draft list boundary, the first authenticated draft update boundary, update-time duplicate slug conflict handling, update-time input validation coverage, the first authenticated publish route contract boundary, the first publish state transition boundary, the first publish job storage boundary, and the first published readback boundary, the first published filtering boundary, and the first published pagination boundary.
-2. The FastAPI service skeleton and auth dependency exist under `services/api/`.
-3. The accepted product direction is API-first and agent-first CMS.
-4. FastAPI is the product capability authority.
-5. Documentation, contracts, guard rules, health endpoint tests, protected scope tests, article draft creation route tests, draft persistence tests, duplicate slug tests, draft input validation tests, draft timestamp tests, draft readback tests, draft list tests, draft update tests, update duplicate slug tests, update input validation tests, publish contract tests, publish state transition tests, publish job storage tests, published read/list tests, published filtering tests, and published pagination tests currently pass locally.
+1. Nairi is in early alpha implementation.
+2. The implementation still follows the accepted API-first, agent-first CMS direction.
+3. Core public and management content flows exist as scaffold implementations with verified route tests and guards.
+4. The current development focus is Project Documentation Source-of-Truth Remediation before resuming Cloudflare dry-run dispatch work.
+5. Cloudflare dry-run dispatch implementation work is paused in a git stash and must be resumed only after the documentation governance remediation is merged.
 
-## Confirmed Decisions
+### Current Authority Snapshot
 
-### Product Direction
+1. `project-state.md` is the current status source of truth.
+2. `roadmap.md` is the functional roadmap source of truth.
+3. `decisions.md` is the durable architecture decision source of truth.
+4. `progress-log.md` is append-only historical evidence.
+5. `project-review.md` is a historical review artifact for this remediation and is not maintained during normal feature work.
 
-1. Nairi helps convert valuable AI-agent-assisted project work into publishable articles.
-2. Human administrators and AI agents are both first-class users.
-3. The CMS admin console remains necessary because humans need review, editing, audit, media, settings, and recovery control.
+## Implemented Functional Areas
 
-### Technical Direction
+### Foundation and Guards
 
-1. Public site uses Next.js, React, Tailwind CSS, shadcn/ui, and Markdown/MDX.
-2. Admin console uses React, Vite, TanStack Router, TanStack Query, React Hook Form, Zod, Tailwind CSS, and shadcn/ui.
-3. Core API uses FastAPI, Pydantic, SQLAlchemy, and Alembic.
-4. SQLite is default; PostgreSQL is optional for production.
-5. MCP wraps documented API capabilities for agents.
+1. Foundational documentation, documentation boundaries, bilingual rules, guard scripts, and Guards CI exist.
+2. Current guards cover docs boundaries, bilingual contract-token drift, contract consistency, API schema casing, secret safety, and selected public-site structural checks.
+3. CI uses read-only permissions, concurrency cancellation, and Node.js 24 opt-in for JavaScript actions.
+
+### API Core and Authentication
+
+1. FastAPI service skeleton and app factory exist under `services/api/`.
+2. Health endpoint and tests exist.
+3. Scaffold token-to-scope authentication, bearer parsing, protected scope checks, and standard API error handling exist.
+4. Current route inventory includes `GET /api/v1/health`, `GET /api/v1/mdx-components`, content management routes, and public content routes.
+
+### Content Draft and Publishing
+
+1. SQLite-backed scaffold persistence uses `PostStore` for posts, revisions, audit events, and publish jobs.
+2. Authenticated draft create, read, list, update, duplicate slug handling, update conflict handling, validation, request-time timestamps, and immutable revisions exist.
+3. Authenticated publish requests perform the first immediate publish transition, preserve current revision, record `post.published`, and create durable publish-job bookkeeping.
+4. Authenticated published read/list/filter/pagination exists through management routes with `posts:read` scope.
+
+### Public Content API
+
+1. Anonymous `GET /api/v1/public/posts` exposes public-safe published summaries.
+2. Anonymous `GET /api/v1/public/posts/{slug}` exposes public-safe published detail by slug.
+3. Public list supports minimal `limit` and item-id `cursor` pagination plus `page` metadata.
+4. Public detail includes minimal safe `bodyHtml` rendering.
+5. Authenticated management routes remain separate from public routes.
+
+### Public Frontend
+
+1. `apps/public-site` provides a Next.js public site scaffold.
+2. Implemented routes include home, `/posts`, `/posts/{slug}`, `/rss.xml`, `/sitemap.xml`, and `/sitemap-posts.xml`.
+3. Public pages use public APIs and avoid management routes.
+4. Public list/detail render core fields, summary fallback, tags, machine-readable dates, not-found behavior, empty state, and controlled error state.
+5. Public route metadata and canonical URLs exist.
+6. Current public cache policy uses explicit Next.js route/fetch revalidation and avoids `cache: "no-store"` for public content fetches.
+
+### RSS, Sitemap, and SEO
+
+1. `/rss.xml` emits RSS 2.0 items from bounded full-history public-list traversal.
+2. `/sitemap.xml` is a sitemap index.
+3. `/sitemap-posts.xml` emits post URLs from bounded full-history public-list traversal.
+4. RSS and sitemap routes use public APIs, route-level revalidation, and explicit page-size/max-page bounds.
+5. Atom, richer feed contents, richer SEO schema, Open Graph image generation, additional sitemap shards, and CDN cache policy remain future work.
+
+### Publish Invalidation
+
+1. Publish responses and `publish_jobs` record public invalidation surfaces for `/posts`, `/posts/{slug}`, `/rss.xml`, and `/sitemap.xml`.
+2. Public invalidation execution is durable bookkeeping with `mode=recorded`, `status=recorded`, and `executor=none`.
+3. Dispatch bookkeeping is recorded in response and durable publish-job fields.
+4. Dispatcher exceptions produce `dispatch_failed` / `dispatcher_exception` bookkeeping without rolling back successful publish state.
+5. Current dispatchers include `none`, `contract`, and `cloudflare`.
+
+### Cloudflare Adapter
+
+1. Settings accept `public_invalidation_dispatcher=cloudflare`.
+2. Settings accept optional `public_invalidation_cloudflare_zone_id` and secret `public_invalidation_cloudflare_api_token` values.
+3. The Cloudflare adapter distinguishes missing settings from configured-disabled bookkeeping on `main`.
+4. The Cloudflare adapter can build an inert `CloudflarePurgeRequestPlan` with method, path, and deduplicated ordered files body.
+5. Request plans exclude token, `Authorization`, and `Bearer` data and are not executed on `main`.
+6. Cloudflare dry-run dispatch is the paused next implementation task after documentation remediation.
+
+## Deferred Functional Areas
+
+### Data and Migrations
+
+1. SQLAlchemy and Alembic are target stack components but are not yet introduced in code.
+2. Migration work must preserve current logical entities and route contracts while replacing scaffold schema initialization.
+3. PostgreSQL remains a future production option after managed migrations exist.
+
+### Admin Console
+
+1. CMS admin console implementation remains future work.
+2. Admin must use authenticated API contracts and must not write directly to the database.
+
+### Agent and MCP
+
+1. MCP server implementation remains future work.
+2. MCP tools must wrap documented API capabilities and must not bypass API auth, scopes, state transitions, or audit logging.
+
+### Deployment
+
+1. Deployment readiness, Docker/Compose runtime hardening, smoke tests, and image publishing remain future work.
+2. Current CI validates guards and the public-site build but does not publish GHCR images.
+
+### Live External Side Effects
+
+1. Real Cloudflare API calls, CDN purge, authorization header sending, provider response/error mapping, retries, webhooks, Next.js tag/path revalidation, cache headers, scheduling semantics, and real job runner execution remain future work.
+2. These concerns must be introduced through explicit named tasks and decisions.
 
 ## Next Named Work
 
-### Article Draft API Development
+### Project Documentation Source-of-Truth Remediation
 
-1. SQLite-backed draft persistence now creates `Post`, `PostRevision`, and `post.created` audit rows for `POST /api/v1/posts`.
-2. Duplicate draft slug requests now return a standard `409 conflict` response without creating additional persistence side effects.
-3. Invalid draft input now returns a standard `400 invalid_request` response before persistence side effects.
-4. Draft creation now uses request-time UTC timestamps, with injectable clock support for deterministic tests.
-5. Authenticated draft readback now returns a created draft through `GET /api/v1/posts/{post_id}` with `posts:read` scope.
-6. Authenticated draft list now returns summary-shaped draft items through `GET /api/v1/posts?status=draft` with `posts:read` scope.
-7. Authenticated draft update now creates a new immutable revision through `PATCH /api/v1/posts/{post_id}` with `posts:write` scope and `expectedRevisionId` conflict protection.
-8. Update-time duplicate slug requests now return a standard `409 conflict` response before creating a new revision, audit event, or post mutation.
-9. Invalid update payloads now have explicit test coverage proving `400 invalid_request` before revision, audit, or post mutation side effects.
-10. Authenticated publish requests now return a queued job-shaped response through `POST /api/v1/posts/{post_id}/publish` with `posts:publish` scope, standard `404`, and stale `revisionId` `409 conflict` without post/revision/audit mutation.
-11. Publish requests now persist the first state transition from `draft` to `published`, set `publishedAt`/`updatedAt`, preserve the current revision, and record `post.published` audit metadata.
-12. Publish requests now create a durable `publish_jobs` row for the immediate publish attempt while keeping runner and scheduling semantics deferred.
-13. Authenticated management read/list now exposes published posts through `GET /api/v1/posts/{post_id}` and `GET /api/v1/posts?status=published`; public read remains a separate dedicated endpoint task.
-14. Published lists now support the first minimal `tag`, `category`, and `series` filters.
-15. Published lists now support the first minimal `limit`/`cursor` pagination boundary.
-16. `GET /api/v1/public/posts` now provides the first anonymous public published summary list with public-safe fields while keeping authenticated `/api/v1/posts...` management routes separate.
-17. `GET /api/v1/public/posts/{slug}` now provides the first anonymous public published detail readback with public-safe fields while keeping authenticated `/api/v1/posts...` management detail separate.
-18. `GET /api/v1/public/posts/{slug}` now includes `bodyHtml`, a minimal sanitized render output for public detail content. It preserves the original authored `content` and keeps management detail unchanged.
-19. `apps/public-site` now provides the first Next.js public frontend scaffold with `/posts/{slug}` reading `GET /api/v1/public/posts/{slug}` and rendering `bodyHtml` while preserving the public/management API boundary.
-20. `/posts` now provides the first public article list page, reads `GET /api/v1/public/posts`, displays title/summary/publishedAt/tags, and links each item to `/posts/{slug}` without using management routes.
-21. Current CI validates the public-site build but intentionally does not publish Docker or GHCR images until deployment readiness contracts exist.
-22. The Dependabot PostCSS advisory for `apps/public-site/package-lock.json` is fixed by resolving `postcss` to patched version `8.5.10`.
-23. CI Hygiene / Node 24 Actions Boundary is complete: Guards use read-only permissions, concurrency cancellation, and Node.js 24 opt-in for JavaScript actions.
-24. `/posts` now has a stable empty-list state and controlled fetch-failure error boundary without calling management routes.
-25. Article Public Site Styling Boundary is complete: `/`, `/posts`, `/posts/{slug}`, list empty state, and list error state share a narrow header/card surface rhythm without introducing a full design system.
-26. Article Public Site SEO Metadata Boundary is complete: `/` and `/posts` define stable route metadata while `/posts/{slug}` keeps generating metadata from public detail data.
-27. Article Published Public Render Coverage Boundary is complete: public list/detail rendering now guard machine-readable publish dates, summary fallback, tags, public detail `bodyHtml`, and not-found behavior without calling management routes.
-28. Article Public API / Frontend Cache Policy Boundary is complete: public list/detail fetches use explicit Next.js revalidation constants and the dynamic routes avoid build-time API prerendering.
-29. Article Public Sitemap Boundary is complete: `/sitemap.xml` exposes `/`, `/posts`, and published post detail URLs from public list data without RSS or management-route access.
-30. Article Public RSS Boundary is complete: `/rss.xml` exposes RSS 2.0 items from public list data without full body content, Atom, or management-route access.
-31. Article Public Canonical URL Boundary is complete: `/`, `/posts`, and `/posts/{slug}` define canonical metadata using the public site URL setting without management-route access.
-32. Article Public Pagination Boundary is complete: anonymous `GET /api/v1/public/posts` supports minimal `limit` and item-id `cursor` pagination while preserving public-safe fields.
-33. Article Public Frontend Pagination Boundary is complete: `/posts` requests a limited public list page, accepts `cursor` from query params, and renders a `Load more articles` link when `nextCursor` exists.
-34. Article Public Pagination Metadata Boundary is complete: anonymous `GET /api/v1/public/posts` now returns minimal `page` metadata (`limit`, `cursor`, `hasNextPage`) alongside `items` and `nextCursor`.
-35. Article Public Pagination Metadata Frontend Boundary is complete: `/posts` now uses `page.hasNextPage` plus `nextCursor` to decide whether to render the next-page link.
-36. Article Public RSS/Sitemap Pagination Policy Boundary is complete: `/rss.xml` and `/sitemap.xml` explicitly consume one single public list page only, with cursor/full-history expansion deferred.
-37. Article Public CDN/Invalidation Boundary is complete: public frontend caching remains Next.js revalidation only, with no CDN headers, publish-triggered invalidation, tag-based revalidation, or CDN purge wiring yet.
-38. Article Public Publish Invalidation Contract Boundary is complete: publish responses and `publish_jobs` now record contract-only public invalidation surfaces for `/posts`, `/posts/{slug}`, `/rss.xml`, and `/sitemap.xml` without executing real CDN or Next.js invalidation.
-39. Article Public RSS/Sitemap Full-History Pagination Boundary is complete: `/rss.xml` and `/sitemap.xml` now traverse anonymous public list pages with explicit page-size and max-page bounds so feeds include published history beyond the first list page.
-40. Article Public RSS/Sitemap Cache Policy Boundary is complete: `/rss.xml` and `/sitemap.xml` now declare route-level Next.js revalidation with explicit RSS/sitemap cache policy markers and no CDN headers, purge, or publish-triggered invalidation execution.
-41. Article Public Publish Invalidation Execution Boundary is complete: publish responses and `publish_jobs` now record public invalidation execution status as durable bookkeeping with `mode=recorded`, `status=recorded`, and `executor=none`, without CDN purge, webhooks, cache headers, or Next.js tag/path invalidation.
-42. Article Public Publish Invalidation Dispatch Boundary is complete: publish responses and `publish_jobs` now record dispatch semantics with `dispatch_skipped`, `no_dispatcher_configured`, `attempted=false`, and no external invalidation side effects.
-43. Article Public Publish Invalidation Dispatcher Configuration Boundary is complete: API settings now expose `public_invalidation_dispatcher` with the only supported value `none`, including `NAIRI_PUBLIC_INVALIDATION_DISPATCHER=none` env wiring and validation that rejects unsupported dispatcher values.
-44. Article Public Publish Invalidation Dispatcher Interface Boundary is complete: app creation now builds a configured `PublicInvalidationDispatcher`, with a `none` no-op implementation that returns skipped dispatch bookkeeping without external side effects.
-45. Article Public Publish Invalidation Dispatcher Route Integration Boundary is complete: the publish route now invokes the configured in-process dispatcher after successful publish storage and maps the dispatcher result into the response dispatch object.
-46. Article Public Publish Invalidation Dispatcher Persistence Boundary is complete: the publish route now records the dispatcher result back onto the durable `publish_jobs` dispatch fields after the dispatcher returns, keeping response dispatch and durable dispatch bookkeeping aligned without running external invalidation.
-47. Article Public Publish Invalidation Dispatcher Error Policy Boundary is complete: dispatcher exceptions now become durable `dispatch_failed` / `dispatcher_exception` bookkeeping while preserving the successful publish transition, and dispatch persistence fails closed for missing publish job rows.
-48. Article Public Publish Invalidation Adapter Contract Boundary is complete: settings now accept `public_invalidation_dispatcher=contract`, and the contract-only dispatcher records deterministic attempted bookkeeping without external invalidation side effects.
-49. Article Public RSS/Sitemap Split Boundary is complete: `/sitemap.xml` is now a sitemap index and `/sitemap-posts.xml` contains the bounded full-history public posts sitemap without RSS or CDN/invalidation side effects.
-50. Article Public Publish Invalidation Cloudflare Adapter Config Boundary is complete: settings now accept `public_invalidation_dispatcher=cloudflare`, and the Cloudflare dispatcher is config-only disabled bookkeeping with no Cloudflare API or purge side effects.
-51. Article Public Publish Invalidation Cloudflare Adapter Settings Boundary is complete: settings now accept optional Cloudflare zone id and secret API token env/config values, distinguish missing-settings vs configured-disabled bookkeeping, and still perform no Cloudflare API or purge side effects.
-52. Article Public Publish Invalidation Cloudflare Adapter Request Builder Boundary is complete: the Cloudflare adapter can build an inert purge request plan from zone id and deduplicated ordered surfaces without token output, HTTP clients, Cloudflare API calls, or purge execution.
-53. The next product-development task is Article Public Publish Invalidation Cloudflare Adapter Dry-Run Dispatch Boundary or Article Public Sitemap Additional Shards Boundary.
-17. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
-18. Preserve scope checks and standard error behavior.
+1. Status: in progress.
+2. Scope: restore source-of-truth boundaries across root docs and `memory-bank` after the project review found drift in `project-state.md`, `roadmap.md`, `decisions.md`, `AGENTS.md`, README, and `.env.example`.
+3. Required updates: `AGENTS.md`, README files, CONTRIBUTING files, `.env.example`, `decisions.md`, `project-state.md`, `roadmap.md`, `progress-log.md`, `guard-ci.md`, `tech-stack.md`, local Chinese companions, and this review artifact.
+4. Verification: docs, i18n, contract, API schema, secret guards, diff check, and relevant scans.
+5. After completion: resume Article Public Publish Invalidation Cloudflare Adapter Dry-Run Dispatch Boundary.
 
 ## Blockers
 
 ### Current Blockers
 
-No active blocker. Continue one named task at a time and keep guard verification mandatory.
+No product blocker. Documentation governance remediation is intentionally blocking further Cloudflare/live invalidation work until source-of-truth documents are corrected.

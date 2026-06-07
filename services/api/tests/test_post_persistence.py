@@ -895,6 +895,99 @@ def test_list_published_posts_paginates_with_limit_and_cursor(tmp_path: Path) ->
     assert second_page_response.json()["nextCursor"] is None
 
 
+def test_list_public_posts_returns_public_safe_published_summaries_without_auth(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    settings = Settings(
+        api_tokens={
+            "post-writer-token": ["posts:write"],
+            "post-publisher-token": ["posts:publish"],
+        },
+        database_path=str(database_path),
+    )
+    timestamps = iter(
+        [
+            datetime(2026, 6, 7, 8, 1, 0, tzinfo=UTC),
+            datetime(2026, 6, 7, 8, 2, 0, tzinfo=UTC),
+            datetime(2026, 6, 7, 8, 3, 0, tzinfo=UTC),
+        ]
+    )
+    app = create_app(settings=settings)
+    app.state.post_store = PostStore(str(database_path), clock=lambda: next(timestamps))
+    client = TestClient(app)
+
+    draft_only_payload = draft_payload()
+    draft_only_payload.update(
+        {
+            "title": "Hidden draft",
+            "slug": "hidden-draft",
+            "content": "This draft body must not leak.",
+            "summary": "Hidden draft summary.",
+            "metadata": {"source": "draft-only"},
+        }
+    )
+    draft_response = client.post(
+        "/api/v1/posts",
+        json=draft_only_payload,
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+    published_payload = draft_payload()
+    published_payload.update(
+        {
+            "title": "Public published post",
+            "slug": "public-published-post",
+            "content": "Published body is still omitted from public list.",
+            "summary": "Public summary.",
+            "tags": ["public", "storage"],
+            "categoryId": "category-public",
+            "seriesId": "series-public",
+            "metadata": {"source": "public-list-test", "internalNote": "do-not-leak"},
+        }
+    )
+    create_response = client.post(
+        "/api/v1/posts",
+        json=published_payload,
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+    post_id = create_response.json()["postId"]
+    revision_id = create_response.json()["revisionId"]
+    publish_response = client.post(
+        f"/api/v1/posts/{post_id}/publish",
+        json={"revisionId": revision_id, "publishMode": "immediate", "scheduledAt": None},
+        headers={"Authorization": "Bearer post-publisher-token"},
+    )
+
+    public_response = client.get("/api/v1/public/posts")
+
+    assert draft_response.status_code == 201
+    assert create_response.status_code == 201
+    assert publish_response.status_code == 200
+    assert public_response.status_code == 200
+    assert public_response.json() == {
+        "items": [
+            {
+                "postId": post_id,
+                "title": "Public published post",
+                "slug": "public-published-post",
+                "status": "published",
+                "contentFormat": "markdown",
+                "summary": "Public summary.",
+                "tags": ["public", "storage"],
+                "categoryId": "category-public",
+                "seriesId": "series-public",
+                "publishedAt": "2026-06-07T08:03:00Z",
+            }
+        ],
+        "nextCursor": None,
+    }
+    serialized_response = str(public_response.json())
+    assert "revisionId" not in serialized_response
+    assert "metadata" not in serialized_response
+    assert "internalNote" not in serialized_response
+    assert "Hidden draft" not in serialized_response
+    assert "This draft body must not leak" not in serialized_response
+    assert "Published body is still omitted" not in serialized_response
+
+
 def test_get_published_post_returns_published_detail_for_reader_scope(tmp_path: Path) -> None:
     database_path = tmp_path / "nairi.db"
     settings = Settings(

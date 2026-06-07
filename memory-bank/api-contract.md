@@ -49,7 +49,24 @@
 8. Item fields for published list: `postId`, `title`, `slug`, `status`, `contentFormat`, `summary`, `tags`, `categoryId`, `seriesId`, `metadata`, `revisionId`, `publishedAt`, `createdAt`, `updatedAt`.
 9. List items intentionally omit `content`; clients should use `GET /api/v1/posts/{post_id}` for detail.
 10. Audit event: none for list readback.
-11. Clients: admin console for authenticated lists, MCP for agent-safe listing, and authorized automation. Public frontend must use a dedicated public content endpoint once public read is introduced.
+11. Clients: admin console for authenticated lists, MCP for agent-safe listing, and authorized automation.
+
+## Public Content API
+
+### List Public Posts
+
+1. Method: `GET`
+2. Path: `/api/v1/public/posts`
+3. Scope: `public:read`
+4. Query parameters:
+5. Current scaffold boundary: anonymous published summary list only; no filters, pagination inputs, detail endpoint, Markdown/MDX rendering, or cache headers yet.
+6. Response fields: `items`, `nextCursor`
+7. Item fields: `postId`, `title`, `slug`, `status`, `contentFormat`, `summary`, `tags`, `categoryId`, `seriesId`, `publishedAt`.
+8. Public list items intentionally omit `content`, `revisionId`, `metadata`, `createdAt`, `updatedAt`, audit state, job state, and agent traces.
+9. Audit event: none for public list readback.
+10. Clients: public frontend, anonymous readers, and future CDN-cacheable public routes.
+
+## Management Content API
 
 ### Create Post Draft
 

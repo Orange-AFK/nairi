@@ -450,6 +450,16 @@
 6. Risks or blockers: RSS/sitemap cache policy, CDN headers, publish-triggered invalidation execution, Atom, richer feed contents, and search-engine sitemap splitting remain deferred.
 7. Next recommended named task: Article Public Publish Invalidation Execution Boundary or Article Public RSS/Sitemap Cache Policy Boundary.
 
+### Article Public RSS/Sitemap Cache Policy Boundary
+
+1. Status: completed.
+2. Scope: added explicit route-level Next.js revalidation policy markers for `/rss.xml` and `/sitemap.xml`, using 300-second revalidation while keeping full-history pagination unchanged.
+3. Changed files: `apps/public-site/app/rss.xml/route.ts`, `apps/public-site/app/sitemap.xml/route.ts`, `scripts/checks/frontend_public_rss_check.py`, `scripts/checks/frontend_public_sitemap_check.py`, `memory-bank/frontend-design.md`, `memory-bank/project-state.md`, and `memory-bank/progress-log.md`.
+4. Verification performed: extended RSS/sitemap structural checks first and observed RED on missing revalidation constants, cache policy markers, and route-level revalidation exports; implemented the minimal route policy and verified RSS/sitemap checks plus public-site typecheck, then fixed the route `revalidate` export to use the statically analyzable literal required by Next.js builds.
+5. Result: passed for the RSS/sitemap cache policy boundary.
+6. Risks or blockers: real CDN purge, publish-triggered invalidation execution, `revalidateTag`/`revalidatePath`, cache headers, sitemap splitting, Atom, and richer feed contents remain deferred.
+7. Next recommended named task: Article Public Publish Invalidation Execution Boundary or Article Public RSS/Sitemap Split Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

@@ -69,7 +69,8 @@
 37. Article Public CDN/Invalidation Boundary is complete: public frontend caching remains Next.js revalidation only, with no CDN headers, publish-triggered invalidation, tag-based revalidation, or CDN purge wiring yet.
 38. Article Public Publish Invalidation Contract Boundary is complete: publish responses and `publish_jobs` now record contract-only public invalidation surfaces for `/posts`, `/posts/{slug}`, `/rss.xml`, and `/sitemap.xml` without executing real CDN or Next.js invalidation.
 39. Article Public RSS/Sitemap Full-History Pagination Boundary is complete: `/rss.xml` and `/sitemap.xml` now traverse anonymous public list pages with explicit page-size and max-page bounds so feeds include published history beyond the first list page.
-40. The next product-development task is Article Public Publish Invalidation Execution Boundary or Article Public RSS/Sitemap Cache Policy Boundary.
+40. Article Public RSS/Sitemap Cache Policy Boundary is complete: `/rss.xml` and `/sitemap.xml` now declare route-level Next.js revalidation with explicit RSS/sitemap cache policy markers and no CDN headers, purge, or publish-triggered invalidation execution.
+41. The next product-development task is Article Public Publish Invalidation Execution Boundary or Article Public RSS/Sitemap Split Boundary.
 17. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
 18. Preserve scope checks and standard error behavior.
 

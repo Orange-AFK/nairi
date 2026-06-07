@@ -87,7 +87,10 @@ The public frontend presents articles, pages, project retrospectives, tags, cate
 3. `/posts` and `/posts/{slug}` opt out of build-time API prerendering with `dynamic = "force-dynamic"` so local and CI builds do not require a live API.
 4. Public frontend fetches must not use `cache: "no-store"` after this boundary unless a later explicit cache-policy task changes the contract.
 5. Public frontend cache policy is explicitly Next.js revalidation only: no CDN headers, no publish-triggered invalidation, and no tag-based revalidation in this boundary.
-6. Real CDN purge wiring, revalidation webhooks, pagination cache policy, RSS, and sitemap cache policy remain deferred.
+6. `/rss.xml` uses route-level Next.js revalidation through `PUBLIC_FEED_REVALIDATE_SECONDS`, currently 300 seconds.
+7. `/sitemap.xml` uses route-level Next.js revalidation through `PUBLIC_SITEMAP_REVALIDATE_SECONDS`, currently 300 seconds.
+8. RSS and sitemap cache policy is explicitly Next.js route revalidation only: no CDN headers, no purge, and no publish-triggered invalidation execution in this boundary.
+9. Real CDN purge wiring, revalidation webhooks, pagination cache policy, and tag/path invalidation execution remain deferred.
 
 ## SEO
 
@@ -101,4 +104,4 @@ The public frontend presents articles, pages, project retrospectives, tags, cate
 6. `/rss.xml` returns RSS 2.0 XML with items from bounded full-history public-list pagination; items include title, link, guid, `pubDate` from `publishedAt`, and summary as description, and must not include full `bodyHtml`.
 7. RSS/sitemap full-history traversal uses anonymous public list pages only, with explicit `PUBLIC_POSTS_PAGE_SIZE` and `PUBLIC_POSTS_MAX_PAGES` bounds to avoid unbounded crawling.
 8. The public site URL defaults to localhost for local builds and is overridable through `NEXT_PUBLIC_NAIRI_PUBLIC_SITE_URL`.
-9. Open Graph image generation, Atom, richer SEO schema, sitemap splitting, RSS/sitemap cache policy, and CDN invalidation remain deferred.
+9. Open Graph image generation, Atom, richer SEO schema, sitemap splitting, and CDN invalidation remain deferred.

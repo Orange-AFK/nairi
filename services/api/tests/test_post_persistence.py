@@ -592,7 +592,9 @@ def test_publish_post_draft_transitions_to_published_and_records_audit(tmp_path:
         headers={"Authorization": "Bearer post-reader-token"},
     )
 
-    assert read_response.status_code == 404
+    assert read_response.status_code == 200
+    assert read_response.json()["status"] == "published"
+    assert read_response.json()["publishedAt"] == "2026-06-07T08:11:12Z"
     assert list_response.status_code == 200
     assert list_response.json() == {"items": [], "nextCursor": None}
     with sqlite3.connect(database_path) as connection:
@@ -659,6 +661,131 @@ def test_publish_post_draft_transitions_to_published_and_records_audit(tmp_path:
             "2026-06-07T08:11:12Z",
         ),
     ]
+
+
+def test_list_published_posts_returns_published_summaries_for_reader_scope(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    settings = Settings(
+        api_tokens={
+            "post-writer-token": ["posts:write"],
+            "post-reader-token": ["posts:read"],
+            "post-publisher-token": ["posts:publish"],
+        },
+        database_path=str(database_path),
+    )
+    timestamps = iter(
+        [
+            datetime(2026, 6, 7, 8, 9, 10, tzinfo=UTC),
+            datetime(2026, 6, 7, 8, 11, 12, tzinfo=UTC),
+        ]
+    )
+    app = create_app(settings=settings)
+    app.state.post_store = PostStore(str(database_path), clock=lambda: next(timestamps))
+    client = TestClient(app)
+
+    create_response = client.post(
+        "/api/v1/posts",
+        json=draft_payload(),
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+    post_id = create_response.json()["postId"]
+    revision_id = create_response.json()["revisionId"]
+    publish_response = client.post(
+        f"/api/v1/posts/{post_id}/publish",
+        json={"revisionId": revision_id, "publishMode": "immediate", "scheduledAt": None},
+        headers={"Authorization": "Bearer post-publisher-token"},
+    )
+
+    list_response = client.get(
+        "/api/v1/posts?status=published",
+        headers={"Authorization": "Bearer post-reader-token"},
+    )
+
+    assert create_response.status_code == 201
+    assert publish_response.status_code == 200
+    assert list_response.status_code == 200
+    assert list_response.json() == {
+        "items": [
+            {
+                "postId": post_id,
+                "title": "Persistent draft",
+                "slug": "persistent-draft",
+                "status": "published",
+                "contentFormat": "markdown",
+                "summary": "Stored summary.",
+                "tags": ["storage"],
+                "categoryId": None,
+                "seriesId": None,
+                "metadata": {"source": "persistence-test"},
+                "revisionId": revision_id,
+                "publishedAt": "2026-06-07T08:11:12Z",
+                "createdAt": "2026-06-07T08:09:10Z",
+                "updatedAt": "2026-06-07T08:11:12Z",
+            }
+        ],
+        "nextCursor": None,
+    }
+
+
+
+def test_get_published_post_returns_published_detail_for_reader_scope(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    settings = Settings(
+        api_tokens={
+            "post-writer-token": ["posts:write"],
+            "post-reader-token": ["posts:read"],
+            "post-publisher-token": ["posts:publish"],
+        },
+        database_path=str(database_path),
+    )
+    timestamps = iter(
+        [
+            datetime(2026, 6, 7, 8, 9, 10, tzinfo=UTC),
+            datetime(2026, 6, 7, 8, 11, 12, tzinfo=UTC),
+        ]
+    )
+    app = create_app(settings=settings)
+    app.state.post_store = PostStore(str(database_path), clock=lambda: next(timestamps))
+    client = TestClient(app)
+
+    create_response = client.post(
+        "/api/v1/posts",
+        json=draft_payload(),
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+    post_id = create_response.json()["postId"]
+    revision_id = create_response.json()["revisionId"]
+    publish_response = client.post(
+        f"/api/v1/posts/{post_id}/publish",
+        json={"revisionId": revision_id, "publishMode": "immediate", "scheduledAt": None},
+        headers={"Authorization": "Bearer post-publisher-token"},
+    )
+
+    read_response = client.get(
+        f"/api/v1/posts/{post_id}",
+        headers={"Authorization": "Bearer post-reader-token"},
+    )
+
+    assert create_response.status_code == 201
+    assert publish_response.status_code == 200
+    assert read_response.status_code == 200
+    assert read_response.json() == {
+        "postId": post_id,
+        "title": "Persistent draft",
+        "slug": "persistent-draft",
+        "status": "published",
+        "contentFormat": "markdown",
+        "content": "# Persistent draft\n\nStored body.",
+        "summary": "Stored summary.",
+        "tags": ["storage"],
+        "categoryId": None,
+        "seriesId": None,
+        "metadata": {"source": "persistence-test"},
+        "revisionId": revision_id,
+        "publishedAt": "2026-06-07T08:11:12Z",
+        "createdAt": "2026-06-07T08:09:10Z",
+        "updatedAt": "2026-06-07T08:11:12Z",
+    }
 
 
 def test_publish_post_draft_adds_published_at_column_for_existing_scaffold_database(tmp_path: Path) -> None:

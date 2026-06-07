@@ -4,11 +4,11 @@
 
 ### Project Status
 
-1. Nairi has completed foundational documentation, guard scripts, the first API scaffold, the first protected scope-check route, scaffold-level article draft creation, the first SQLite-backed draft persistence boundary, duplicate draft slug conflict handling, the first draft input validation boundary, request-time draft timestamps, the first authenticated draft readback boundary, the first authenticated draft list boundary, the first authenticated draft update boundary, update-time duplicate slug conflict handling, update-time input validation coverage, the first authenticated publish route contract boundary, the first publish state transition boundary, and the first publish job storage boundary.
+1. Nairi has completed foundational documentation, guard scripts, the first API scaffold, the first protected scope-check route, scaffold-level article draft creation, the first SQLite-backed draft persistence boundary, duplicate draft slug conflict handling, the first draft input validation boundary, request-time draft timestamps, the first authenticated draft readback boundary, the first authenticated draft list boundary, the first authenticated draft update boundary, update-time duplicate slug conflict handling, update-time input validation coverage, the first authenticated publish route contract boundary, the first publish state transition boundary, the first publish job storage boundary, and the first published readback boundary.
 2. The FastAPI service skeleton and auth dependency exist under `services/api/`.
 3. The accepted product direction is API-first and agent-first CMS.
 4. FastAPI is the product capability authority.
-5. Documentation, contracts, guard rules, health endpoint tests, protected scope tests, article draft creation route tests, draft persistence tests, duplicate slug tests, draft input validation tests, draft timestamp tests, draft readback tests, draft list tests, draft update tests, update duplicate slug tests, update input validation tests, publish contract tests, publish state transition tests, and publish job storage tests currently pass locally.
+5. Documentation, contracts, guard rules, health endpoint tests, protected scope tests, article draft creation route tests, draft persistence tests, duplicate slug tests, draft input validation tests, draft timestamp tests, draft readback tests, draft list tests, draft update tests, update duplicate slug tests, update input validation tests, publish contract tests, publish state transition tests, publish job storage tests, and published read/list tests currently pass locally.
 
 ## Confirmed Decisions
 
@@ -42,9 +42,10 @@
 10. Authenticated publish requests now return a queued job-shaped response through `POST /api/v1/posts/{post_id}/publish` with `posts:publish` scope, standard `404`, and stale `revisionId` `409 conflict` without post/revision/audit mutation.
 11. Publish requests now persist the first state transition from `draft` to `published`, set `publishedAt`/`updatedAt`, preserve the current revision, and record `post.published` audit metadata.
 12. Publish requests now create a durable `publish_jobs` row for the immediate publish attempt while keeping runner and scheduling semantics deferred.
-13. The next small task is Article Draft Published Readback Boundary: expose published article read/list behavior without changing public rendering yet.
-14. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
-15. Preserve scope checks and standard error behavior.
+13. Authenticated read/list now exposes published posts through `GET /api/v1/posts/{post_id}` and `GET /api/v1/posts?status=published` while keeping public rendering deferred.
+14. The next small task is Article Draft Published Filtering Boundary: add the first minimal tag/category/series filtering for published lists without pagination yet.
+15. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
+16. Preserve scope checks and standard error behavior.
 
 ## Blockers
 

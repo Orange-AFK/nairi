@@ -40,8 +40,8 @@ FastAPI is the single authority for product capabilities. Other modules are clie
 7. Current public health endpoint: `GET /api/v1/health`.
 8. Current protected contract smoke endpoint: `GET /api/v1/mdx-components`.
 9. Current article draft creation endpoint: `POST /api/v1/posts`.
-10. Current article draft list endpoint: `GET /api/v1/posts?status=draft`.
-11. Current article draft readback endpoint: `GET /api/v1/posts/{post_id}`.
+10. Current article list endpoint: `GET /api/v1/posts?status=draft|published`.
+11. Current article readback endpoint: `GET /api/v1/posts/{post_id}` for draft or published posts.
 12. Current article draft update endpoint: `PATCH /api/v1/posts/{post_id}`.
 13. Current article draft publish endpoint: `POST /api/v1/posts/{post_id}/publish`.
 14. Test path: `services/api/tests/`.
@@ -107,7 +107,8 @@ FastAPI is the single authority for product capabilities. Other modules are clie
 11. Publish request goes through `/api/v1/posts/{post_id}/publish` with `posts:publish` scope and the current draft `revisionId`.
 12. `PostStore` creates a durable `publish_jobs` row for the immediate publish attempt.
 13. `PostStore` changes the post status to `published`, writes request-time `published_at` and `updated_at`, preserves the current revision, and records `post.published` audit metadata.
-14. Scheduling semantics and the job runner remain future work under documented state rules.
+14. Admin, MCP, authorized clients, and later public clients can read published summaries through `GET /api/v1/posts?status=published` and published detail through `GET /api/v1/posts/{post_id}` with `posts:read` scope in the current scaffold.
+15. Scheduling semantics, public rendering, and the job runner remain future work under documented state rules.
 
 ## Security Boundary
 

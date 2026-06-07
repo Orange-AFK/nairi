@@ -111,15 +111,16 @@ FastAPI is the single authority for product capabilities. Other modules are clie
 15. The publish API returns that invalidation record with `mode=recorded` plus dispatch bookkeeping. API settings currently expose `public_invalidation_dispatcher=none` / `NAIRI_PUBLIC_INVALIDATION_DISPATCHER=none` as the only supported dispatcher configuration, so unsupported dispatcher values are rejected before external dispatch behavior exists.
 16. App creation builds `app.state.public_invalidation_dispatcher` from settings. The only current implementation is `NoopPublicInvalidationDispatcher`, which returns skipped dispatch bookkeeping and does not call external systems.
 17. After successful publish storage, the publish route calls the configured dispatcher with the recorded surfaces and `published_at`, maps the dispatcher result into the response `publicInvalidation.dispatch` object, and records the same dispatcher result back onto the durable `publish_jobs` dispatch fields.
-18. The publish flow does not trigger CDN purge, Next.js tag/path revalidation, webhooks, cache headers, or any external invalidation side effect.
-19. Admin, MCP, and authorized clients can read published summaries through `GET /api/v1/posts?status=published` and published detail through `GET /api/v1/posts/{post_id}` with `posts:read` scope in the current scaffold.
-20. Public clients read published summaries through `GET /api/v1/public/posts`, which is anonymous and returns only public-safe fields.
-21. Public clients read published detail through `GET /api/v1/public/posts/{slug}`, which is anonymous, slug-based, published-only, and returns a public-safe detail response.
-22. Public detail includes both authored `content` and a minimal sanitized `bodyHtml` render output. The renderer is intentionally not full MDX execution; it only handles a small Markdown subset and strips script blocks from rendered HTML.
-23. Public clients must not reuse authenticated content-management routes.
-24. Authenticated published summary lists can currently be filtered by tag membership, category id, or series id.
-25. Authenticated and public published summary lists can currently be paginated with `limit` and an item-id `cursor`.
-26. Public filtering inputs, full MDX/component rendering, scheduling semantics, external invalidation execution, and the job runner remain future work under documented state rules.
+18. If the dispatcher raises, the publish route records failed dispatch bookkeeping (`dispatch_failed` / `dispatcher_exception`) in the response and publish job instead of rolling back the successful publish transition; direct dispatch-row updates fail closed if the publish job row is missing.
+19. The publish flow does not trigger CDN purge, Next.js tag/path revalidation, webhooks, cache headers, or any external invalidation side effect.
+20. Admin, MCP, and authorized clients can read published summaries through `GET /api/v1/posts?status=published` and published detail through `GET /api/v1/posts/{post_id}` with `posts:read` scope in the current scaffold.
+21. Public clients read published summaries through `GET /api/v1/public/posts`, which is anonymous and returns only public-safe fields.
+22. Public clients read published detail through `GET /api/v1/public/posts/{slug}`, which is anonymous, slug-based, published-only, and returns a public-safe detail response.
+23. Public detail includes both authored `content` and a minimal sanitized `bodyHtml` render output. The renderer is intentionally not full MDX execution; it only handles a small Markdown subset and strips script blocks from rendered HTML.
+24. Public clients must not reuse authenticated content-management routes.
+25. Authenticated published summary lists can currently be filtered by tag membership, category id, or series id.
+26. Authenticated and public published summary lists can currently be paginated with `limit` and an item-id `cursor`.
+27. Public filtering inputs, full MDX/component rendering, scheduling semantics, external invalidation execution, and the job runner remain future work under documented state rules.
 
 ## Security Boundary
 

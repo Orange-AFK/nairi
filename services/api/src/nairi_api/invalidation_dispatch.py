@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 from collections.abc import Sequence
+from dataclasses import dataclass
 from typing import Literal, Protocol
 
 from nairi_api.config import Settings
@@ -7,8 +7,8 @@ from nairi_api.config import Settings
 
 @dataclass(frozen=True)
 class PublicInvalidationDispatchResult:
-    status: Literal["dispatch_skipped"]
-    reason: Literal["no_dispatcher_configured"]
+    status: Literal["dispatch_skipped", "dispatch_failed"]
+    reason: Literal["no_dispatcher_configured", "dispatcher_exception"]
     attempted: bool
     attempted_at: str | None
 

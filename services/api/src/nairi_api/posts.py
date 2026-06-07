@@ -102,6 +102,12 @@ class PostRevisionConflictError(Exception):
         self.current_revision_id = current_revision_id
 
 
+class PublishJobNotFoundError(Exception):
+
+    def __init__(self, job_id: str) -> None:
+        self.job_id = job_id
+
+
 class PostStore:
     def __init__(self, database_path: str, clock: Callable[[], datetime] | None = None) -> None:
         self.database_path = database_path
@@ -390,7 +396,7 @@ class PostStore:
     ) -> None:
         with self._connect() as connection:
             self._init_schema(connection)
-            connection.execute(
+            cursor = connection.execute(
                 """
                 UPDATE publish_jobs
                 SET
@@ -402,6 +408,8 @@ class PostStore:
                 """,
                 (status, reason, int(attempted), attempted_at, job_id),
             )
+            if cursor.rowcount != 1:
+                raise PublishJobNotFoundError(job_id)
 
     def list_drafts(self) -> list[StoredPostDraft]:
         return self._list_posts_by_status(DRAFT_STATUS)

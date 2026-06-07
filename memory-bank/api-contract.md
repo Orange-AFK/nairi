@@ -35,8 +35,12 @@
 2. Path: `/api/v1/posts`
 3. Scope: `posts:read`
 4. Query parameters: `status`, `tag`, `category`, `series`, `limit`, `cursor`
-5. Response fields: `items`, `nextCursor`
-6. Clients: public frontend for public posts, admin console for authenticated lists, MCP for agent-safe listing.
+5. Current scaffold boundary: authenticated draft list for `status=draft`.
+6. Response fields: `items`, `nextCursor`
+7. Item fields for draft list: `postId`, `title`, `slug`, `status`, `contentFormat`, `summary`, `tags`, `categoryId`, `seriesId`, `metadata`, `revisionId`, `createdAt`, `updatedAt`.
+8. Draft list items intentionally omit `content`; clients should use `GET /api/v1/posts/{post_id}` for draft detail.
+9. Audit event: none for list readback.
+10. Clients: public frontend for public posts, admin console for authenticated lists, MCP for agent-safe listing.
 
 ### Create Post Draft
 

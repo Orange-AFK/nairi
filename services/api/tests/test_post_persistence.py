@@ -81,6 +81,107 @@ def test_create_post_draft_uses_injected_utc_timestamp(tmp_path: Path) -> None:
     )
 
 
+def test_list_post_drafts_returns_created_drafts_for_reader_scope(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    client = build_client(database_path)
+    second_payload = draft_payload()
+    second_payload.update(
+        {
+            "title": "Second persistent draft",
+            "slug": "second-persistent-draft",
+            "summary": "Second stored summary.",
+            "tags": ["storage", "second"],
+            "metadata": {"source": "second-persistence-test"},
+        }
+    )
+
+    first_create_response = client.post(
+        "/api/v1/posts",
+        json=draft_payload(),
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+    second_create_response = client.post(
+        "/api/v1/posts",
+        json=second_payload,
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+
+    list_response = client.get(
+        "/api/v1/posts?status=draft",
+        headers={"Authorization": "Bearer post-reader-token"},
+    )
+
+    assert first_create_response.status_code == 201
+    assert second_create_response.status_code == 201
+    assert list_response.status_code == 200
+    assert list_response.json() == {
+        "items": [
+            {
+                "postId": first_create_response.json()["postId"],
+                "title": "Persistent draft",
+                "slug": "persistent-draft",
+                "status": "draft",
+                "contentFormat": "markdown",
+                "summary": "Stored summary.",
+                "tags": ["storage"],
+                "categoryId": None,
+                "seriesId": None,
+                "metadata": {"source": "persistence-test"},
+                "revisionId": first_create_response.json()["revisionId"],
+                "createdAt": first_create_response.json()["createdAt"],
+                "updatedAt": first_create_response.json()["createdAt"],
+            },
+            {
+                "postId": second_create_response.json()["postId"],
+                "title": "Second persistent draft",
+                "slug": "second-persistent-draft",
+                "status": "draft",
+                "contentFormat": "markdown",
+                "summary": "Second stored summary.",
+                "tags": ["storage", "second"],
+                "categoryId": None,
+                "seriesId": None,
+                "metadata": {"source": "second-persistence-test"},
+                "revisionId": second_create_response.json()["revisionId"],
+                "createdAt": second_create_response.json()["createdAt"],
+                "updatedAt": second_create_response.json()["createdAt"],
+            },
+        ],
+        "nextCursor": None,
+    }
+
+
+def test_list_post_drafts_requires_posts_read_scope(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    client = build_client(database_path)
+
+    response = client.get(
+        "/api/v1/posts?status=draft",
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {
+        "code": "forbidden",
+        "message": "Missing required scope",
+        "details": {"requiredScope": "posts:read"},
+        "requestId": "unavailable",
+    }
+
+
+def test_list_post_drafts_returns_empty_items_when_no_drafts(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    client = build_client(database_path)
+
+    response = client.get(
+        "/api/v1/posts?status=draft",
+        headers={"Authorization": "Bearer post-reader-token"},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"items": [], "nextCursor": None}
+
+
 def test_get_post_draft_returns_created_draft_for_reader_scope(tmp_path: Path) -> None:
     database_path = tmp_path / "nairi.db"
     client = build_client(database_path)

@@ -64,9 +64,10 @@
 2. Draft creation persists one `Post`, one `PostRevision`, and one `post.created` audit event in the same request path.
 3. Draft creation stores one request-time UTC timestamp, serialized as `YYYY-MM-DDTHH:MM:SSZ`, across `posts.created_at`, `posts.updated_at`, `post_revisions.created_at`, and `audit_events.created_at`.
 4. `PostStore` accepts an injectable clock for deterministic tests; production defaults to current UTC time.
-5. Draft readback reconstructs the current draft response by joining `posts.current_revision_id` to `post_revisions.id` and separating draft metadata from response-only fields.
-6. This boundary is intentionally smaller than the final SQLAlchemy/Alembic model layer.
-7. Future migration work must preserve these logical entities while replacing scaffold schema initialization with managed migrations.
+5. Draft list and detail readback reconstruct the current draft response by joining `posts.current_revision_id` to `post_revisions.id` and separating draft metadata from response-only fields.
+6. Draft list readback returns summary-shaped items and intentionally omits revision `content` from each item.
+7. This boundary is intentionally smaller than the final SQLAlchemy/Alembic model layer.
+8. Future migration work must preserve these logical entities while replacing scaffold schema initialization with managed migrations.
 
 ## Database Support
 

@@ -379,6 +379,30 @@ class PostStore:
             public_invalidation_dispatch_attempted_at=public_invalidation_dispatch_attempted_at,
         )
 
+    def record_public_invalidation_dispatch(
+        self,
+        job_id: str,
+        *,
+        status: str,
+        reason: str | None,
+        attempted: bool,
+        attempted_at: str | None,
+    ) -> None:
+        with self._connect() as connection:
+            self._init_schema(connection)
+            connection.execute(
+                """
+                UPDATE publish_jobs
+                SET
+                    public_invalidation_dispatch_status = ?,
+                    public_invalidation_dispatch_reason = ?,
+                    public_invalidation_dispatch_attempted = ?,
+                    public_invalidation_dispatch_attempted_at = ?
+                WHERE id = ?
+                """,
+                (status, reason, int(attempted), attempted_at, job_id),
+            )
+
     def list_drafts(self) -> list[StoredPostDraft]:
         return self._list_posts_by_status(DRAFT_STATUS)
 

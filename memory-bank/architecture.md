@@ -73,7 +73,7 @@ FastAPI is the single authority for product capabilities. Other modules are clie
 1. Persists data for API-owned capabilities.
 2. Is not an external product interface.
 3. Schema changes require data model and migration updates.
-4. Current scaffold-level SQLite tables are initialized by `PostStore` for `posts`, `post_revisions`, and `audit_events`.
+4. Current scaffold-level SQLite tables are initialized by `PostStore` for `posts`, `post_revisions`, `audit_events`, and `publish_jobs`.
 5. SQLAlchemy and Alembic remain planned but are not yet introduced in code.
 
 ## Data Flow
@@ -105,8 +105,9 @@ FastAPI is the single authority for product capabilities. Other modules are clie
 9. Admin, MCP, or authorized clients update a draft through `PATCH /api/v1/posts/{post_id}` with `posts:write` scope and `expectedRevisionId` concurrency control.
 10. Admin reviews the draft through the CMS console.
 11. Publish request goes through `/api/v1/posts/{post_id}/publish` with `posts:publish` scope and the current draft `revisionId`.
-12. `PostStore` changes the post status to `published`, writes request-time `published_at` and `updated_at`, preserves the current revision, and records `post.published` audit metadata.
-13. Durable publish job storage and the job runner remain future work under documented state rules.
+12. `PostStore` creates a durable `publish_jobs` row for the immediate publish attempt.
+13. `PostStore` changes the post status to `published`, writes request-time `published_at` and `updated_at`, preserves the current revision, and records `post.published` audit metadata.
+14. Scheduling semantics and the job runner remain future work under documented state rules.
 
 ## Security Boundary
 

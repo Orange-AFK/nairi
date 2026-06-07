@@ -269,6 +269,23 @@ class PostStore:
                 raise PostRevisionConflictError(current_revision_id)
             connection.execute(
                 """
+                INSERT INTO publish_jobs (
+                    id,
+                    post_id,
+                    revision_id,
+                    status,
+                    scheduled_at,
+                    started_at,
+                    completed_at,
+                    error_code,
+                    error_message
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (job_id, post_id, revision_id, "succeeded", None, published_at, published_at, None, None),
+            )
+            connection.execute(
+                """
                 UPDATE posts
                 SET status = ?, published_at = ?, updated_at = ?
                 WHERE id = ?
@@ -424,6 +441,21 @@ class PostStore:
                 target_id TEXT NOT NULL,
                 metadata TEXT NOT NULL,
                 created_at TEXT NOT NULL
+            )
+            """
+        )
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS publish_jobs (
+                id TEXT PRIMARY KEY,
+                post_id TEXT NOT NULL REFERENCES posts(id),
+                revision_id TEXT NOT NULL REFERENCES post_revisions(id),
+                status TEXT NOT NULL,
+                scheduled_at TEXT,
+                started_at TEXT,
+                completed_at TEXT,
+                error_code TEXT,
+                error_message TEXT
             )
             """
         )

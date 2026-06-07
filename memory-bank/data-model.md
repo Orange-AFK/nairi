@@ -69,9 +69,10 @@
 7. Draft update creates a new immutable `post_revisions` row, updates `posts.current_revision_id`, changes draft fields on `posts`, stores one request-time UTC `updated_at`, and records a `post.updated` audit event.
 8. Draft update rejects stale `expectedRevisionId` values before creating a revision or audit event.
 9. The current publish state transition verifies a draft and current `revisionId`, changes `posts.status` to `published`, stores `posts.published_at` and `posts.updated_at`, preserves the current revision, and records one `post.published` audit event.
-10. The current publish path does not create a durable `publish_jobs` row; `jobId` remains deterministic response metadata until a later publish job storage task.
-11. This boundary is intentionally smaller than the final SQLAlchemy/Alembic model layer.
-12. Future migration work must preserve these logical entities while replacing scaffold schema initialization with managed migrations.
+10. The current publish path creates a durable `publish_jobs` row for the immediate publish attempt, with `status=succeeded`, null scheduling/error fields, and start/completion timestamps matching `published_at`.
+11. The current publish job storage is a scaffold persistence boundary only; no job runner, retry state machine, scheduling semantics, or public rendering is introduced yet.
+12. This boundary is intentionally smaller than the final SQLAlchemy/Alembic model layer.
+13. Future migration work must preserve these logical entities while replacing scaffold schema initialization with managed migrations.
 
 ## Database Support
 

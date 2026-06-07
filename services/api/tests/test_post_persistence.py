@@ -617,9 +617,28 @@ def test_publish_post_draft_transitions_to_published_and_records_audit(tmp_path:
             """,
             (post_id,),
         ).fetchall()
+        publish_job_row = connection.execute(
+            """
+            SELECT id, post_id, revision_id, status, scheduled_at, started_at, completed_at, error_code, error_message
+            FROM publish_jobs
+            WHERE id = ?
+            """,
+            (f"publish-{post_id}-{revision_id}",),
+        ).fetchone()
 
     assert post_row == ("published", revision_id, "2026-06-07T08:11:12Z", "2026-06-07T08:11:12Z")
     assert revision_count == 1
+    assert publish_job_row == (
+        f"publish-{post_id}-{revision_id}",
+        post_id,
+        revision_id,
+        "succeeded",
+        None,
+        "2026-06-07T08:11:12Z",
+        "2026-06-07T08:11:12Z",
+        None,
+        None,
+    )
     assert audit_rows == [
         (
             "post.created",
@@ -837,7 +856,8 @@ def test_publish_post_draft_rejects_revision_conflict_without_side_effects(tmp_p
             SELECT
                 (SELECT COUNT(*) FROM posts WHERE status = 'draft'),
                 (SELECT COUNT(*) FROM post_revisions),
-                (SELECT COUNT(*) FROM audit_events)
+                (SELECT COUNT(*) FROM audit_events),
+                (SELECT COUNT(*) FROM publish_jobs)
             """
         ).fetchone()
         post_row = connection.execute(
@@ -845,7 +865,7 @@ def test_publish_post_draft_rejects_revision_conflict_without_side_effects(tmp_p
             (post_id,),
         ).fetchone()
 
-    assert counts == (1, 1, 1)
+    assert counts == (1, 1, 1, 0)
     assert post_row == (current_revision_id,)
 
 

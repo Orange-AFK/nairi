@@ -45,9 +45,10 @@
 3. Scope: `posts:write`
 4. Request body fields: `title`, `slug`, `contentFormat`, `content`, `summary`, `tags`, `categoryId`, `seriesId`, `metadata`
 5. Response fields: `postId`, `status`, `revisionId`, `createdAt`
-6. Audit event: `post.created`
-7. Errors: `400` with code `invalid_request` when `title` is blank, `slug` is not lowercase letters/numbers/hyphens, or `content` is blank. The validation response must not create a post, revision, or audit event.
-8. Errors: `409` with code `conflict` when the requested `slug` already exists. The conflict response must not create an additional post revision or audit event.
+6. Timestamp rule: `createdAt` is a request-time UTC timestamp serialized as `YYYY-MM-DDTHH:MM:SSZ`.
+7. Audit event: `post.created`
+8. Errors: `400` with code `invalid_request` when `title` is blank, `slug` is not lowercase letters/numbers/hyphens, or `content` is blank. The validation response must not create a post, revision, or audit event.
+9. Errors: `409` with code `conflict` when the requested `slug` already exists. The conflict response must not create an additional post revision or audit event.
 
 ### Update Post Draft
 

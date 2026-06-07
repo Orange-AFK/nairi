@@ -93,11 +93,12 @@ FastAPI is the single authority for product capabilities. Other modules are clie
 1. Admin or agent requests draft creation through API or MCP-backed API call.
 2. FastAPI validates scope and input.
 3. `PostStore` creates a `posts` row with status `draft`.
-4. `PostStore` creates a matching immutable `post_revisions` row.
-5. `PostStore` records a `post.created` audit row.
-6. Admin reviews the draft through the CMS console.
-7. Publish request goes through `/api/v1/posts/{post_id}/publish`.
-8. The job runner performs publication work under documented state rules.
+4. `PostStore` assigns a request-time UTC timestamp and stores it on the post, revision, and audit event rows.
+5. `PostStore` creates a matching immutable `post_revisions` row.
+6. `PostStore` records a `post.created` audit row.
+7. Admin reviews the draft through the CMS console.
+8. Publish request goes through `/api/v1/posts/{post_id}/publish`.
+9. The job runner performs publication work under documented state rules.
 
 ## Security Boundary
 

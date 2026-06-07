@@ -62,8 +62,10 @@
 
 1. `PostStore` currently owns the minimal SQLite-backed `posts`, `post_revisions`, and `audit_events` tables used by `POST /api/v1/posts`.
 2. Draft creation persists one `Post`, one `PostRevision`, and one `post.created` audit event in the same request path.
-3. This boundary is intentionally smaller than the final SQLAlchemy/Alembic model layer.
-4. Future migration work must preserve these logical entities while replacing scaffold schema initialization with managed migrations.
+3. Draft creation stores one request-time UTC timestamp, serialized as `YYYY-MM-DDTHH:MM:SSZ`, across `posts.created_at`, `posts.updated_at`, `post_revisions.created_at`, and `audit_events.created_at`.
+4. `PostStore` accepts an injectable clock for deterministic tests; production defaults to current UTC time.
+5. This boundary is intentionally smaller than the final SQLAlchemy/Alembic model layer.
+6. Future migration work must preserve these logical entities while replacing scaffold schema initialization with managed migrations.
 
 ## Database Support
 

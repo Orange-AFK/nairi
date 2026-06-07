@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 from nairi_api.config import Settings
 from nairi_api.invalidation_dispatch import PublicInvalidationDispatchResult
 from nairi_api.main import create_app
-from nairi_api.posts import PostDraftInput, PostStore
+from nairi_api.posts import PostDraftInput, PostStore, PostStoreMigration, run_schema_migrations
 
 
 def build_client(database_path: Path) -> TestClient:
@@ -2030,3 +2030,92 @@ def test_post_store_adopts_existing_pre_migration_database_without_data_loss(tmp
 
     assert migration_rows == [(1, "post_store_baseline")]
     assert data_counts == (1, 1, 1)
+
+
+def test_post_store_reconciles_baseline_schema_when_metadata_already_exists(tmp_path: Path) -> None:
+    database_path = tmp_path / "managed-but-incomplete.db"
+    with sqlite3.connect(database_path) as connection:
+        connection.execute(
+            """
+            CREATE TABLE schema_migrations (
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL UNIQUE
+            )
+            """
+        )
+        connection.execute(
+            "INSERT INTO schema_migrations (id, name) VALUES (?, ?)",
+            (1, "post_store_baseline"),
+        )
+
+    PostStore(str(database_path)).list_drafts()
+
+    with sqlite3.connect(database_path) as connection:
+        table_rows = connection.execute(
+            """
+            SELECT name FROM sqlite_master
+            WHERE type = 'table' AND name IN ('posts', 'post_revisions', 'audit_events', 'publish_jobs')
+            ORDER BY name
+            """
+        ).fetchall()
+        migration_rows = connection.execute("SELECT id, name FROM schema_migrations ORDER BY id").fetchall()
+
+    assert table_rows == [("audit_events",), ("post_revisions",), ("posts",), ("publish_jobs",)]
+    assert migration_rows == [(1, "post_store_baseline")]
+
+
+def test_schema_migration_runner_applies_pending_migrations_in_order() -> None:
+    applied: list[str] = []
+
+    def first(connection: sqlite3.Connection) -> None:
+        applied.append("first")
+        connection.execute("CREATE TABLE first_marker (id INTEGER PRIMARY KEY)")
+
+    def second(connection: sqlite3.Connection) -> None:
+        applied.append("second")
+        connection.execute("CREATE TABLE second_marker (id INTEGER PRIMARY KEY)")
+
+    with sqlite3.connect(":memory:") as connection:
+        run_schema_migrations(
+            connection,
+            [
+                PostStoreMigration(id=1, name="first", apply=first),
+                PostStoreMigration(id=2, name="second", apply=second),
+            ],
+        )
+        run_schema_migrations(
+            connection,
+            [
+                PostStoreMigration(id=1, name="first", apply=first),
+                PostStoreMigration(id=2, name="second", apply=second),
+            ],
+        )
+        rows = connection.execute("SELECT id, name FROM schema_migrations ORDER BY id").fetchall()
+
+    assert applied == ["first", "second"]
+    assert rows == [(1, "first"), (2, "second")]
+
+
+def test_schema_migration_runner_rolls_back_failed_pending_migration() -> None:
+    def failing(connection: sqlite3.Connection) -> None:
+        connection.execute("CREATE TABLE should_rollback (id INTEGER PRIMARY KEY)")
+        raise RuntimeError("migration failed")
+
+    with sqlite3.connect(":memory:") as connection:
+        try:
+            run_schema_migrations(
+                connection,
+                [PostStoreMigration(id=1, name="failing", apply=failing)],
+            )
+        except RuntimeError as error:
+            assert str(error) == "migration failed"
+        else:
+            raise AssertionError("migration failure should be re-raised")
+
+        migration_rows = connection.execute("SELECT id, name FROM schema_migrations ORDER BY id").fetchall()
+        marker_row = connection.execute(
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'should_rollback'"
+        ).fetchone()
+
+    assert migration_rows == []
+    assert marker_row is None

@@ -89,7 +89,7 @@
 
 1. Status: completed through Cloudflare dry-run dispatch boundary.
 2. Completed: public invalidation surfaces, durable recorded execution, dispatch result fields, dispatcher config, dispatcher interface, route integration, dispatch persistence, dispatcher error policy, contract adapter, Cloudflare config adapter, Cloudflare settings, inert Cloudflare request-plan construction, and configured Cloudflare dry-run dispatch bookkeeping.
-3. Active next candidate: Cloudflare Live Execution Design Boundary if live provider behavior is prioritized; otherwise managed migration tooling, data migration hardening, or CMS Admin Console Foundation.
+3. Active next candidate: Cloudflare Live Execution Design Boundary if live provider behavior is prioritized; otherwise data migration rehearsal, migration repair policy, or CMS Admin Console Foundation.
 4. Deferred: live HTTP client, authorization header sending, Cloudflare API response/error mapping, CDN purge, retry policy, external execution switch, and real job runner execution.
 
 ## Cloudflare Provider Adapter
@@ -109,9 +109,9 @@
 
 ### SQLAlchemy and Alembic Migration Layer
 
-1. Status: completed for SQLite baseline metadata.
-2. Completed: `schema_migrations` metadata table, one-time `post_store_baseline` recording, reopen idempotency, and pre-migration SQLite adoption without data loss.
-3. Deferred: standalone migration runner, Alembic integration, SQLAlchemy model layer, PostgreSQL support, and live database migration rehearsal.
+1. Status: completed for SQLite baseline metadata and minimal ordered runner.
+2. Completed: `schema_migrations` metadata table, one-time `post_store_baseline` recording, reopen idempotency, pre-migration SQLite adoption without data loss, ordered pending migration application, idempotent skip of applied migrations, and rollback on failed pending migrations, and baseline schema reconciliation when metadata already exists.
+3. Deferred: standalone migration CLI, migration repair policy, Alembic integration, SQLAlchemy model layer, PostgreSQL support, and live database migration rehearsal.
 
 ## Admin Console
 

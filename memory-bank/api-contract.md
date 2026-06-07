@@ -133,8 +133,9 @@
 10. Publish job storage: immediate publish currently stores a `publish_jobs` row with deterministic `id`, `postId`, `revisionId`, `status=succeeded`, `scheduledAt=null`, `startedAt=publishedAt`, `completedAt=publishedAt`, `errorCode=null`, `errorMessage=null`, `publicInvalidationSurfaces` for `/posts`, `/posts/{slug}`, `/rss.xml`, and `/sitemap.xml`, plus public invalidation execution and dispatch fields.
 11. Public invalidation mode: `recorded`; the API records and returns intended public surfaces plus `execution.status=recorded`, `execution.executor=none`, `execution.executedAt=publishedAt`, `execution.errorCode=null`, and `execution.errorMessage=null`.
 12. Public invalidation dispatch boundary: the API records `dispatch.status=dispatch_skipped`, `dispatch.reason=no_dispatcher_configured`, `dispatch.attempted=false`, and `dispatch.attemptedAt=null` as future-safe dispatch semantics when no dispatcher is configured.
-13. Public invalidation execution boundary: recorded execution and dispatch bookkeeping are durable bookkeeping only; they do not trigger CDN purge, `revalidateTag`, `revalidatePath`, webhooks, cache headers, or any external invalidation side effect.
-14. Duplicate capability warning: admin, MCP, and agents must use this capability instead of creating parallel publish endpoints.
+13. Public invalidation dispatcher configuration boundary: `Settings.public_invalidation_dispatcher` is currently restricted to `none`, can be supplied through `NAIRI_PUBLIC_INVALIDATION_DISPATCHER=none`, and rejects unsupported values before any dispatcher behavior can be implied.
+14. Public invalidation execution boundary: recorded execution, dispatch bookkeeping, and dispatcher configuration are durable/configuration bookkeeping only; they do not trigger CDN purge, `revalidateTag`, `revalidatePath`, webhooks, cache headers, or any external invalidation side effect.
+15. Duplicate capability warning: admin, MCP, and agents must use this capability instead of creating parallel publish endpoints.
 
 ## MDX Component API
 

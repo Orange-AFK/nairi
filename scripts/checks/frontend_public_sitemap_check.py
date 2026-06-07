@@ -17,6 +17,13 @@ required_route = [
     "fetchAllPublicPosts",
     "PUBLIC_SITEMAP_FULL_HISTORY_PAGINATION_POLICY",
     "full-history sitemap pagination",
+    "PUBLIC_SITEMAP_REVALIDATE_SECONDS",
+    "PUBLIC_SITEMAP_CACHE_POLICY",
+    "Next.js route revalidation only",
+    "no CDN headers",
+    "no purge",
+    "no publish-triggered invalidation execution",
+    "export const revalidate = 300",
     "PUBLIC_POSTS_PAGE_SIZE",
     "PUBLIC_POSTS_MAX_PAGES",
     "cursor",
@@ -39,6 +46,14 @@ if "/api/v1/posts" in route or "/api/v1/posts" in client.replace("/api/v1/public
     failures.append("sitemap must not call authenticated management posts routes")
 if "Authorization" in route:
     failures.append("sitemap must not send bearer tokens")
+if "Cache-Control" in route:
+    failures.append("sitemap cache policy must not add CDN/cache headers yet")
+if "cloudflare" in route.lower() or "purge" in route.lower().replace("no purge", ""):
+    failures.append("sitemap cache policy must not call CDN purge APIs yet")
+if "revalidateTag" in route or "revalidatePath" in route:
+    failures.append("sitemap cache policy must not add tag/path invalidation calls yet")
+if "export const revalidate = PUBLIC_SITEMAP_REVALIDATE_SECONDS" in route:
+    failures.append("sitemap route revalidate export must stay statically analyzable for Next.js")
 if "rss" in route.lower():
     failures.append("sitemap boundary must not implement RSS")
 if "while" not in route:

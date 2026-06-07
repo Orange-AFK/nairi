@@ -108,17 +108,18 @@ FastAPI is the single authority for product capabilities. Other modules are clie
 12. `PostStore` creates a durable `publish_jobs` row for the immediate publish attempt.
 13. `PostStore` changes the post status to `published`, writes request-time `published_at` and `updated_at`, preserves the current revision, and records `post.published` audit metadata.
 14. `PostStore` stores a recorded public invalidation execution and dispatch row on the publish job, including surfaces `/posts`, `/posts/{slug}`, `/rss.xml`, and `/sitemap.xml`, `status=recorded`, `executor=none`, `executed_at=published_at`, no error fields, `dispatch_status=dispatch_skipped`, `dispatch_reason=no_dispatcher_configured`, `dispatch_attempted=false`, and `dispatch_attempted_at=null`.
-15. The publish API returns that invalidation record with `mode=recorded` plus dispatch bookkeeping. API settings currently expose `public_invalidation_dispatcher=none` / `NAIRI_PUBLIC_INVALIDATION_DISPATCHER=none` as the only supported dispatcher configuration, so unsupported dispatcher values are rejected before runtime dispatch behavior exists.
+15. The publish API returns that invalidation record with `mode=recorded` plus dispatch bookkeeping. API settings currently expose `public_invalidation_dispatcher=none` / `NAIRI_PUBLIC_INVALIDATION_DISPATCHER=none` as the only supported dispatcher configuration, so unsupported dispatcher values are rejected before external dispatch behavior exists.
 16. App creation builds `app.state.public_invalidation_dispatcher` from settings. The only current implementation is `NoopPublicInvalidationDispatcher`, which returns skipped dispatch bookkeeping and does not call external systems.
-17. The publish flow does not trigger CDN purge, Next.js tag/path revalidation, webhooks, cache headers, or any external invalidation side effect.
-18. Admin, MCP, and authorized clients can read published summaries through `GET /api/v1/posts?status=published` and published detail through `GET /api/v1/posts/{post_id}` with `posts:read` scope in the current scaffold.
-19. Public clients read published summaries through `GET /api/v1/public/posts`, which is anonymous and returns only public-safe fields.
-20. Public clients read published detail through `GET /api/v1/public/posts/{slug}`, which is anonymous, slug-based, published-only, and returns a public-safe detail response.
-21. Public detail includes both authored `content` and a minimal sanitized `bodyHtml` render output. The renderer is intentionally not full MDX execution; it only handles a small Markdown subset and strips script blocks from rendered HTML.
-22. Public clients must not reuse authenticated content-management routes.
-23. Authenticated published summary lists can currently be filtered by tag membership, category id, or series id.
-24. Authenticated and public published summary lists can currently be paginated with `limit` and an item-id `cursor`.
-25. Public filtering inputs, full MDX/component rendering, scheduling semantics, external invalidation execution, and the job runner remain future work under documented state rules.
+17. After successful publish storage, the publish route calls the configured dispatcher with the recorded surfaces and `published_at`, then maps the dispatcher result into the response `publicInvalidation.dispatch` object. This is route-level result mapping only; the durable `publish_jobs` dispatch row remains the recorded no-dispatcher bookkeeping in this slice.
+18. The publish flow does not trigger CDN purge, Next.js tag/path revalidation, webhooks, cache headers, or any external invalidation side effect.
+19. Admin, MCP, and authorized clients can read published summaries through `GET /api/v1/posts?status=published` and published detail through `GET /api/v1/posts/{post_id}` with `posts:read` scope in the current scaffold.
+20. Public clients read published summaries through `GET /api/v1/public/posts`, which is anonymous and returns only public-safe fields.
+21. Public clients read published detail through `GET /api/v1/public/posts/{slug}`, which is anonymous, slug-based, published-only, and returns a public-safe detail response.
+22. Public detail includes both authored `content` and a minimal sanitized `bodyHtml` render output. The renderer is intentionally not full MDX execution; it only handles a small Markdown subset and strips script blocks from rendered HTML.
+23. Public clients must not reuse authenticated content-management routes.
+24. Authenticated published summary lists can currently be filtered by tag membership, category id, or series id.
+25. Authenticated and public published summary lists can currently be paginated with `limit` and an item-id `cursor`.
+26. Public filtering inputs, full MDX/component rendering, scheduling semantics, external invalidation execution, and the job runner remain future work under documented state rules.
 
 ## Security Boundary
 

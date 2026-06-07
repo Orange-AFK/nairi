@@ -1,10 +1,12 @@
 import sqlite3
+from collections.abc import Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 
 from fastapi.testclient import TestClient
 
 from nairi_api.config import Settings
+from nairi_api.invalidation_dispatch import PublicInvalidationDispatchResult
 from nairi_api.main import create_app
 from nairi_api.posts import PostStore
 
@@ -32,6 +34,20 @@ def draft_payload() -> dict[str, object]:
         "seriesId": None,
         "metadata": {"source": "persistence-test"},
     }
+
+
+class RecordingPublicInvalidationDispatcher:
+    def __init__(self) -> None:
+        self.calls: list[dict[str, object]] = []
+
+    def dispatch(self, *, surfaces: Sequence[str], published_at: str | None) -> PublicInvalidationDispatchResult:
+        self.calls.append({"surfaces": list(surfaces), "published_at": published_at})
+        return PublicInvalidationDispatchResult(
+            status="dispatch_skipped",
+            reason="no_dispatcher_configured",
+            attempted=True,
+            attempted_at="2026-06-07T08:12:13Z",
+        )
 
 
 def test_create_post_draft_uses_injected_utc_timestamp(tmp_path: Path) -> None:
@@ -559,6 +575,8 @@ def test_publish_post_draft_transitions_to_published_and_records_audit(tmp_path:
     )
     app = create_app(settings=settings)
     app.state.post_store = PostStore(str(database_path), clock=lambda: next(timestamps))
+    dispatcher = RecordingPublicInvalidationDispatcher()
+    app.state.public_invalidation_dispatcher = dispatcher
     client = TestClient(app)
 
     create_response = client.post(
@@ -600,11 +618,17 @@ def test_publish_post_draft_transitions_to_published_and_records_audit(tmp_path:
             "dispatch": {
                 "status": "dispatch_skipped",
                 "reason": "no_dispatcher_configured",
-                "attempted": False,
-                "attemptedAt": None,
+                "attempted": True,
+                "attemptedAt": "2026-06-07T08:12:13Z",
             },
         },
     }
+    assert dispatcher.calls == [
+        {
+            "surfaces": ["/posts", "/posts/persistent-draft", "/rss.xml", "/sitemap.xml"],
+            "published_at": "2026-06-07T08:11:12Z",
+        }
+    ]
     read_response = client.get(
         f"/api/v1/posts/{post_id}",
         headers={"Authorization": "Bearer post-reader-token"},

@@ -55,7 +55,8 @@
 23. CI Hygiene / Node 24 Actions Boundary is complete: Guards use read-only permissions, concurrency cancellation, and Node.js 24 opt-in for JavaScript actions.
 24. `/posts` now has a stable empty-list state and controlled fetch-failure error boundary without calling management routes.
 25. Article Public Site Styling Boundary is complete: `/`, `/posts`, `/posts/{slug}`, list empty state, and list error state share a narrow header/card surface rhythm without introducing a full design system.
-26. The next product-development task is Article Published Public Render Coverage Boundary or Article Public Site SEO Metadata Boundary.
+26. Article Public Site SEO Metadata Boundary is complete: `/` and `/posts` define stable route metadata while `/posts/{slug}` keeps generating metadata from public detail data.
+27. The next product-development task is Article Published Public Render Coverage Boundary.
 17. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
 18. Preserve scope checks and standard error behavior.
 

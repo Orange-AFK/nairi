@@ -81,8 +81,8 @@ The public frontend presents articles, pages, project retrospectives, tags, cate
 
 ### Public Metadata
 
-1. Title
-2. Description
-3. Canonical URL
-4. Open Graph image
-5. Structured metadata where appropriate.
+1. `/` defines route metadata with title `Nairi | Project Experience Publishing` and a stable public-site description.
+2. `/posts` defines route metadata with title `Articles | Nairi` and a stable published-list description.
+3. `/posts/{slug}` generates metadata from `GET /api/v1/public/posts/{slug}` using the public title and summary.
+4. Unknown public detail slugs return `Post not found | Nairi` metadata.
+5. Canonical URL, Open Graph image generation, RSS, sitemap, and cache/CDN policy remain deferred.

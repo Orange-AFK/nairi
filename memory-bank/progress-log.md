@@ -310,6 +310,16 @@
 6. Risks or blockers: Tailwind, shadcn/ui, a complete design system, cache/CDN policy, SEO metadata, RSS, sitemap, pagination, and filter UI remain deferred.
 7. Next recommended named task: Article Published Public Render Coverage Boundary or Article Public Site SEO Metadata Boundary.
 
+### Article Public Site SEO Metadata Boundary
+
+1. Status: completed.
+2. Scope: added stable route metadata for `/` and `/posts`, kept `/posts/{slug}` metadata generated from public detail data, and added a structural metadata check to Guards.
+3. Changed files: `.github/workflows/guards.yml`, `apps/public-site/app/page.tsx`, `apps/public-site/app/posts/page.tsx`, `scripts/checks/frontend_public_metadata_check.py`, `memory-bank/frontend-design.md`, `memory-bank/guard-ci.md`, `memory-bank/project-state.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: added `frontend_public_metadata_check.py` first and observed RED on missing home/list metadata; added route metadata and wired the check into Guards; verified metadata/style/detail/list checks, public-site typecheck, and public-site build.
+5. Result: passed for the public site SEO metadata boundary.
+6. Risks or blockers: canonical URLs, Open Graph image generation, RSS, sitemap, cache/CDN policy, and richer SEO schema remain deferred.
+7. Next recommended named task: Article Published Public Render Coverage Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

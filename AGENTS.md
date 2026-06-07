@@ -7,14 +7,30 @@ Nairi is an API-first, agent-first CMS. FastAPI is the single product capability
 ## Required Reading Before Any Change
 
 1. `memory-bank/project-state.md`
-2. `memory-bank/requirements.md`
-3. `memory-bank/architecture.md`
-4. `memory-bank/contract-index.md`
-5. `memory-bank/api-contract.md`
-6. `memory-bank/integration-map.md`
-7. The specific design document for the module being changed.
+2. `memory-bank/roadmap.md`
+3. `memory-bank/decisions.md`
+4. `memory-bank/requirements.md`
+5. `memory-bank/architecture.md`
+6. `memory-bank/contract-index.md`
+7. `memory-bank/api-contract.md`
+8. `memory-bank/integration-map.md`
+9. The specific design document for the module being changed.
 
 If local Chinese `memory-bank/*-cn.md` files exist, update them together with the English files. Chinese memory-bank files are local-only and must not be pushed.
+
+## Documentation Authority Map
+
+1. `project-state.md`: current status, current focus, latest completed functional boundaries, and blockers.
+2. `roadmap.md`: functional module plan and current sequencing.
+3. `progress-log.md`: append-only historical evidence only; it is not the current roadmap or the only decision authority.
+4. `decisions.md`: durable architecture decisions, owner decisions, and long-lived constraints created during development.
+5. `architecture.md`: current system architecture and module responsibility boundaries.
+6. `api-contract.md`: API-visible route, request, response, auth, error, and behavior contracts.
+7. `data-model.md`: persistence entities, current scaffold persistence boundary, and migration/database support boundaries.
+8. `frontend-design.md`: public frontend behavior, rendering, SEO, RSS/sitemap, and public cache policy.
+9. `integration-map.md`: allowed integration paths and duplicate capability prevention.
+10. `guard-ci.md`: guard and CI behavior, document synchronization rules, and executable check coverage.
+11. Review files such as `project-review.md` are historical audit artifacts, not normal active sources of truth.
 
 ## Documentation Boundaries
 
@@ -26,8 +42,12 @@ If local Chinese `memory-bank/*-cn.md` files exist, update them together with th
 2. `README-cn.md`
 3. `LICENSE`
 4. `AGENTS.md`
-5. `.env.example`
-6. Engineering entry files such as package, compose, or build configuration.
+5. `SECURITY.md`
+6. `SECURITY-cn.md`
+7. `CONTRIBUTING.md`
+8. `CONTRIBUTING-cn.md`
+9. `.env.example`
+10. Engineering entry files such as package, compose, or build configuration.
 
 ### Forbidden Root Documents
 
@@ -60,6 +80,8 @@ Development memory for maintainers and agents.
 13. Decisions
 14. Contract index
 15. Integration map
+16. Guard and CI design
+17. Historical review artifacts created by explicit review tasks
 
 ### Git Rule
 
@@ -168,11 +190,27 @@ If an existing capability covers the same product behavior, reuse it or make a d
 
 ## Documentation Synchronization Rule
 
-A task is not complete until code, contracts, bilingual documents, README, roadmap, project state, and progress log agree.
+A task is not complete until affected source-of-truth documents agree with the code, tests, contracts, and project state.
 
-Every create, update, delete, rename, or semantic change to a module, API, MCP tool, route, database entity, permission, job, audit event, deployment service, or public feature must update every affected document in the same task.
+Every create, update, delete, rename, or semantic change to a module, API, MCP tool, route, database entity, permission, job, audit event, deployment service, public feature, external side effect, or security boundary must update every affected authority document in the same task.
 
-If the roadmap mentions a feature, the progress log and design documents must use the same feature name. If a feature is removed or renamed, stale references must be updated or explicitly marked historical.
+Update `decisions.md`, or explicitly cite an existing decision, whenever a task changes one of these durable concerns:
+
+1. module boundaries
+2. system responsibilities
+3. public vs authenticated behavior
+4. security or secret-handling policy
+5. external side-effect policy
+6. cache, CDN, or invalidation policy
+7. database or migration policy
+8. integration authority or duplicate capability rules
+9. roadmap sequencing or future-work split
+
+Update `roadmap.md` when a task completes, defers, splits, removes, or reorders a functional area. Update `project-state.md` when current capabilities, blockers, or next named work change. Update `progress-log.md` after every completed named task.
+
+Update `README.md` and `README-cn.md` only when GitHub-facing positioning, repository state, setup, or public project description changes. Do not churn README for internal-only implementation boundaries.
+
+If the roadmap mentions a feature, the progress log, decisions, and design documents must use the same feature name. If a feature is removed or renamed, stale references must be updated or explicitly marked historical.
 
 ## Development Execution Rule
 
@@ -196,9 +234,9 @@ If the roadmap mentions a feature, the progress log and design documents must us
 
 ## Guard Requirement
 
-The project must include guard scripts and CI checks for documentation and contract consistency before product code work begins.
+Guard scripts and CI checks are mandatory project contracts, not optional utilities.
 
-Planned guards:
+Current guards:
 
 1. `scripts/guards/docs_guard.py`
 2. `scripts/guards/contract_guard.py`

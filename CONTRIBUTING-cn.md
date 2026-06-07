@@ -36,10 +36,13 @@ python3 -m venv .venv
 
 - Root documentation 限于 GitHub entry-point files，例如 `README.md`、`README-cn.md`、`AGENTS.md`、`LICENSE`、`SECURITY.md` 和 `CONTRIBUTING.md`。
 - Operational 和 user-facing docs 属于 `docs/`。
-- Planning、architecture、progress 和 contract notes 属于 `memory-bank/`。
+- Planning、architecture、progress、decisions、contract notes 和 historical review artifacts 属于 `memory-bank/`。
 - English public docs 需要按 guards 要求提供中文配对。
 - Local Chinese memory-bank companion files 按设计被 ignored，不会 push。
 - Project docs 不使用抽象的 Step、Phase 或 Slice headings。
+- 代码或行为变更需要在同一个 PR 中更新受影响的 source-of-truth docs。
+- 如果变更产生 durable architecture decision、改变 module boundaries、改变 public/auth behavior、改变 cache/invalidation policy、改变 secret handling 或改变长期顺序，需要新增或更新 `memory-bank/decisions.md`。
+- 内部实现边界不要随意更新 `README.md`；只有 GitHub-facing positioning、repository state、setup 或 public project description 改变时才更新。
 
 ## 安全与 secrets
 
@@ -48,10 +51,12 @@ python3 -m venv .venv
 - Push 前运行 secret guard。
 - 漏洞通过 `SECURITY.md` 描述的私有流程报告。
 
-## Pull request checklist
+## Pull Request Checklist
 
 - [ ] 变更范围明确。
 - [ ] 行为变化时同步更新 tests 或 guards。
 - [ ] 本地验证已通过。
+- [ ] 受影响 source-of-truth docs 已更新，或 PR 说明无需文档更新的原因。
+- [ ] Durable architecture decisions 已加入/更新到 `memory-bank/decisions.md`，或 PR 引用已有 decision。
 - [ ] Public docs 避免内部规划历史和已废弃定位。
 - [ ] 没有包含 secrets 或 runtime artifacts。

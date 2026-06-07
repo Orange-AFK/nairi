@@ -12,7 +12,7 @@
 
 1. 面向轻量单机部署。
 2. 使用本地持久化数据目录。
-3. 通过 `NAIRI_DATABASE_URL` 配置 SQLite 连接。
+3. 在 managed migrations 和 deployment database contracts 存在前，使用 scaffold `NAIRI_DATABASE_PATH` setting。
 
 ### PostgreSQL Profile 模式
 
@@ -22,15 +22,19 @@
 
 ## 环境变量
 
-### 必需变量
+### 当前 Scaffold 变量
 
-1. `NAIRI_ENV`
-2. `NAIRI_API_BASE_URL`
-3. `NAIRI_PUBLIC_SITE_URL`
-4. `NAIRI_DATABASE_URL`
-5. `NAIRI_JWT_SECRET`
-6. `NAIRI_INITIAL_ADMIN_EMAIL`
-7. `NAIRI_INITIAL_ADMIN_PASSWORD`
+1. `NAIRI_SERVICE_NAME`
+2. `NAIRI_VERSION`
+3. `NAIRI_API_TOKENS`
+4. `NAIRI_DATABASE_PATH`
+5. `NAIRI_PUBLIC_INVALIDATION_DISPATCHER`
+6. NAIRI_PUBLIC_INVALIDATION_CLOUDFLARE_ZONE_ID
+7. NAIRI_PUBLIC_INVALIDATION_CLOUDFLARE_API_TOKEN
+
+### 未来部署变量
+
+Runtime URL、JWT、initial-admin 和 database URL 变量仍是未来部署工作，直到对应 settings 和 deployment contracts 存在。
 
 ## 文档同步
 

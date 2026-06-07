@@ -12,7 +12,7 @@ This guide will document self-hosted Docker Compose deployment for Nairi.
 
 1. Intended for lightweight single-node deployments.
 2. Uses a persistent local data directory.
-3. Requires `NAIRI_DATABASE_URL` with SQLite connection string.
+3. Uses the scaffold `NAIRI_DATABASE_PATH` setting until managed migrations and deployment database contracts exist.
 
 ### PostgreSQL Profile Mode
 
@@ -22,15 +22,19 @@ This guide will document self-hosted Docker Compose deployment for Nairi.
 
 ## Environment Variables
 
-### Required Variables
+### Current Scaffold Variables
 
-1. `NAIRI_ENV`
-2. `NAIRI_API_BASE_URL`
-3. `NAIRI_PUBLIC_SITE_URL`
-4. `NAIRI_DATABASE_URL`
-5. `NAIRI_JWT_SECRET`
-6. `NAIRI_INITIAL_ADMIN_EMAIL`
-7. `NAIRI_INITIAL_ADMIN_PASSWORD`
+1. `NAIRI_SERVICE_NAME`
+2. `NAIRI_VERSION`
+3. `NAIRI_API_TOKENS`
+4. `NAIRI_DATABASE_PATH`
+5. `NAIRI_PUBLIC_INVALIDATION_DISPATCHER`
+6. NAIRI_PUBLIC_INVALIDATION_CLOUDFLARE_ZONE_ID
+7. NAIRI_PUBLIC_INVALIDATION_CLOUDFLARE_API_TOKEN
+
+### Future Deployment Variables
+
+Runtime URL, JWT, initial-admin, and database URL variables remain future deployment work until the corresponding settings and deployment contracts exist.
 
 ## Documentation Synchronization
 

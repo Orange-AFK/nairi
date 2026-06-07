@@ -560,6 +560,16 @@
 6. Risks or blockers: Cloudflare credentials/settings, zone/tag/path mapping, real Cloudflare API calls, CDN purge, `revalidateTag`/`revalidatePath`, webhooks, cache headers, scheduling semantics, external invalidation execution, and the real job runner remain deferred.
 7. Next recommended named task: Article Public Publish Invalidation Cloudflare Adapter Settings Boundary or Article Public Sitemap Additional Shards Boundary.
 
+### Article Public Publish Invalidation Cloudflare Adapter Settings Boundary
+
+1. Status: completed.
+2. Scope: added optional Cloudflare adapter settings for zone id and secret API token, made the config-only Cloudflare dispatcher distinguish missing settings from configured-but-disabled bookkeeping, and kept all external invalidation behavior disabled.
+3. Changed files: `services/api/src/nairi_api/config.py`, `services/api/src/nairi_api/invalidation_dispatch.py`, `services/api/src/nairi_api/main.py`, `services/api/tests/test_config.py`, `services/api/tests/test_public_invalidation_dispatcher.py`, `memory-bank/api-contract.md`, `memory-bank/architecture.md`, `memory-bank/project-state.md`, and `memory-bank/progress-log.md`.
+4. Verification performed: added RED tests for default-unconfigured settings, env-read zone/token settings with secret-safe repr, missing-settings dispatcher bookkeeping, and configured-disabled dispatcher bookkeeping; observed RED on missing settings fields and old disabled-only reason; then implemented the minimal settings fields, secret type, missing-settings reason literal, and settings-aware dispatcher factory.
+5. Result: focused config/dispatcher tests and full API tests passed; production external-side-effect scan found zero Cloudflare/API/purge/revalidation/webhook/cache-header additions.
+6. Risks or blockers: Cloudflare request construction, endpoint path/method, zone/tag/path mapping, real HTTP client, CDN purge, `revalidateTag`/`revalidatePath`, webhooks, cache headers, scheduling semantics, external invalidation execution, and job runner remain deferred.
+7. Next recommended named task: Article Public Publish Invalidation Cloudflare Adapter Request Builder Boundary or Article Public Sitemap Additional Shards Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

@@ -80,7 +80,8 @@
 48. Article Public Publish Invalidation Adapter Contract Boundary is complete: settings now accept `public_invalidation_dispatcher=contract`, and the contract-only dispatcher records deterministic attempted bookkeeping without external invalidation side effects.
 49. Article Public RSS/Sitemap Split Boundary is complete: `/sitemap.xml` is now a sitemap index and `/sitemap-posts.xml` contains the bounded full-history public posts sitemap without RSS or CDN/invalidation side effects.
 50. Article Public Publish Invalidation Cloudflare Adapter Config Boundary is complete: settings now accept `public_invalidation_dispatcher=cloudflare`, and the Cloudflare dispatcher is config-only disabled bookkeeping with no Cloudflare API or purge side effects.
-51. The next product-development task is Article Public Publish Invalidation Cloudflare Adapter Settings Boundary or Article Public Sitemap Additional Shards Boundary.
+51. Article Public Publish Invalidation Cloudflare Adapter Settings Boundary is complete: settings now accept optional Cloudflare zone id and secret API token env/config values, distinguish missing-settings vs configured-disabled bookkeeping, and still perform no Cloudflare API or purge side effects.
+52. The next product-development task is Article Public Publish Invalidation Cloudflare Adapter Request Builder Boundary or Article Public Sitemap Additional Shards Boundary.
 17. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
 18. Preserve scope checks and standard error behavior.
 

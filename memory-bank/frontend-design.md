@@ -76,6 +76,8 @@ The public frontend presents articles, pages, project retrospectives, tags, cate
 3. Markdown is rendered by default.
 4. MDX rendering uses registered components and published policies.
 5. The public site must not expose admin or agent-only data, including revision identifiers, internal metadata, audit/job state, and agent traces.
+6. `/posts` renders published date with a machine-readable `time` element, always shows a summary fallback when `summary` is null, renders tags when present, and links each item to `/posts/{slug}`.
+7. `/posts/{slug}` renders public-safe `bodyHtml`, uses the framework not-found path for unknown slugs, renders published date with a machine-readable `time` element, always shows a summary fallback when `summary` is null, and renders tags when present.
 
 ## SEO
 

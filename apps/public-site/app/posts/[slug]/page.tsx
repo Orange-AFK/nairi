@@ -35,9 +35,18 @@ export default async function PublicPostDetailPage({ params }: PublicPostDetailP
   return (
     <main className="article-shell">
       <header className="article-header">
-        <p className="article-meta">Published {new Date(publicPost.publishedAt).toLocaleDateString("en-US")}</p>
+        <p className="article-meta">
+          Published <time dateTime={publicPost.publishedAt}>{new Date(publicPost.publishedAt).toLocaleDateString("en-US")}</time>
+        </p>
         <h1 className="article-title">{publicPost.title}</h1>
-        {publicPost.summary ? <p className="article-summary">{publicPost.summary}</p> : null}
+        <p className="article-summary">{publicPost.summary ?? "No summary provided."}</p>
+        {publicPost.tags.length > 0 ? (
+          <ul className="tag-list" aria-label="Tags">
+            {publicPost.tags.map((tag) => (
+              <li key={tag}>{tag}</li>
+            ))}
+          </ul>
+        ) : null}
       </header>
       <article className="article-body surface-card" dangerouslySetInnerHTML={{ __html: publicPost.bodyHtml }} />
     </main>

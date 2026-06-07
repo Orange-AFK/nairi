@@ -24,11 +24,13 @@ export default async function PublicPostsPage() {
         ) : (
           posts.map((post) => (
             <article className="post-card surface-card" key={post.postId}>
-              <p className="article-meta">Published {new Date(post.publishedAt).toLocaleDateString("en-US")}</p>
+              <p className="article-meta">
+                Published <time dateTime={post.publishedAt}>{new Date(post.publishedAt).toLocaleDateString("en-US")}</time>
+              </p>
               <h2 className="post-title">
                 <Link href={`/posts/${post.slug}`}>{post.title}</Link>
               </h2>
-              {post.summary ? <p className="post-summary">{post.summary}</p> : null}
+              <p className="post-summary">{post.summary ?? "No summary provided."}</p>
               {post.tags.length > 0 ? (
                 <ul className="tag-list" aria-label="Tags">
                   {post.tags.map((tag) => (

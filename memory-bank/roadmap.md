@@ -23,7 +23,7 @@
 
 ### Documentation Source-of-Truth Remediation
 
-1. Status: active.
+1. Status: completed.
 2. Goal: restore authority boundaries across root docs, `project-state.md`, `roadmap.md`, `progress-log.md`, `decisions.md`, `guard-ci.md`, and `tech-stack.md`.
 3. Exit: source-of-truth docs agree with implemented state and guard verification passes.
 
@@ -87,18 +87,18 @@
 
 ### Invalidation Bookkeeping and Dispatcher
 
-1. Status: completed through adapter request-plan boundary.
-2. Completed: public invalidation surfaces, durable recorded execution, dispatch result fields, dispatcher config, dispatcher interface, route integration, dispatch persistence, dispatcher error policy, contract adapter, Cloudflare config adapter, Cloudflare settings, and inert Cloudflare request-plan construction.
-3. Active next after documentation remediation: Article Public Publish Invalidation Cloudflare Adapter Dry-Run Dispatch Boundary.
+1. Status: completed through Cloudflare dry-run dispatch boundary.
+2. Completed: public invalidation surfaces, durable recorded execution, dispatch result fields, dispatcher config, dispatcher interface, route integration, dispatch persistence, dispatcher error policy, contract adapter, Cloudflare config adapter, Cloudflare settings, inert Cloudflare request-plan construction, and configured Cloudflare dry-run dispatch bookkeeping.
+3. Active next candidate: Article Public Sitemap Additional Shards Boundary or a separately planned Cloudflare live execution design task.
 4. Deferred: live HTTP client, authorization header sending, Cloudflare API response/error mapping, CDN purge, retry policy, external execution switch, and real job runner execution.
 
 ## Cloudflare Provider Adapter
 
 ### Cloudflare Dry-Run Dispatch
 
-1. Status: paused.
-2. Reason: Documentation source-of-truth remediation is intentionally blocking live/provider progression until staged invalidation decisions are documented.
-3. Next action: resume saved WIP after remediation merges.
+1. Status: completed for dry-run bookkeeping.
+2. Result: configured Cloudflare dispatch builds or depends on the inert request plan and records `cloudflare_adapter_dry_run`, `attempted=true`, and `attemptedAt=publishedAt`.
+3. Boundary: dry-run dispatch remains side-effect-free and does not expose provider plan, zone, token, Authorization, or Bearer data.
 
 ### Cloudflare Live Execution
 

@@ -116,7 +116,7 @@
 
 1. Status: Accepted.
 2. Origin: Emerged during Cloudflare adapter config, settings, and request-plan boundaries.
-3. Decision: The Cloudflare adapter is introduced in stages. Settings may include zone id and secret token, but dispatcher construction receives only the zone id and token-configured state needed for inert request planning. Request plans must not include token, `Authorization`, or `Bearer` data and are not executed by the current mainline boundary.
+3. Decision: The Cloudflare adapter is introduced in stages. Settings may include zone id and secret token, but dispatcher construction receives only the zone id and token-configured state needed for inert request planning. Request plans must not include token, `Authorization`, or `Bearer` data. Configured dispatch may perform only an in-process dry-run request-plan build and record `cloudflare_adapter_dry_run`; it must not execute or expose the plan.
 4. Rationale: Cloudflare purge is an external side effect involving secrets. Secret handling, request construction, dry-run semantics, and live execution must remain separate.
 5. Consequence: Real HTTP client wiring, authorization header construction/sending, Cloudflare API response/error mapping, and CDN purge require explicit future tasks and tests.
 6. Revisit when: the dry-run dispatch boundary or live Cloudflare execution boundary changes provider behavior.

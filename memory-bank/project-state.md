@@ -7,8 +7,8 @@
 1. Nairi is in early alpha implementation.
 2. The implementation still follows the accepted API-first, agent-first CMS direction.
 3. Core public and management content flows exist as scaffold implementations with verified route tests and guards.
-4. The current development focus is Project Documentation Source-of-Truth Remediation before resuming Cloudflare dry-run dispatch work.
-5. Cloudflare dry-run dispatch implementation work is paused in a git stash and must be resumed only after the documentation governance remediation is merged.
+4. The current development focus is Article Public Publish Invalidation Cloudflare Adapter Dry-Run Dispatch Boundary.
+5. Documentation governance remediation has merged; Cloudflare dry-run dispatch implementation is active on the feature branch.
 
 ### Current Authority Snapshot
 
@@ -77,10 +77,10 @@
 
 1. Settings accept `public_invalidation_dispatcher=cloudflare`.
 2. Settings accept optional `public_invalidation_cloudflare_zone_id` and secret `public_invalidation_cloudflare_api_token` values.
-3. The Cloudflare adapter distinguishes missing settings from configured-disabled bookkeeping on `main`.
+3. The Cloudflare adapter distinguishes missing settings from configured dry-run bookkeeping on the feature branch.
 4. The Cloudflare adapter can build an inert `CloudflarePurgeRequestPlan` with method, path, and deduplicated ordered files body.
 5. Request plans exclude token, `Authorization`, and `Bearer` data and are not executed on `main`.
-6. Cloudflare dry-run dispatch is the paused next implementation task after documentation remediation.
+6. Cloudflare dry-run dispatch is active: complete settings build an inert request plan and record `cloudflare_adapter_dry_run` without external I/O.
 
 ## Deferred Functional Areas
 
@@ -112,16 +112,16 @@
 
 ## Next Named Work
 
-### Project Documentation Source-of-Truth Remediation
+### Article Public Publish Invalidation Cloudflare Adapter Dry-Run Dispatch Boundary
 
 1. Status: in progress.
-2. Scope: restore source-of-truth boundaries across root docs and `memory-bank` after the project review found drift in `project-state.md`, `roadmap.md`, `decisions.md`, `AGENTS.md`, README, and `.env.example`.
-3. Required updates: `AGENTS.md`, README files, CONTRIBUTING files, `.env.example`, `decisions.md`, `project-state.md`, `roadmap.md`, `progress-log.md`, `guard-ci.md`, `tech-stack.md`, local Chinese companions, and this review artifact.
-4. Verification: docs, i18n, contract, API schema, secret guards, diff check, and relevant scans.
-5. After completion: resume Article Public Publish Invalidation Cloudflare Adapter Dry-Run Dispatch Boundary.
+2. Scope: when Cloudflare settings are complete, dispatch builds or depends on the inert request plan and records `cloudflare_adapter_dry_run` with `attempted=true` and `attemptedAt=publishedAt`.
+3. Boundary: no Cloudflare API call, HTTP client, token/header output, CDN purge, Next.js revalidation, webhook, cache header, scheduling, or job runner execution.
+4. Verification: RED dispatcher tests, focused dispatcher tests, full API tests, guards, side-effect scans, secret scans, and PR CI.
+5. After completion: consider Article Public Sitemap Additional Shards Boundary or a separately planned Cloudflare live execution design task.
 
 ## Blockers
 
 ### Current Blockers
 
-No product blocker. Documentation governance remediation is intentionally blocking further Cloudflare/live invalidation work until source-of-truth documents are corrected.
+No current product blocker. Live Cloudflare execution remains blocked until an explicit future design task defines secret-safe HTTP execution and response/error handling.

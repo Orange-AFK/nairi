@@ -71,7 +71,7 @@ class PublicInvalidationDispatchResponse(BaseModel):
         "no_dispatcher_configured",
         "dispatcher_exception",
         "contract_only_adapter",
-        "cloudflare_adapter_disabled",
+        "cloudflare_adapter_dry_run",
         "cloudflare_adapter_missing_settings",
     ]
     attempted: bool

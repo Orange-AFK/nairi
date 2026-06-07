@@ -580,6 +580,19 @@
 6. Risks or blockers: Cloudflare dry-run dispatch result shaping, actual HTTP client wiring, authorization headers, Cloudflare API responses/errors, CDN purge, `revalidateTag`/`revalidatePath`, webhooks, cache headers, scheduling semantics, external invalidation execution, and job runner remain deferred.
 7. Next recommended named task: Article Public Publish Invalidation Cloudflare Adapter Dry-Run Dispatch Boundary or Article Public Sitemap Additional Shards Boundary.
 
+
+### Article Public Publish Invalidation Cloudflare Adapter Dry-Run Dispatch Boundary
+
+1. Status: completed.
+2. Scope: advanced the configured Cloudflare adapter from configured-disabled bookkeeping to side-effect-free dry-run dispatch bookkeeping. Complete Cloudflare settings now build or depend on the inert purge request plan and return `cloudflare_adapter_dry_run`, `attempted=true`, and `attemptedAt=publishedAt`; missing or partial settings still return `cloudflare_adapter_missing_settings`, `attempted=false`, and `attemptedAt=null`.
+3. Changed files: `services/api/src/nairi_api/invalidation_dispatch.py`, `services/api/src/nairi_api/main.py`, `services/api/tests/test_public_invalidation_dispatcher.py`, `memory-bank/api-contract.md`, `memory-bank/architecture.md`, `memory-bank/decisions.md`, `memory-bank/project-state.md`, `memory-bank/roadmap.md`, `memory-bank/progress-log.md`, and local Chinese companion files.
+4. Verification performed: applied the updated dispatcher tests to `main` in a temporary worktree and observed RED on the previous `cloudflare_adapter_disabled` result; implemented the minimal dry-run reason literal, API response reason literal, dispatch request-plan dependency, and secret-safe result shape; verified focused dispatcher tests and full API tests.
+5. Result: configured Cloudflare dispatch records dry-run bookkeeping without exposing `CloudflarePurgeRequestPlan`, zone id, token fixture, `Authorization`, or `Bearer` data in the dispatch result. No external I/O, Cloudflare API call, CDN purge, Next.js revalidation, webhook, cache header, scheduling, or job runner behavior was added.
+6. Risks or blockers: live HTTP client wiring, authorization header construction/sending, Cloudflare API responses/errors, CDN purge, retry policy, external execution switch, and real job runner remain deferred.
+7. Decision impact: updated the existing Cloudflare staged/secret-safe decision to include dry-run request-plan build semantics.
+8. Authority-doc impact: updated `api-contract.md`, `architecture.md`, `decisions.md`, `project-state.md`, `roadmap.md`, and this progress log.
+9. Next recommended named task: Article Public Sitemap Additional Shards Boundary, or a separately planned Cloudflare Live Execution Design Boundary if live provider behavior becomes the priority.
+
 ## Progress Rule
 
 `progress-log.md` is append-only historical evidence. It is not the current roadmap and it is not the only authority for durable architecture decisions.

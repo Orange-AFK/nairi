@@ -54,7 +54,8 @@
 22. The Dependabot PostCSS advisory for `apps/public-site/package-lock.json` is fixed by resolving `postcss` to patched version `8.5.10`.
 23. CI Hygiene / Node 24 Actions Boundary is complete: Guards use read-only permissions, concurrency cancellation, and Node.js 24 opt-in for JavaScript actions.
 24. `/posts` now has a stable empty-list state and controlled fetch-failure error boundary without calling management routes.
-25. The next product-development task is Article Public Site Styling Boundary.
+25. Article Public Site Styling Boundary is complete: `/`, `/posts`, `/posts/{slug}`, list empty state, and list error state share a narrow header/card surface rhythm without introducing a full design system.
+26. The next product-development task is Article Published Public Render Coverage Boundary or Article Public Site SEO Metadata Boundary.
 17. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
 18. Preserve scope checks and standard error behavior.
 

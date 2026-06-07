@@ -58,6 +58,15 @@ The public frontend presents articles, pages, project retrospectives, tags, cate
 5. Draft or unknown slugs use the framework not-found path.
 6. Public list navigation, cache headers, CDN policy, and advanced typography remain deferred.
 
+## Public Site Styling Boundary
+
+### Shared Surface Rhythm
+
+1. `/`, `/posts`, `/posts/{slug}`, and `/posts` error state share the `article-header` rhythm.
+2. Home action, post cards, article body, empty state, and error state share the `surface-card` boundary.
+3. CSS custom properties define the current small styling surface: `--nairi-surface`, `--nairi-border`, `--nairi-muted`, and `--nairi-shadow-soft`.
+4. This is a narrow styling boundary only; Tailwind, shadcn/ui, a full design system, cache/CDN policy, SEO, RSS, and sitemap remain deferred.
+
 ## Rendering Rules
 
 ### Content Rendering

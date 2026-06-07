@@ -1,8 +1,14 @@
 :root {
+  --nairi-background: #f8fafc;
+  --nairi-border: #e2e8f0;
+  --nairi-muted: #64748b;
+  --nairi-shadow-soft: 0 24px 80px rgba(15, 23, 42, 0.08);
+  --nairi-surface: #ffffff;
+  --nairi-text: #111827;
   color-scheme: light;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #f8fafc;
-  color: #111827;
+  background: var(--nairi-background);
+  color: var(--nairi-text);
 }
 
 body {
@@ -23,8 +29,12 @@ main {
   padding: 64px 24px;
 }
 
+.article-header {
+  margin: 0 0 40px;
+}
+
 .article-meta {
-  color: #64748b;
+  color: var(--nairi-muted);
   font-size: 0.95rem;
   margin-bottom: 12px;
 }
@@ -40,14 +50,22 @@ main {
   color: #475569;
   font-size: 1.125rem;
   line-height: 1.7;
-  margin: 0 0 40px;
+  margin: 0;
 }
 
-.article-body {
-  background: white;
-  border: 1px solid #e2e8f0;
+.surface-card {
+  background: var(--nairi-surface);
+  border: 1px solid var(--nairi-border);
   border-radius: 24px;
-  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.08);
+  box-shadow: var(--nairi-shadow-soft);
+  padding: 28px;
+}
+
+.surface-card-link {
+  display: inline-flex;
+}
+
+.article-body.surface-card {
   font-size: 1.05rem;
   line-height: 1.8;
   padding: 32px;
@@ -80,10 +98,7 @@ main {
   gap: 20px;
 }
 
-.post-card {
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 20px;
+.post-card.surface-card {
   padding: 24px;
 }
 
@@ -103,12 +118,9 @@ main {
   margin: 0 0 16px;
 }
 
-.post-empty,
-.post-error {
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 20px;
-  color: #64748b;
+.post-empty.surface-card,
+.post-error.surface-card {
+  color: var(--nairi-muted);
   line-height: 1.7;
   margin: 0;
   padding: 24px;

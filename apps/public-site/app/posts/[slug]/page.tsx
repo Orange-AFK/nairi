@@ -34,10 +34,12 @@ export default async function PublicPostDetailPage({ params }: PublicPostDetailP
 
   return (
     <main className="article-shell">
-      <p className="article-meta">Published {new Date(publicPost.publishedAt).toLocaleDateString("en-US")}</p>
-      <h1 className="article-title">{publicPost.title}</h1>
-      {publicPost.summary ? <p className="article-summary">{publicPost.summary}</p> : null}
-      <article className="article-body" dangerouslySetInnerHTML={{ __html: publicPost.bodyHtml }} />
+      <header className="article-header">
+        <p className="article-meta">Published {new Date(publicPost.publishedAt).toLocaleDateString("en-US")}</p>
+        <h1 className="article-title">{publicPost.title}</h1>
+        {publicPost.summary ? <p className="article-summary">{publicPost.summary}</p> : null}
+      </header>
+      <article className="article-body surface-card" dangerouslySetInnerHTML={{ __html: publicPost.bodyHtml }} />
     </main>
   );
 }

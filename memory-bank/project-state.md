@@ -71,7 +71,8 @@
 39. Article Public RSS/Sitemap Full-History Pagination Boundary is complete: `/rss.xml` and `/sitemap.xml` now traverse anonymous public list pages with explicit page-size and max-page bounds so feeds include published history beyond the first list page.
 40. Article Public RSS/Sitemap Cache Policy Boundary is complete: `/rss.xml` and `/sitemap.xml` now declare route-level Next.js revalidation with explicit RSS/sitemap cache policy markers and no CDN headers, purge, or publish-triggered invalidation execution.
 41. Article Public Publish Invalidation Execution Boundary is complete: publish responses and `publish_jobs` now record public invalidation execution status as durable bookkeeping with `mode=recorded`, `status=recorded`, and `executor=none`, without CDN purge, webhooks, cache headers, or Next.js tag/path invalidation.
-42. The next product-development task is Article Public Publish Invalidation Dispatch Boundary or Article Public RSS/Sitemap Split Boundary.
+42. Article Public Publish Invalidation Dispatch Boundary is complete: publish responses and `publish_jobs` now record dispatch semantics with `dispatch_skipped`, `no_dispatcher_configured`, `attempted=false`, and no external invalidation side effects.
+43. The next product-development task is Article Public Publish Invalidation Dispatcher Configuration Boundary or Article Public RSS/Sitemap Split Boundary.
 17. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
 18. Preserve scope checks and standard error behavior.
 

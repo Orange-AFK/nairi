@@ -520,6 +520,16 @@
 6. Risks or blockers: dispatcher error policy, external dispatch execution, CDN purge, `revalidateTag`/`revalidatePath`, webhooks, cache headers, scheduling semantics, and the real job runner remain deferred.
 7. Next recommended named task: Article Public Publish Invalidation Dispatcher Error Policy Boundary or Article Public RSS/Sitemap Split Boundary.
 
+### Article Public Publish Invalidation Dispatcher Error Policy Boundary
+
+1. Status: completed.
+2. Scope: added deterministic in-process dispatcher exception bookkeeping and missing publish-job row fail-closed behavior for dispatch result persistence.
+3. Changed files: `services/api/src/nairi_api/invalidation_dispatch.py`, `services/api/src/nairi_api/main.py`, `services/api/src/nairi_api/posts.py`, `services/api/tests/test_post_persistence.py`, `memory-bank/api-contract.md`, `memory-bank/architecture.md`, `memory-bank/project-state.md`, and `memory-bank/progress-log.md`.
+4. Verification performed: added RED tests proving dispatcher exceptions no longer roll back successful publishes but instead record `dispatch_failed` / `dispatcher_exception` in both response and durable `publish_jobs`, and proving missing publish-job dispatch persistence fails closed; implemented the minimal exception fallback and rowcount check, then verified focused publish/dispatcher tests plus the full API test suite.
+5. Result: passed for the publish invalidation dispatcher error policy boundary.
+6. Risks or blockers: external invalidation execution, CDN purge, `revalidateTag`/`revalidatePath`, webhooks, cache headers, scheduling semantics, concrete adapters, and the real job runner remain deferred.
+7. Next recommended named task: Article Public Publish Invalidation Adapter Contract Boundary or Article Public RSS/Sitemap Split Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

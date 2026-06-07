@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 
 from nairi_api.auth import ApiError, AuthenticatedActor, api_error_response, require_scope
 from nairi_api.config import Settings, get_settings
-from nairi_api.invalidation_dispatch import build_public_invalidation_dispatcher
+from nairi_api.invalidation_dispatch import PublicInvalidationDispatchResult, build_public_invalidation_dispatcher
 from nairi_api.posts import (
     CreatedPostDraft,
     DuplicatePostSlugError,
@@ -66,8 +66,8 @@ class PublicInvalidationExecutionResponse(BaseModel):
 
 
 class PublicInvalidationDispatchResponse(BaseModel):
-    status: Literal["dispatch_skipped"]
-    reason: Literal["no_dispatcher_configured"]
+    status: Literal["dispatch_skipped", "dispatch_failed"]
+    reason: Literal["no_dispatcher_configured", "dispatcher_exception"]
     attempted: bool
     attempted_at: str | None = Field(alias="attemptedAt")
 
@@ -445,10 +445,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "Post revision conflict",
                 {"currentRevisionId": error.current_revision_id},
             ) from error
-        dispatch_result = app.state.public_invalidation_dispatcher.dispatch(
-            surfaces=published.public_invalidation_surfaces,
-            published_at=published.published_at,
-        )
+        try:
+            dispatch_result = app.state.public_invalidation_dispatcher.dispatch(
+                surfaces=published.public_invalidation_surfaces,
+                published_at=published.published_at,
+            )
+        except Exception:
+            dispatch_result = PublicInvalidationDispatchResult(
+                status="dispatch_failed",
+                reason="dispatcher_exception",
+                attempted=True,
+                attempted_at=published.published_at,
+            )
         app.state.post_store.record_public_invalidation_dispatch(
             published.job_id,
             status=dispatch_result.status,

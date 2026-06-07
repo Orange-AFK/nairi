@@ -50,6 +50,15 @@ class RecordingPublicInvalidationDispatcher:
         )
 
 
+class FailingPublicInvalidationDispatcher:
+    def __init__(self) -> None:
+        self.calls: list[dict[str, object]] = []
+
+    def dispatch(self, *, surfaces: Sequence[str], published_at: str | None) -> PublicInvalidationDispatchResult:
+        self.calls.append({"surfaces": list(surfaces), "published_at": published_at})
+        raise RuntimeError("simulated dispatcher failure")
+
+
 def test_create_post_draft_uses_injected_utc_timestamp(tmp_path: Path) -> None:
     database_path = tmp_path / "nairi.db"
     settings = Settings(
@@ -736,6 +745,101 @@ def test_publish_post_draft_transitions_to_published_and_records_audit(tmp_path:
             "2026-06-07T08:11:12Z",
         ),
     ]
+
+
+def test_publish_post_records_dispatch_failure_without_rolling_back_publish(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    settings = Settings(
+        api_tokens={
+            "post-writer-token": ["posts:write"],
+            "post-publisher-token": ["posts:publish"],
+        },
+        database_path=str(database_path),
+    )
+    timestamps = iter(
+        [
+            datetime(2026, 6, 7, 8, 9, 10, tzinfo=UTC),
+            datetime(2026, 6, 7, 8, 11, 12, tzinfo=UTC),
+        ]
+    )
+    app = create_app(settings=settings)
+    app.state.post_store = PostStore(str(database_path), clock=lambda: next(timestamps))
+    dispatcher = FailingPublicInvalidationDispatcher()
+    app.state.public_invalidation_dispatcher = dispatcher
+    client = TestClient(app)
+
+    create_response = client.post(
+        "/api/v1/posts",
+        json=draft_payload(),
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+    post_id = create_response.json()["postId"]
+    revision_id = create_response.json()["revisionId"]
+
+    response = client.post(
+        f"/api/v1/posts/{post_id}/publish",
+        json={"revisionId": revision_id, "publishMode": "immediate", "scheduledAt": None},
+        headers={"Authorization": "Bearer post-publisher-token"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "published"
+    assert response.json()["publicInvalidation"]["dispatch"] == {
+        "status": "dispatch_failed",
+        "reason": "dispatcher_exception",
+        "attempted": True,
+        "attemptedAt": "2026-06-07T08:11:12Z",
+    }
+    assert dispatcher.calls == [
+        {
+            "surfaces": ["/posts", "/posts/persistent-draft", "/rss.xml", "/sitemap.xml"],
+            "published_at": "2026-06-07T08:11:12Z",
+        }
+    ]
+
+    with sqlite3.connect(database_path) as connection:
+        post_row = connection.execute(
+            "SELECT status, published_at FROM posts WHERE id = ?",
+            (post_id,),
+        ).fetchone()
+        dispatch_row = connection.execute(
+            """
+            SELECT
+                public_invalidation_dispatch_status,
+                public_invalidation_dispatch_reason,
+                public_invalidation_dispatch_attempted,
+                public_invalidation_dispatch_attempted_at
+            FROM publish_jobs
+            WHERE id = ?
+            """,
+            (f"publish-{post_id}-{revision_id}",),
+        ).fetchone()
+
+    assert post_row == ("published", "2026-06-07T08:11:12Z")
+    assert dispatch_row == (
+        "dispatch_failed",
+        "dispatcher_exception",
+        1,
+        "2026-06-07T08:11:12Z",
+    )
+
+
+def test_record_public_invalidation_dispatch_requires_existing_publish_job(tmp_path: Path) -> None:
+    store = PostStore(str(tmp_path / "nairi.db"))
+
+    try:
+        store.record_public_invalidation_dispatch(
+            "missing-job",
+            status="dispatch_skipped",
+            reason="no_dispatcher_configured",
+            attempted=False,
+            attempted_at=None,
+        )
+    except Exception as error:
+        assert type(error).__name__ == "PublishJobNotFoundError"
+        assert getattr(error, "job_id") == "missing-job"
+    else:
+        raise AssertionError("expected missing publish job to fail closed")
 
 
 def test_list_published_posts_returns_published_summaries_for_reader_scope(tmp_path: Path) -> None:

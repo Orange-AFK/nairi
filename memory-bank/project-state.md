@@ -76,7 +76,8 @@
 44. Article Public Publish Invalidation Dispatcher Interface Boundary is complete: app creation now builds a configured `PublicInvalidationDispatcher`, with a `none` no-op implementation that returns skipped dispatch bookkeeping without external side effects.
 45. Article Public Publish Invalidation Dispatcher Route Integration Boundary is complete: the publish route now invokes the configured in-process dispatcher after successful publish storage and maps the dispatcher result into the response dispatch object.
 46. Article Public Publish Invalidation Dispatcher Persistence Boundary is complete: the publish route now records the dispatcher result back onto the durable `publish_jobs` dispatch fields after the dispatcher returns, keeping response dispatch and durable dispatch bookkeeping aligned without running external invalidation.
-47. The next product-development task is Article Public RSS/Sitemap Split Boundary or Article Public Publish Invalidation Dispatcher Error Policy Boundary.
+47. Article Public Publish Invalidation Dispatcher Error Policy Boundary is complete: dispatcher exceptions now become durable `dispatch_failed` / `dispatcher_exception` bookkeeping while preserving the successful publish transition, and dispatch persistence fails closed for missing publish job rows.
+48. The next product-development task is Article Public RSS/Sitemap Split Boundary or Article Public Publish Invalidation Adapter Contract Boundary.
 17. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
 18. Preserve scope checks and standard error behavior.
 

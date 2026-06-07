@@ -583,13 +583,20 @@ def test_publish_post_draft_transitions_to_published_and_records_audit(tmp_path:
         "publishedAt": "2026-06-07T08:11:12Z",
         "jobId": f"publish-{post_id}-{revision_id}",
         "publicInvalidation": {
-            "mode": "contract_only",
+            "mode": "recorded",
             "surfaces": [
                 "/posts",
                 "/posts/persistent-draft",
                 "/rss.xml",
                 "/sitemap.xml",
             ],
+            "execution": {
+                "status": "recorded",
+                "executor": "none",
+                "executedAt": "2026-06-07T08:11:12Z",
+                "errorCode": None,
+                "errorMessage": None,
+            },
         },
     }
     read_response = client.get(
@@ -640,7 +647,12 @@ def test_publish_post_draft_transitions_to_published_and_records_audit(tmp_path:
                 completed_at,
                 error_code,
                 error_message,
-                public_invalidation_surfaces
+                public_invalidation_surfaces,
+                public_invalidation_status,
+                public_invalidation_executor,
+                public_invalidation_executed_at,
+                public_invalidation_error_code,
+                public_invalidation_error_message
             FROM publish_jobs
             WHERE id = ?
             """,
@@ -660,6 +672,11 @@ def test_publish_post_draft_transitions_to_published_and_records_audit(tmp_path:
         None,
         None,
         '["/posts","/posts/persistent-draft","/rss.xml","/sitemap.xml"]',
+        "recorded",
+        "none",
+        "2026-06-07T08:11:12Z",
+        None,
+        None,
     )
     assert audit_rows == [
         (
@@ -1349,13 +1366,20 @@ def test_publish_post_draft_adds_published_at_column_for_existing_scaffold_datab
         "publishedAt": "2026-06-07T08:11:12Z",
         "jobId": "publish-draft-persistent-draft-revision-persistent-draft-1",
         "publicInvalidation": {
-            "mode": "contract_only",
+            "mode": "recorded",
             "surfaces": [
                 "/posts",
                 "/posts/persistent-draft",
                 "/rss.xml",
                 "/sitemap.xml",
             ],
+            "execution": {
+                "status": "recorded",
+                "executor": "none",
+                "executedAt": "2026-06-07T08:11:12Z",
+                "errorCode": None,
+                "errorMessage": None,
+            },
         },
     }
     with sqlite3.connect(database_path) as connection:
@@ -1363,13 +1387,30 @@ def test_publish_post_draft_adds_published_at_column_for_existing_scaffold_datab
             "SELECT status, published_at, updated_at FROM posts WHERE id = ?",
             ("draft-persistent-draft",),
         ).fetchone()
-        publish_job_surfaces = connection.execute(
-            "SELECT public_invalidation_surfaces FROM publish_jobs WHERE id = ?",
+        publish_job_execution = connection.execute(
+            """
+            SELECT
+                public_invalidation_surfaces,
+                public_invalidation_status,
+                public_invalidation_executor,
+                public_invalidation_executed_at,
+                public_invalidation_error_code,
+                public_invalidation_error_message
+            FROM publish_jobs
+            WHERE id = ?
+            """,
             ("publish-draft-persistent-draft-revision-persistent-draft-1",),
-        ).fetchone()[0]
+        ).fetchone()
 
     assert post_row == ("published", "2026-06-07T08:11:12Z", "2026-06-07T08:11:12Z")
-    assert publish_job_surfaces == '["/posts","/posts/persistent-draft","/rss.xml","/sitemap.xml"]'
+    assert publish_job_execution == (
+        '["/posts","/posts/persistent-draft","/rss.xml","/sitemap.xml"]',
+        "recorded",
+        "none",
+        "2026-06-07T08:11:12Z",
+        None,
+        None,
+    )
 
 
 def test_publish_post_draft_requires_posts_publish_scope(tmp_path: Path) -> None:

@@ -48,6 +48,8 @@ type FetchPublicPostsOptions = FetchPublicPostOptions & {
 const DEFAULT_API_BASE_URL = "http://localhost:8000";
 const PUBLIC_POST_LIST_REVALIDATE_SECONDS = 60;
 const PUBLIC_POST_DETAIL_REVALIDATE_SECONDS = 300;
+const PUBLIC_CDN_INVALIDATION_POLICY =
+  "Public frontend uses Next.js revalidation only: no CDN headers, no publish-triggered invalidation, no tag-based revalidation.";
 
 function publicApiBaseUrl(apiBaseUrl?: string): string {
   return (apiBaseUrl ?? process.env.NEXT_PUBLIC_NAIRI_API_BASE_URL ?? DEFAULT_API_BASE_URL).replace(/\/$/, "");
@@ -57,6 +59,7 @@ export async function fetchPublicPostBySlug(
   slug: string,
   options: FetchPublicPostOptions = {},
 ): Promise<PublicPostDetail | null> {
+  void PUBLIC_CDN_INVALIDATION_POLICY;
   const response = await fetch(`${publicApiBaseUrl(options.apiBaseUrl)}/api/v1/public/posts/${encodeURIComponent(slug)}`, {
     next: { revalidate: PUBLIC_POST_DETAIL_REVALIDATE_SECONDS },
   });
@@ -72,6 +75,7 @@ export async function fetchPublicPostBySlug(
 }
 
 export async function fetchPublicPosts(options: FetchPublicPostsOptions = {}): Promise<ListPublicPostsResponse> {
+  void PUBLIC_CDN_INVALIDATION_POLICY;
   const url = new URL(`${publicApiBaseUrl(options.apiBaseUrl)}/api/v1/public/posts`);
   if (options.limit !== undefined) {
     url.searchParams.set("limit", String(options.limit));

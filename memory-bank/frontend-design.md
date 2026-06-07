@@ -86,7 +86,8 @@ The public frontend presents articles, pages, project retrospectives, tags, cate
 2. Public detail fetches use Next.js revalidation through `PUBLIC_POST_DETAIL_REVALIDATE_SECONDS`, currently 300 seconds.
 3. `/posts` and `/posts/{slug}` opt out of build-time API prerendering with `dynamic = "force-dynamic"` so local and CI builds do not require a live API.
 4. Public frontend fetches must not use `cache: "no-store"` after this boundary unless a later explicit cache-policy task changes the contract.
-5. CDN headers, publish-triggered invalidation, tag-based revalidation, pagination cache policy, RSS, and sitemap remain deferred.
+5. Public frontend cache policy is explicitly Next.js revalidation only: no CDN headers, no publish-triggered invalidation, and no tag-based revalidation in this boundary.
+6. Real CDN purge wiring, revalidation webhooks, pagination cache policy, RSS, and sitemap cache policy remain deferred.
 
 ## SEO
 

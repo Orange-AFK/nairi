@@ -66,7 +66,8 @@
 34. Article Public Pagination Metadata Boundary is complete: anonymous `GET /api/v1/public/posts` now returns minimal `page` metadata (`limit`, `cursor`, `hasNextPage`) alongside `items` and `nextCursor`.
 35. Article Public Pagination Metadata Frontend Boundary is complete: `/posts` now uses `page.hasNextPage` plus `nextCursor` to decide whether to render the next-page link.
 36. Article Public RSS/Sitemap Pagination Policy Boundary is complete: `/rss.xml` and `/sitemap.xml` explicitly consume one single public list page only, with cursor/full-history expansion deferred.
-37. The next product-development task is Article Public RSS/Sitemap Full-History Pagination Boundary or Article Public CDN/Invalidation Boundary.
+37. Article Public CDN/Invalidation Boundary is complete: public frontend caching remains Next.js revalidation only, with no CDN headers, publish-triggered invalidation, tag-based revalidation, or CDN purge wiring yet.
+38. The next product-development task is Article Public Publish Invalidation Contract Boundary or Article Public RSS/Sitemap Full-History Pagination Boundary.
 17. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
 18. Preserve scope checks and standard error behavior.
 

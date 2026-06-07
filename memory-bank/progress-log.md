@@ -110,6 +110,16 @@
 6. Risks or blockers: readback is intentionally limited to draft detail by ID; list, update, publish, and SQLAlchemy/Alembic migrations remain deferred.
 7. Next recommended named task: Article Draft List Boundary.
 
+### Article Draft List Boundary
+
+1. Status: completed.
+2. Scope: added authenticated `GET /api/v1/posts?status=draft` list readback for draft summaries with `posts:read` scope, empty-list behavior, and standard `403` scope enforcement.
+3. Changed files: `services/api/src/nairi_api/main.py`, `services/api/src/nairi_api/posts.py`, `services/api/tests/test_post_persistence.py`, `memory-bank/api-contract.md`, `memory-bank/project-state.md`, `memory-bank/architecture.md`, `memory-bank/data-model.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: wrote list route tests first, observed RED on the unwired route returning FastAPI `405`, implemented the smallest store list method and route mapping, then verified focused GREEN, persistence tests, full API suite, docs guards, schema guards, and secret guards.
+5. Result: passed for the draft list boundary.
+6. Risks or blockers: list is intentionally limited to draft summary items and omits content; filtering, pagination, update, publish, and SQLAlchemy/Alembic migrations remain deferred.
+7. Next recommended named task: Article Draft Update Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

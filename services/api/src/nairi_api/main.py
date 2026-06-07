@@ -28,13 +28,12 @@ class CreatePostDraftResponse(BaseModel):
     created_at: str = Field(alias="createdAt")
 
 
-class ReadPostDraftResponse(BaseModel):
+class PostDraftSummaryResponse(BaseModel):
     post_id: str = Field(alias="postId")
     title: str
     slug: str
     status: Literal["draft"]
     content_format: Literal["markdown", "mdx"] = Field(alias="contentFormat")
-    content: str
     summary: str | None = None
     tags: list[str]
     category_id: str | None = Field(alias="categoryId")
@@ -43,6 +42,15 @@ class ReadPostDraftResponse(BaseModel):
     revision_id: str = Field(alias="revisionId")
     created_at: str = Field(alias="createdAt")
     updated_at: str = Field(alias="updatedAt")
+
+
+class ListPostDraftsResponse(BaseModel):
+    items: list[PostDraftSummaryResponse]
+    next_cursor: str | None = Field(default=None, alias="nextCursor")
+
+
+class ReadPostDraftResponse(PostDraftSummaryResponse):
+    content: str
 
 
 SLUG_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
@@ -59,6 +67,24 @@ def validate_post_draft_request(draft: CreatePostDraftRequest) -> None:
         details["content"] = "Content is required"
     if details:
         raise ApiError(400, "invalid_request", "Invalid post draft request", details)
+
+
+def post_draft_summary_response(draft: StoredPostDraft) -> PostDraftSummaryResponse:
+    return PostDraftSummaryResponse(
+        postId=draft.post_id,
+        title=draft.title,
+        slug=draft.slug,
+        status="draft",
+        contentFormat=draft.content_format,
+        summary=draft.summary,
+        tags=draft.tags,
+        categoryId=draft.category_id,
+        seriesId=draft.series_id,
+        metadata=draft.metadata,
+        revisionId=draft.revision_id,
+        createdAt=draft.created_at,
+        updatedAt=draft.updated_at,
+    )
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -80,6 +106,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/api/v1/mdx-components")
     def list_mdx_components(_actor: object = Depends(require_scope("settings:read"))) -> dict[str, list[dict[str, str]]]:
         return {"items": []}
+
+    @app.get("/api/v1/posts")
+    def list_post_drafts(
+        _actor: AuthenticatedActor = Depends(require_scope("posts:read")),
+    ) -> ListPostDraftsResponse:
+        drafts: list[StoredPostDraft] = app.state.post_store.list_drafts()
+        return ListPostDraftsResponse(
+            items=[post_draft_summary_response(draft) for draft in drafts],
+            nextCursor=None,
+        )
 
     @app.post("/api/v1/posts", status_code=201)
     def create_post_draft(
@@ -120,20 +156,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if draft is None:
             raise ApiError(404, "not_found", "Post not found", {"postId": post_id})
         return ReadPostDraftResponse(
-            postId=draft.post_id,
-            title=draft.title,
-            slug=draft.slug,
-            status="draft",
-            contentFormat=draft.content_format,
+            **post_draft_summary_response(draft).model_dump(by_alias=True),
             content=draft.content,
-            summary=draft.summary,
-            tags=draft.tags,
-            categoryId=draft.category_id,
-            seriesId=draft.series_id,
-            metadata=draft.metadata,
-            revisionId=draft.revision_id,
-            createdAt=draft.created_at,
-            updatedAt=draft.updated_at,
         )
 
     return app

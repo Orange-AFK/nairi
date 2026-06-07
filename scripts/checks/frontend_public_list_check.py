@@ -18,6 +18,12 @@ root_page = ROOT_PAGE.read_text()
 required_page = [
     "PublicPostsPage",
     "fetchPublicPosts",
+    "searchParams",
+    "cursor",
+    "PUBLIC_POSTS_PAGE_SIZE",
+    "nextCursor",
+    "Load more articles",
+    "/posts?cursor=",
     "/posts/",
     "publishedAt",
     "tags",

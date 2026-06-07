@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const siteUrl = PUBLIC_SITE_URL();
-  const posts = await fetchPublicPosts();
+  const { items: posts } = await fetchPublicPosts();
   const entries = [
     `<url><loc>${siteUrl}/</loc></url>`,
     `<url><loc>${siteUrl}/posts</loc></url>`,

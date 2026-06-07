@@ -35,6 +35,11 @@ type FetchPublicPostOptions = {
   apiBaseUrl?: string;
 };
 
+type FetchPublicPostsOptions = FetchPublicPostOptions & {
+  limit?: number;
+  cursor?: string;
+};
+
 const DEFAULT_API_BASE_URL = "http://localhost:8000";
 const PUBLIC_POST_LIST_REVALIDATE_SECONDS = 60;
 const PUBLIC_POST_DETAIL_REVALIDATE_SECONDS = 300;
@@ -61,8 +66,16 @@ export async function fetchPublicPostBySlug(
   return (await response.json()) as PublicPostDetail;
 }
 
-export async function fetchPublicPosts(options: FetchPublicPostOptions = {}): Promise<PublicPostSummary[]> {
-  const response = await fetch(`${publicApiBaseUrl(options.apiBaseUrl)}/api/v1/public/posts`, {
+export async function fetchPublicPosts(options: FetchPublicPostsOptions = {}): Promise<ListPublicPostsResponse> {
+  const url = new URL(`${publicApiBaseUrl(options.apiBaseUrl)}/api/v1/public/posts`);
+  if (options.limit !== undefined) {
+    url.searchParams.set("limit", String(options.limit));
+  }
+  if (options.cursor) {
+    url.searchParams.set("cursor", options.cursor);
+  }
+
+  const response = await fetch(url, {
     next: { revalidate: PUBLIC_POST_LIST_REVALIDATE_SECONDS },
   });
 
@@ -71,5 +84,5 @@ export async function fetchPublicPosts(options: FetchPublicPostOptions = {}): Pr
   }
 
   const payload = (await response.json()) as ListPublicPostsResponse;
-  return payload.items;
+  return payload;
 }

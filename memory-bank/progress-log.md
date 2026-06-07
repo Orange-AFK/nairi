@@ -208,7 +208,17 @@
 4. Verification performed: wrote the published pagination route test first and observed RED because `limit` was ignored and all published posts were returned; implemented the smallest route-level pagination helper; then verified focused GREEN and persistence tests.
 5. Result: passed for the published pagination boundary.
 6. Risks or blockers: pagination is an in-memory scaffold over reconstructed posts; unauthenticated public-read policy, public rendering, scheduling semantics, job runner execution, and SQLAlchemy/Alembic migrations remain deferred.
-7. Next recommended named task: Article Draft Published Public Read Policy Boundary.
+7. Next recommended named task: Article Published Public List Boundary.
+
+### API Permission Boundary Audit
+
+1. Status: completed.
+2. Scope: paused feature development to review completed API route behavior and project documents for public/authenticated permission mixing; accepted the policy that public content APIs and authenticated content-management APIs must use separate route contracts.
+3. Changed files: `AGENTS.md`, `docs/api-auth.md`, `memory-bank/api-contract.md`, `memory-bank/architecture.md`, `memory-bank/contract-index.md`, `memory-bank/decisions.md`, `memory-bank/frontend-design.md`, `memory-bank/integration-map.md`, `memory-bank/project-state.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: inspected FastAPI route dependencies, tests, and project documents; confirmed current implemented content routes still require explicit `posts:*` scopes and no `/api/v1/public/...` route exists yet; then documented that future public reads must use dedicated public endpoints and public-safe response schemas.
+5. Result: passed for documentation and architecture boundary clarification.
+6. Risks or blockers: existing code is not currently mixing anonymous public and authenticated management access, but prior documents were ambiguous because some frontend/client wording implied public frontend could use authenticated published-list routes. Public route implementation remains future work.
+7. Next recommended named task: Article Published Public List Boundary.
 
 ## Progress Rule
 

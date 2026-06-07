@@ -4,7 +4,7 @@
 
 ### API Version Prefix
 
-1. Public and authenticated product APIs use `/api/v1`.
+1. Public and authenticated product APIs use `/api/v1`, but public content APIs must use a dedicated public path such as `/api/v1/public/...` instead of reusing authenticated management paths.
 2. New endpoints must be registered in `api-contract.md` before implementation.
 
 ## Canonical Entity Names
@@ -104,7 +104,8 @@
 1. Use plural resource names.
 2. Use resource identifiers in path variables.
 3. Use verbs only for domain actions such as `publish`, `archive`, or `review`.
-4. Do not create parallel admin or agent API paths for the same capability.
+4. Do not create parallel admin or agent API paths for the same management capability.
+5. Public read paths are separate capabilities when they use anonymous caller rules and public-safe responses.
 
 ## MCP Tool Naming Rules
 

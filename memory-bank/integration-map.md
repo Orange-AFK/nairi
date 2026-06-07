@@ -55,8 +55,16 @@ Parallel publish endpoints are forbidden unless a future versioned contract expl
 
 ### Scope Enforcement
 
-1. Public frontend receives public data only.
-2. Admin console needs human admin scopes.
-3. MCP tools need agent-safe scopes.
-4. Job runner needs documented internal authority.
-5. Audit-sensitive operations must emit audit events.
+1. Public frontend receives public data only from dedicated public endpoints.
+2. Public frontend must not call `/api/v1/posts...` content-management endpoints directly, even for `status=published`.
+3. Admin console needs human admin scopes.
+4. MCP tools need agent-safe scopes and must call authenticated content-management endpoints.
+5. Job runner needs documented internal authority.
+6. Audit-sensitive operations must emit audit events.
+
+### Public vs Management Route Separation
+
+1. Public routes are anonymous-read, CDN-cacheable candidates, and expose only public-safe published fields.
+2. Management routes are authenticated, scope-checked, and may expose revision/workflow metadata required by admin, MCP, or agents.
+3. Authorization must not depend on a query parameter such as `status=published` to switch a management route into a public route.
+4. Adding a public capability is not a duplicate management capability when its response safety, cacheability, and caller model differ.

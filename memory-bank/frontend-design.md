@@ -35,10 +35,11 @@ The public frontend presents articles, pages, project retrospectives, tags, cate
 
 ### Content Rendering
 
-1. Public content should be read through API capabilities.
-2. Markdown is rendered by default.
-3. MDX rendering uses registered components and published policies.
-4. The public site must not expose admin or agent-only data.
+1. Public content should be read through dedicated public API capabilities.
+2. The public site must not call authenticated `/api/v1/posts...` management endpoints directly.
+3. Markdown is rendered by default.
+4. MDX rendering uses registered components and published policies.
+5. The public site must not expose admin or agent-only data, including revision identifiers, internal metadata, audit/job state, and agent traces.
 
 ## SEO
 

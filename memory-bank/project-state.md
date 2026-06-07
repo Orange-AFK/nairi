@@ -42,10 +42,10 @@
 10. Authenticated publish requests now return a queued job-shaped response through `POST /api/v1/posts/{post_id}/publish` with `posts:publish` scope, standard `404`, and stale `revisionId` `409 conflict` without post/revision/audit mutation.
 11. Publish requests now persist the first state transition from `draft` to `published`, set `publishedAt`/`updatedAt`, preserve the current revision, and record `post.published` audit metadata.
 12. Publish requests now create a durable `publish_jobs` row for the immediate publish attempt while keeping runner and scheduling semantics deferred.
-13. Authenticated read/list now exposes published posts through `GET /api/v1/posts/{post_id}` and `GET /api/v1/posts?status=published` while keeping public rendering deferred.
+13. Authenticated management read/list now exposes published posts through `GET /api/v1/posts/{post_id}` and `GET /api/v1/posts?status=published`; public read remains a separate dedicated endpoint task.
 14. Published lists now support the first minimal `tag`, `category`, and `series` filters.
 15. Published lists now support the first minimal `limit`/`cursor` pagination boundary.
-16. The next small task is Article Draft Published Public Read Policy Boundary: decide and test the first public-read policy without public rendering yet.
+16. The next small task is Article Published Public List Boundary: add a dedicated public list endpoint with public-safe response fields and keep authenticated `/api/v1/posts...` management routes separate.
 17. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
 18. Preserve scope checks and standard error behavior.
 

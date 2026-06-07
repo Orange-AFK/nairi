@@ -17,6 +17,14 @@
 3. API tokens carry explicit scopes.
 4. `admin:all` may imply all scopes only for trusted administrative use.
 
+### Public and Authenticated API Boundary
+
+1. Authenticated content-management APIs use `/api/v1/posts...` and require explicit content scopes such as `posts:read`, `posts:write`, or `posts:publish`.
+2. Public content APIs must use a dedicated public contract such as `/api/v1/public/posts...` and must not share route handlers whose authorization depends on `status` query parameters.
+3. Public responses must expose only public-safe published fields; they must not expose draft data, `revisionId`, internal `metadata`, audit state, job state, agent traces, or raw privileged workflow fields.
+4. Public frontend, anonymous readers, and CDN-cacheable routes must use public contracts. Admin console, MCP, agents, and automation must use authenticated contracts.
+5. A route may not be both anonymous-public and authenticated-management for the same path. If behavior differs by caller type, define separate route contracts.
+
 ## System API
 
 ### Read API Health
@@ -41,7 +49,7 @@
 8. Item fields for published list: `postId`, `title`, `slug`, `status`, `contentFormat`, `summary`, `tags`, `categoryId`, `seriesId`, `metadata`, `revisionId`, `publishedAt`, `createdAt`, `updatedAt`.
 9. List items intentionally omit `content`; clients should use `GET /api/v1/posts/{post_id}` for detail.
 10. Audit event: none for list readback.
-11. Clients: public frontend for public posts, admin console for authenticated lists, MCP for agent-safe listing.
+11. Clients: admin console for authenticated lists, MCP for agent-safe listing, and authorized automation. Public frontend must use a dedicated public content endpoint once public read is introduced.
 
 ### Create Post Draft
 

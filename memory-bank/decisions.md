@@ -9,6 +9,13 @@
 3. Rationale: Nairi needs one governed capability layer shared by frontend, admin, MCP, agents, jobs, and automation.
 4. Consequence: No module may bypass API auth, scopes, status transitions, or audit logging unless documented as internal infrastructure.
 
+### Separate Public and Management APIs
+
+1. Status: Accepted.
+2. Decision: Public content APIs and authenticated content-management APIs must use separate route contracts.
+3. Rationale: Public readers need anonymous, public-safe, cacheable published data, while admin, MCP, agents, and automation need authenticated management data that may include revision, workflow, and internal metadata.
+4. Consequence: `/api/v1/posts...` remains authenticated management API even for `status=published`; future public reads must use dedicated public paths such as `/api/v1/public/posts...` and public-safe response schemas.
+
 ### Use FastAPI for Core API
 
 1. Status: Accepted.

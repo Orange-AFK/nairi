@@ -48,7 +48,8 @@
 16. `GET /api/v1/public/posts` now provides the first anonymous public published summary list with public-safe fields while keeping authenticated `/api/v1/posts...` management routes separate.
 17. `GET /api/v1/public/posts/{slug}` now provides the first anonymous public published detail readback with public-safe fields while keeping authenticated `/api/v1/posts...` management detail separate.
 18. `GET /api/v1/public/posts/{slug}` now includes `bodyHtml`, a minimal sanitized render output for public detail content. It preserves the original authored `content` and keeps management detail unchanged.
-19. The next small task is Article Published Public Render Coverage Boundary: expand renderer coverage deliberately, or alternatively move to frontend detail integration once the minimal body contract is accepted.
+19. `apps/public-site` now provides the first Next.js public frontend scaffold with `/posts/{slug}` reading `GET /api/v1/public/posts/{slug}` and rendering `bodyHtml` while preserving the public/management API boundary.
+20. The next small task is Article Frontend Public List Integration Boundary or Article Public Site Styling Boundary, depending on whether navigation or visual polish is more valuable next.
 17. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
 18. Preserve scope checks and standard error behavior.
 

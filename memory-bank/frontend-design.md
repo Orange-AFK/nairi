@@ -19,17 +19,31 @@ The public frontend presents articles, pages, project retrospectives, tags, cate
 
 ## Public Routes
 
-### Planned Routes
+### Implemented Routes
 
 1. `/`
-2. `/posts`
-3. `/posts/{slug}`
-4. `/tags/{slug}`
-5. `/categories/{slug}`
-6. `/series/{slug}`
-7. `/about`
-8. `/rss.xml`
-9. `/sitemap.xml`
+2. `/posts/{slug}`
+
+### Planned Routes
+
+1. `/posts`
+2. `/tags/{slug}`
+3. `/categories/{slug}`
+4. `/series/{slug}`
+5. `/about`
+6. `/rss.xml`
+7. `/sitemap.xml`
+
+## Public Detail Integration
+
+### Article Detail Page
+
+1. Route: `/posts/{slug}`.
+2. Data source: `GET /api/v1/public/posts/{slug}`.
+3. Rendering source: `bodyHtml` from the public API response.
+4. The page uses the public route family only and must not call authenticated `/api/v1/posts...` management endpoints.
+5. Draft or unknown slugs use the framework not-found path.
+6. Public list navigation, cache headers, CDN policy, and advanced typography remain deferred.
 
 ## Rendering Rules
 

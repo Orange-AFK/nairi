@@ -32,3 +32,22 @@ jobs:
 
       - name: Run secret guard
         run: python3 scripts/guards/secret_guard.py
+
+      - name: Run frontend public detail check
+        run: python3 scripts/checks/frontend_public_detail_check.py
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/public-site/package-lock.json
+
+      - name: Install public site dependencies
+        run: npm ci --prefix apps/public-site
+
+      - name: Typecheck public site
+        run: npm run typecheck --prefix apps/public-site
+
+      - name: Build public site
+        run: npm run build --prefix apps/public-site

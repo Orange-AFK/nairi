@@ -13,6 +13,9 @@ Every product module integrates through documented API capabilities unless expli
 1. Reads public content endpoints.
 2. Uses published post data only.
 3. Does not access admin-only endpoints.
+4. The first Next.js public site scaffold lives under `apps/public-site`.
+5. `/posts/{slug}` calls `GET /api/v1/public/posts/{slug}` and renders `bodyHtml`.
+6. Draft or unknown slugs map to not-found.
 
 ### CMS Admin Console to API
 

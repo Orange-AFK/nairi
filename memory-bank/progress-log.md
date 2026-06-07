@@ -250,6 +250,16 @@
 6. Risks or blockers: renderer coverage is intentionally tiny; full MDX/component rendering, sanitizer policy expansion, frontend page integration, cache policy, scheduling semantics, job runner execution, and SQLAlchemy/Alembic migrations remain deferred.
 7. Next recommended named task: Article Published Public Render Coverage Boundary or Article Frontend Public Detail Integration Boundary.
 
+### Article Frontend Public Detail Integration Boundary
+
+1. Status: completed.
+2. Scope: added the first Next.js public site scaffold under `apps/public-site`, including `/posts/{slug}` article detail rendering from `GET /api/v1/public/posts/{slug}` and `bodyHtml`.
+3. Changed files: `.github/workflows/guards.yml`, `.gitignore`, `apps/public-site/*`, `scripts/checks/frontend_public_detail_check.py`, `memory-bank/frontend-design.md`, `memory-bank/tech-stack.md`, `memory-bank/integration-map.md`, `memory-bank/guard-ci.md`, `memory-bank/project-state.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: wrote `frontend_public_detail_check.py` first and observed RED because the public site files did not exist; implemented the smallest public site scaffold; verified the check, `npm run typecheck --prefix apps/public-site`, and `npm run build --prefix apps/public-site`.
+5. Result: passed for the frontend public detail integration boundary.
+6. Risks or blockers: public list navigation, frontend API base deployment configuration hardening, cache/CDN policy, styling system integration, full MDX/component rendering, and admin console remain deferred.
+7. Next recommended named task: Article Frontend Public List Integration Boundary or Article Public Site Styling Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

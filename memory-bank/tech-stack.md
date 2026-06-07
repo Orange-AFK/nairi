@@ -4,10 +4,11 @@
 
 ### Public Site
 
-1. Next.js provides React-based routing, rendering, and MDX integration.
+1. Next.js provides React-based routing and the initial public article detail page.
 2. React keeps the public site and admin console in one ecosystem.
-3. Tailwind CSS and shadcn/ui provide customizable product UI.
-4. Markdown and governed MDX support technical writing and embedded components.
+3. The first public site scaffold lives under `apps/public-site` and uses npm scripts for `typecheck` and `build`.
+4. Tailwind CSS and shadcn/ui remain planned UI layers for richer product styling.
+5. Markdown and governed MDX support technical writing and embedded components.
 
 ### Admin Console
 

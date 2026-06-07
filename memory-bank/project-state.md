@@ -52,8 +52,9 @@
 20. `/posts` now provides the first public article list page, reads `GET /api/v1/public/posts`, displays title/summary/publishedAt/tags, and links each item to `/posts/{slug}` without using management routes.
 21. Current CI validates the public-site build but intentionally does not publish Docker or GHCR images until deployment readiness contracts exist.
 22. The Dependabot PostCSS advisory for `apps/public-site/package-lock.json` is fixed by resolving `postcss` to patched version `8.5.10`.
-23. The current maintenance task is CI Hygiene / Node 24 Actions Boundary: read-only workflow permissions, concurrency cancellation, and Node.js 24 opt-in for JavaScript actions.
-24. The next product-development task is Article Frontend Public List Empty/Error State Boundary.
+23. CI Hygiene / Node 24 Actions Boundary is complete: Guards use read-only permissions, concurrency cancellation, and Node.js 24 opt-in for JavaScript actions.
+24. `/posts` now has a stable empty-list state and controlled fetch-failure error boundary without calling management routes.
+25. The next product-development task is Article Public Site Styling Boundary.
 17. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
 18. Preserve scope checks and standard error behavior.
 

@@ -280,6 +280,26 @@
 6. Risks or blockers: the override should be revisited when Next.js directly depends on a patched PostCSS version; current CI still has a Node.js 20 actions deprecation annotation until CI hygiene is completed.
 7. Next recommended named task: CI Hygiene / Node 24 Actions Boundary, then Article Frontend Public List Empty/Error State Boundary.
 
+### CI Hygiene / Node 24 Actions Boundary
+
+1. Status: completed.
+2. Scope: hardened the Guards workflow with read-only repository permissions, concurrency cancellation for superseded runs on the same ref, and `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'`.
+3. Changed files: `.github/workflows/guards.yml`, `memory-bank/guard-ci.md`, `memory-bank/project-state.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: verified workflow YAML parsing for `permissions`, `concurrency`, and `env`; verified frontend checks, docs/i18n/contract/API schema/secret guards, staged runtime artifact scan, secret-shaped scan, PR CI, main CI, and remote contents readback.
+5. Result: passed for the CI hygiene boundary.
+6. Risks or blockers: GitHub still emits an informational annotation that current action versions target Node.js 20 while being forced to run on Node.js 24; this can be revisited when newer action major versions are available.
+7. Next recommended named task: Article Frontend Public List Empty/Error State Boundary.
+
+### Article Frontend Public List Empty/Error State Boundary
+
+1. Status: completed.
+2. Scope: added a stable empty-list message for `/posts` and a controlled Next.js route error boundary for public list fetch failures.
+3. Changed files: `apps/public-site/app/globals.css`, `apps/public-site/app/posts/error.tsx`, `scripts/checks/frontend_public_list_check.py`, `memory-bank/frontend-design.md`, `memory-bank/integration-map.md`, `memory-bank/project-state.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: expanded `frontend_public_list_check.py` first and observed RED because `apps/public-site/app/posts/error.tsx` was missing; added the error boundary and focused styles; verified `frontend_public_list_check.py`, public-site typecheck, and public-site build.
+5. Result: passed for the frontend public list empty/error state boundary.
+6. Risks or blockers: pagination, filter UI, cache/CDN policy, RSS, sitemap, complete styling system, and deployment configuration remain deferred.
+7. Next recommended named task: Article Public Site Styling Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

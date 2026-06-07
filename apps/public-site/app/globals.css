@@ -103,8 +103,23 @@ main {
   margin: 0 0 16px;
 }
 
-.post-empty {
+.post-empty,
+.post-error {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
   color: #64748b;
+  line-height: 1.7;
+  margin: 0;
+  padding: 24px;
+}
+
+.post-error p {
+  margin: 0 0 8px;
+}
+
+.post-error p:last-child {
+  margin-bottom: 0;
 }
 
 .tag-list {

@@ -75,9 +75,9 @@ def test_cloudflare_factory_keeps_configured_settings_disabled_without_external_
 
     assert result == PublicInvalidationDispatchResult(
         status="dispatch_skipped",
-        reason="cloudflare_adapter_disabled",
-        attempted=False,
-        attempted_at=None,
+        reason="cloudflare_adapter_dry_run",
+        attempted=True,
+        attempted_at="2026-06-07T08:11:12Z",
     )
 
 
@@ -131,7 +131,7 @@ def test_cloudflare_dispatcher_does_not_build_purge_request_plan_without_require
     assert dispatcher.build_purge_request_plan(surfaces=["/posts"]) is None
 
 
-def test_cloudflare_factory_exposes_request_plan_but_dispatch_stays_disabled_without_external_invalidation() -> None:
+def test_cloudflare_factory_exposes_request_plan_and_records_dry_run_without_external_invalidation() -> None:
     settings = Settings(
         public_invalidation_dispatcher="cloudflare",
         public_invalidation_cloudflare_zone_id="zone-test",
@@ -145,12 +145,19 @@ def test_cloudflare_factory_exposes_request_plan_but_dispatch_stays_disabled_wit
         path="/client/v4/zones/zone-test/purge_cache",
         body={"files": ["/posts"]},
     )
-    assert dispatcher.dispatch(surfaces=["/posts"], published_at="2026-06-07T08:11:12Z") == PublicInvalidationDispatchResult(
+    result = dispatcher.dispatch(surfaces=["/posts", "/rss.xml", "/posts"], published_at="2026-06-07T08:11:12Z")
+
+    assert result == PublicInvalidationDispatchResult(
         status="dispatch_skipped",
-        reason="cloudflare_adapter_disabled",
-        attempted=False,
-        attempted_at=None,
+        reason="cloudflare_adapter_dry_run",
+        attempted=True,
+        attempted_at="2026-06-07T08:11:12Z",
     )
+    assert "CloudflarePurgeRequestPlan" not in repr(result)
+    assert "zone-test" not in repr(result)
+    assert "stub" not in repr(result)
+    assert "Authorization" not in repr(result)
+    assert "Bearer" not in repr(result)
 
 
 def test_dispatcher_factory_builds_noop_dispatcher_for_none_configuration() -> None:

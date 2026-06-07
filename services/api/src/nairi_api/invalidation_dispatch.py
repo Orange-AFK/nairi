@@ -19,7 +19,7 @@ class PublicInvalidationDispatchResult:
         "no_dispatcher_configured",
         "dispatcher_exception",
         "contract_only_adapter",
-        "cloudflare_adapter_disabled",
+        "cloudflare_adapter_dry_run",
         "cloudflare_adapter_missing_settings",
     ]
     attempted: bool
@@ -67,16 +67,19 @@ class CloudflarePublicInvalidationDispatcher:
         )
 
     def dispatch(self, *, surfaces: Sequence[str], published_at: str | None) -> PublicInvalidationDispatchResult:
-        reason: Literal["cloudflare_adapter_disabled", "cloudflare_adapter_missing_settings"] = (
-            "cloudflare_adapter_disabled"
-            if self._zone_id and self._api_token_configured
-            else "cloudflare_adapter_missing_settings"
-        )
+        request_plan = self.build_purge_request_plan(surfaces=surfaces)
+        if request_plan is None:
+            return PublicInvalidationDispatchResult(
+                status="dispatch_skipped",
+                reason="cloudflare_adapter_missing_settings",
+                attempted=False,
+                attempted_at=None,
+            )
         return PublicInvalidationDispatchResult(
             status="dispatch_skipped",
-            reason=reason,
-            attempted=False,
-            attempted_at=None,
+            reason="cloudflare_adapter_dry_run",
+            attempted=True,
+            attempted_at=published_at,
         )
 
 

@@ -827,6 +827,74 @@ def test_list_published_posts_filters_by_tag_category_and_series(tmp_path: Path)
     assert [item["postId"] for item in series_response.json()["items"]] == [created_posts[0][0]]
 
 
+def test_list_published_posts_paginates_with_limit_and_cursor(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    settings = Settings(
+        api_tokens={
+            "post-writer-token": ["posts:write"],
+            "post-reader-token": ["posts:read"],
+            "post-publisher-token": ["posts:publish"],
+        },
+        database_path=str(database_path),
+    )
+    timestamps = iter(
+        [
+            datetime(2026, 6, 7, 8, 1, 0, tzinfo=UTC),
+            datetime(2026, 6, 7, 8, 2, 0, tzinfo=UTC),
+            datetime(2026, 6, 7, 8, 3, 0, tzinfo=UTC),
+            datetime(2026, 6, 7, 8, 4, 0, tzinfo=UTC),
+            datetime(2026, 6, 7, 8, 5, 0, tzinfo=UTC),
+            datetime(2026, 6, 7, 8, 6, 0, tzinfo=UTC),
+        ]
+    )
+    app = create_app(settings=settings)
+    app.state.post_store = PostStore(str(database_path), clock=lambda: next(timestamps))
+    client = TestClient(app)
+
+    created_posts = []
+    for index in range(3):
+        payload = draft_payload()
+        payload.update(
+            {
+                "title": f"Published page item {index + 1}",
+                "slug": f"published-page-item-{index + 1}",
+                "summary": f"Published page summary {index + 1}.",
+                "metadata": {"source": f"pagination-test-{index + 1}"},
+            }
+        )
+        create_response = client.post(
+            "/api/v1/posts",
+            json=payload,
+            headers={"Authorization": "Bearer post-writer-token"},
+        )
+        post_id = create_response.json()["postId"]
+        revision_id = create_response.json()["revisionId"]
+        publish_response = client.post(
+            f"/api/v1/posts/{post_id}/publish",
+            json={"revisionId": revision_id, "publishMode": "immediate", "scheduledAt": None},
+            headers={"Authorization": "Bearer post-publisher-token"},
+        )
+        assert create_response.status_code == 201
+        assert publish_response.status_code == 200
+        created_posts.append(post_id)
+
+    first_page_response = client.get(
+        "/api/v1/posts?status=published&limit=2",
+        headers={"Authorization": "Bearer post-reader-token"},
+    )
+    second_page_response = client.get(
+        f"/api/v1/posts?status=published&limit=2&cursor={created_posts[1]}",
+        headers={"Authorization": "Bearer post-reader-token"},
+    )
+
+    assert first_page_response.status_code == 200
+    assert [item["postId"] for item in first_page_response.json()["items"]] == created_posts[:2]
+    assert first_page_response.json()["nextCursor"] == created_posts[1]
+    assert second_page_response.status_code == 200
+    assert [item["postId"] for item in second_page_response.json()["items"]] == [created_posts[2]]
+    assert second_page_response.json()["nextCursor"] is None
+
+
 def test_get_published_post_returns_published_detail_for_reader_scope(tmp_path: Path) -> None:
     database_path = tmp_path / "nairi.db"
     settings = Settings(

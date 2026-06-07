@@ -72,9 +72,10 @@
 10. The current publish path creates a durable `publish_jobs` row for the immediate publish attempt, with `status=succeeded`, null scheduling/error fields, and start/completion timestamps matching `published_at`.
 11. Published read/list reconstructs published responses through the same current-revision join used by drafts and includes `published_at` as `publishedAt`.
 12. Published list filtering currently applies in the scaffold store after reconstructing current-revision responses, matching tag membership plus exact category/series ids.
-13. The current publish job storage, published readback, and published filtering are scaffold persistence boundaries only; no job runner, retry state machine, scheduling semantics, pagination, or public rendering is introduced yet.
-14. This boundary is intentionally smaller than the final SQLAlchemy/Alembic model layer.
-15. Future migration work must preserve these logical entities while replacing scaffold schema initialization with managed migrations.
+13. Published list pagination currently applies after filtering with a `limit` and item-id `cursor`, returning the last item id of the current page as `nextCursor` when more matching posts remain.
+14. The current publish job storage, published readback, published filtering, and published pagination are scaffold persistence boundaries only; no job runner, retry state machine, scheduling semantics, public-read policy, or public rendering is introduced yet.
+15. This boundary is intentionally smaller than the final SQLAlchemy/Alembic model layer.
+16. Future migration work must preserve these logical entities while replacing scaffold schema initialization with managed migrations.
 
 ## Database Support
 

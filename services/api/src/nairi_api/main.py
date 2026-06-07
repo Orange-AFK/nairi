@@ -95,8 +95,26 @@ class PublishedPostSummaryResponse(BaseModel):
     updated_at: str = Field(alias="updatedAt")
 
 
+class PublicPostSummaryResponse(BaseModel):
+    post_id: str = Field(alias="postId")
+    title: str
+    slug: str
+    status: Literal["published"]
+    content_format: Literal["markdown", "mdx"] = Field(alias="contentFormat")
+    summary: str | None = None
+    tags: list[str]
+    category_id: str | None = Field(alias="categoryId")
+    series_id: str | None = Field(alias="seriesId")
+    published_at: str = Field(alias="publishedAt")
+
+
 class ListPostDraftsResponse(BaseModel):
     items: list[PostDraftSummaryResponse | PublishedPostSummaryResponse]
+    next_cursor: str | None = Field(default=None, alias="nextCursor")
+
+
+class ListPublicPostsResponse(BaseModel):
+    items: list[PublicPostSummaryResponse]
     next_cursor: str | None = Field(default=None, alias="nextCursor")
 
 
@@ -161,6 +179,21 @@ def published_post_summary_response(post: StoredPostDraft) -> PublishedPostSumma
     )
 
 
+def public_post_summary_response(post: StoredPostDraft) -> PublicPostSummaryResponse:
+    return PublicPostSummaryResponse(
+        postId=post.post_id,
+        title=post.title,
+        slug=post.slug,
+        status="published",
+        contentFormat=post.content_format,
+        summary=post.summary,
+        tags=post.tags,
+        categoryId=post.category_id,
+        seriesId=post.series_id,
+        publishedAt=post.published_at or post.updated_at,
+    )
+
+
 def paginate_posts(
     posts: list[StoredPostDraft],
     limit: int | None,
@@ -199,6 +232,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/api/v1/mdx-components")
     def list_mdx_components(_actor: object = Depends(require_scope("settings:read"))) -> dict[str, list[dict[str, str]]]:
         return {"items": []}
+
+    @app.get("/api/v1/public/posts")
+    def list_public_posts() -> ListPublicPostsResponse:
+        published_posts: list[StoredPostDraft] = app.state.post_store.list_published()
+        return ListPublicPostsResponse(
+            items=[public_post_summary_response(post) for post in published_posts],
+            nextCursor=None,
+        )
 
     @app.get("/api/v1/posts")
     def list_posts(

@@ -220,6 +220,16 @@
 6. Risks or blockers: existing code is not currently mixing anonymous public and authenticated management access, but prior documents were ambiguous because some frontend/client wording implied public frontend could use authenticated published-list routes. Public route implementation remains future work.
 7. Next recommended named task: Article Published Public List Boundary.
 
+### Article Published Public List Boundary
+
+1. Status: completed.
+2. Scope: added the first anonymous public published summary list at `GET /api/v1/public/posts` with a public-safe response schema while preserving authenticated `/api/v1/posts...` management routes and `posts:read` scope semantics.
+3. Changed files: `services/api/src/nairi_api/main.py`, `services/api/tests/test_post_persistence.py`, `memory-bank/api-contract.md`, `memory-bank/project-state.md`, `memory-bank/architecture.md`, `memory-bank/data-model.md`, `memory-bank/progress-log.md`, and local Chinese pairs.
+4. Verification performed: wrote the public list route test first and observed RED on missing route `404`; implemented the smallest public response model and route; then verified focused GREEN and related published list tests.
+5. Result: passed for the public published list boundary.
+6. Risks or blockers: public detail, public filtering/pagination inputs, public rendering, cache policy, scheduling semantics, job runner execution, and SQLAlchemy/Alembic migrations remain deferred.
+7. Next recommended named task: Article Published Public Detail Boundary.
+
 ## Progress Rule
 
 Every completed named task must add a progress entry with:

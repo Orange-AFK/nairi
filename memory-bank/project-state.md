@@ -45,7 +45,8 @@
 13. Authenticated management read/list now exposes published posts through `GET /api/v1/posts/{post_id}` and `GET /api/v1/posts?status=published`; public read remains a separate dedicated endpoint task.
 14. Published lists now support the first minimal `tag`, `category`, and `series` filters.
 15. Published lists now support the first minimal `limit`/`cursor` pagination boundary.
-16. The next small task is Article Published Public List Boundary: add a dedicated public list endpoint with public-safe response fields and keep authenticated `/api/v1/posts...` management routes separate.
+16. `GET /api/v1/public/posts` now provides the first anonymous public published summary list with public-safe fields while keeping authenticated `/api/v1/posts...` management routes separate.
+17. The next small task is Article Published Public Detail Boundary: add a dedicated public detail endpoint, likely slug-based, without Markdown/MDX rendering yet.
 17. Keep SQLAlchemy and Alembic deferred until the explicit migration/model task.
 18. Preserve scope checks and standard error behavior.
 

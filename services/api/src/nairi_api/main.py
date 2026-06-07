@@ -445,6 +445,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "Post revision conflict",
                 {"currentRevisionId": error.current_revision_id},
             ) from error
+        dispatch_result = app.state.public_invalidation_dispatcher.dispatch(
+            surfaces=published.public_invalidation_surfaces,
+            published_at=published.published_at,
+        )
         return PublishPostResponse(
             postId=published.post_id,
             status="published",
@@ -461,10 +465,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     errorMessage=published.public_invalidation_error_message,
                 ),
                 dispatch=PublicInvalidationDispatchResponse(
-                    status="dispatch_skipped",
-                    reason="no_dispatcher_configured",
-                    attempted=published.public_invalidation_dispatch_attempted,
-                    attemptedAt=published.public_invalidation_dispatch_attempted_at,
+                    status=dispatch_result.status,
+                    reason=dispatch_result.reason,
+                    attempted=dispatch_result.attempted,
+                    attemptedAt=dispatch_result.attempted_at,
                 ),
             ),
         )

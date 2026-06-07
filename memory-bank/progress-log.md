@@ -593,6 +593,18 @@
 8. Authority-doc impact: updated `api-contract.md`, `architecture.md`, `decisions.md`, `project-state.md`, `roadmap.md`, and this progress log.
 9. Next recommended named task: Article Public Sitemap Additional Shards Boundary, or a separately planned Cloudflare Live Execution Design Boundary if live provider behavior becomes the priority.
 
+### Article Public Sitemap Additional Shards Boundary
+
+1. Status: completed.
+2. Scope: added `/sitemap-static.xml` as a dedicated static public sitemap shard for `/` and `/posts`, kept `/sitemap-posts.xml` dedicated to post detail URLs from bounded full-history public-list traversal, and updated `/sitemap.xml` to index both shard documents.
+3. Changed files: `apps/public-site/app/sitemap.xml/route.ts`, `apps/public-site/app/sitemap-posts.xml/route.ts`, `apps/public-site/app/sitemap-static.xml/route.ts`, `scripts/checks/frontend_public_sitemap_check.py`, `memory-bank/frontend-design.md`, `memory-bank/project-state.md`, `memory-bank/roadmap.md`, `memory-bank/progress-log.md`, and local Chinese companion files.
+4. Verification performed: extended the sitemap structural check first and observed RED on missing `apps/public-site/app/sitemap-static.xml/route.ts`; implemented the static shard, updated the sitemap index, narrowed the posts sitemap to post detail URLs, and verified focused sitemap/RSS checks plus public-site typecheck/build.
+5. Result: `/sitemap.xml` is a sitemap index for `/sitemap-static.xml` and `/sitemap-posts.xml`; static routes live in the static shard; post detail URLs remain in the posts shard with bounded traversal. No RSS mixing, management-route access, bearer tokens, CDN headers, purge calls, Cloudflare behavior, tag/path revalidation, or publish-triggered invalidation execution was added.
+6. Risks or blockers: Atom, richer feed contents, richer SEO schema, search-engine sitemap splitting beyond current static/posts shards, CDN cache policy, and publish-triggered live invalidation remain deferred.
+7. Decision impact: covered by existing bounded RSS/sitemap traversal and staged invalidation decisions; no new ADR needed.
+8. Authority-doc impact: updated `frontend-design.md`, `project-state.md`, `roadmap.md`, and this progress log.
+9. Next recommended named task: Data Migration Baseline Boundary, CMS Admin Console Foundation Boundary, or Cloudflare Live Execution Design Boundary if live provider behavior becomes the priority.
+
 ## Progress Rule
 
 `progress-log.md` is append-only historical evidence. It is not the current roadmap and it is not the only authority for durable architecture decisions.

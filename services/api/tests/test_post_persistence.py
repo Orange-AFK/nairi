@@ -1028,7 +1028,7 @@ def test_get_public_post_by_slug_returns_public_safe_published_detail_without_au
         {
             "title": "Public detail post",
             "slug": "public-detail-post",
-            "content": "Published Markdown detail body.",
+            "content": "# Public Detail Post\n\nPublished **Markdown** detail body.\n\n<script>alert(1)</script>",
             "summary": "Public detail summary.",
             "tags": ["public", "detail"],
             "categoryId": "category-public-detail",
@@ -1063,7 +1063,8 @@ def test_get_public_post_by_slug_returns_public_safe_published_detail_without_au
         "slug": "public-detail-post",
         "status": "published",
         "contentFormat": "markdown",
-        "content": "Published Markdown detail body.",
+        "content": "# Public Detail Post\n\nPublished **Markdown** detail body.\n\n<script>alert(1)</script>",
+        "bodyHtml": "<h1>Public Detail Post</h1>\n<p>Published <strong>Markdown</strong> detail body.</p>",
         "summary": "Public detail summary.",
         "tags": ["public", "detail"],
         "categoryId": "category-public-detail",
@@ -1076,6 +1077,8 @@ def test_get_public_post_by_slug_returns_public_safe_published_detail_without_au
     assert "internalNote" not in serialized_response
     assert "createdAt" not in serialized_response
     assert "updatedAt" not in serialized_response
+    assert "<script" not in detail_response.json()["bodyHtml"]
+    assert "alert(1)" not in detail_response.json()["bodyHtml"]
     assert draft_detail_response.status_code == 404
     assert draft_detail_response.json()["code"] == "not_found"
     assert unknown_response.status_code == 404

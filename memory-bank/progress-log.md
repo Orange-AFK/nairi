@@ -617,6 +617,18 @@
 8. Authority-doc impact: updated `project-state.md`, `roadmap.md`, `tech-stack.md`, and this progress log.
 9. Next recommended named task: Managed Migration Runner Boundary, Data Migration Rehearsal Boundary, or CMS Admin Console Foundation Boundary.
 
+### Managed Migration Runner Boundary
+
+1. Status: completed.
+2. Scope: extracted a minimal ordered `PostStoreMigration` runner, kept the current scaffold schema as migration 1, and preserved existing baseline/adoption behavior.
+3. Changed files: `services/api/src/nairi_api/posts.py`, `services/api/tests/test_post_persistence.py`, `memory-bank/project-state.md`, `memory-bank/roadmap.md`, and `memory-bank/progress-log.md`.
+4. Verification performed: added runner tests first and observed RED on missing `PostStoreMigration`; implemented ordered pending migration application, applied-migration skip, migration-name mismatch guard, and rollback on failed pending migration; verified focused runner/baseline/adoption tests, full post persistence tests, and full API tests.
+5. Result: migrations are now represented as ordered objects, `schema_migrations` stays authoritative for applied IDs/names, applied migrations do not rerun, and failed pending migrations rollback without writing metadata, and baseline schema reconciliation still runs for already-managed databases. No public API contract, route behavior, SQLAlchemy/Alembic layer, PostgreSQL support, external migration CLI, route/UI change, or live database operation was added.
+6. Risks or blockers: standalone migration CLI, migration repair policy, multi-package migration coordination, SQLAlchemy models, Alembic integration, PostgreSQL support, and live database rehearsal remain deferred.
+7. Decision impact: covered by existing data/migration roadmap and scaffold-to-managed-migrations direction; no new ADR needed.
+8. Authority-doc impact: updated `project-state.md`, `roadmap.md`, and this progress log.
+9. Next recommended named task: Data Migration Rehearsal Boundary, Migration Repair Policy Boundary, or CMS Admin Console Foundation Boundary.
+
 ## Progress Rule
 
 `progress-log.md` is append-only historical evidence. It is not the current roadmap and it is not the only authority for durable architecture decisions.

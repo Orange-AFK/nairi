@@ -7,8 +7,8 @@
 1. Nairi is in early alpha implementation.
 2. The implementation still follows the accepted API-first, agent-first CMS direction.
 3. Core public and management content flows exist as scaffold implementations with verified route tests and guards.
-4. The current development focus is SQLite Schema Migration Baseline Boundary.
-5. Sitemap static/posts shard work has merged; data migration work is now adding migration metadata without changing public API behavior.
+4. The current development focus is Managed Migration Runner Boundary.
+5. SQLite schema migration baseline metadata has merged; data migration work is now extracting the baseline into an ordered, testable migration runner without changing public API behavior.
 
 ### Current Authority Snapshot
 
@@ -87,10 +87,11 @@
 
 ### Data and Migrations
 
-1. SQLite `PostStore` now records a baseline row in `schema_migrations` for the current scaffold schema.
-2. Existing pre-migration SQLite files can be adopted by creating migration metadata without losing posts, revisions, or audit rows.
-3. SQLAlchemy and Alembic are target stack components but are not yet introduced in code.
-4. PostgreSQL remains a future production option after managed migrations exist.
+1. SQLite `PostStore` now uses an ordered `PostStoreMigration` runner to record and apply the current scaffold baseline / `post_store_baseline`.
+2. `schema_migrations` records the current `(1, "post_store_baseline")` row and the runner skips already-applied migrations.
+3. Existing pre-migration SQLite files can be adopted by creating migration metadata without losing posts, revisions, or audit rows.
+4. SQLAlchemy and Alembic are target stack components but are not yet introduced in code.
+5. PostgreSQL remains a future production option after managed migrations exist.
 
 ### Admin Console
 
@@ -114,13 +115,13 @@
 
 ## Next Named Work
 
-### SQLite Schema Migration Baseline Boundary
+### Managed Migration Runner Boundary
 
 1. Status: in progress.
-2. Scope: add `schema_migrations` metadata for the current `PostStore` SQLite scaffold schema and record `post_store_baseline` exactly once.
-3. Boundary: preserve current API contracts and route behavior; do not introduce SQLAlchemy, Alembic, PostgreSQL, external migration CLIs, or route/UI changes.
-4. Verification: RED migration tests, focused migration/persistence tests, full API tests, guards, scans, PR CI, and main CI.
-5. After completion: continue toward managed migration tooling, data migration hardening, or CMS Admin Console Foundation.
+2. Scope: extract a minimal ordered `PostStoreMigration` runner for `PostStore` and keep the baseline schema as migration 1 / `post_store_baseline`.
+3. Boundary: preserve current API contracts and route behavior; do not introduce SQLAlchemy, Alembic, PostgreSQL, external migration CLIs, route/UI changes, or live database operations.
+4. Verification: RED runner tests, focused runner/baseline/adoption tests, full API tests, guards, scans, PR CI, and main CI.
+5. After completion: continue toward data migration rehearsal, migration repair policy, or CMS Admin Console Foundation.
 
 ## Blockers
 

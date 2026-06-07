@@ -82,6 +82,46 @@ class StoredPostDraft:
     published_at: str | None = None
 
 
+@dataclass(frozen=True)
+class PostStoreMigration:
+    id: int
+    name: str
+    apply: Callable[[sqlite3.Connection], None]
+
+
+def run_schema_migrations(connection: sqlite3.Connection, migrations: list[PostStoreMigration]) -> None:
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS schema_migrations (
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL UNIQUE
+        )
+        """
+    )
+    applied_rows = connection.execute("SELECT id, name FROM schema_migrations").fetchall()
+    applied = {cast(int, row[0]): cast(str, row[1]) for row in applied_rows}
+    for migration in sorted(migrations, key=lambda item: item.id):
+        applied_name = applied.get(migration.id)
+        if applied_name is not None:
+            if applied_name != migration.name:
+                raise ValueError(
+                    f"schema migration {migration.id} recorded as {applied_name!r}, expected {migration.name!r}"
+                )
+            continue
+        try:
+            connection.execute("BEGIN")
+            migration.apply(connection)
+            connection.execute(
+                "INSERT INTO schema_migrations (id, name) VALUES (?, ?)",
+                (migration.id, migration.name),
+            )
+            connection.execute("COMMIT")
+        except Exception:
+            connection.execute("ROLLBACK")
+            raise
+        applied[migration.id] = migration.name
+
+
 def public_invalidation_surfaces_for_post(slug: str) -> list[str]:
     return ["/posts", f"/posts/{slug}", "/rss.xml", "/sitemap.xml"]
 
@@ -534,35 +574,17 @@ class PostStore:
         return connection
 
     def _init_schema(self, connection: sqlite3.Connection) -> None:
-        self._run_schema_migrations(connection)
-
-    def _run_schema_migrations(self, connection: sqlite3.Connection) -> None:
-        connection.execute(
-            """
-            CREATE TABLE IF NOT EXISTS schema_migrations (
-                id INTEGER PRIMARY KEY,
-                name TEXT NOT NULL UNIQUE
-            )
-            """
+        run_schema_migrations(
+            connection,
+            [
+                PostStoreMigration(
+                    id=POST_STORE_BASELINE_MIGRATION_ID,
+                    name=POST_STORE_BASELINE_MIGRATION_NAME,
+                    apply=self._apply_baseline_schema,
+                ),
+            ],
         )
-        baseline_row = connection.execute(
-            "SELECT id FROM schema_migrations WHERE id = ?",
-            (POST_STORE_BASELINE_MIGRATION_ID,),
-        ).fetchone()
-        if baseline_row is not None:
-            self._apply_baseline_schema(connection)
-            return
-        try:
-            connection.execute("BEGIN")
-            self._apply_baseline_schema(connection)
-            connection.execute(
-                "INSERT INTO schema_migrations (id, name) VALUES (?, ?)",
-                (POST_STORE_BASELINE_MIGRATION_ID, POST_STORE_BASELINE_MIGRATION_NAME),
-            )
-            connection.execute("COMMIT")
-        except Exception:
-            connection.execute("ROLLBACK")
-            raise
+        self._apply_baseline_schema(connection)
 
     def _apply_baseline_schema(self, connection: sqlite3.Connection) -> None:
         connection.execute(

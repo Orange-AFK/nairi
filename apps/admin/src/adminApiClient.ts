@@ -1,4 +1,4 @@
-import type { AdminApiClient, AdminPostDetail, AdminPostSummary } from "./App";
+import type { AdminApiClient, AdminPostDetail, AdminPostSummary, AdminPostUpdateInput } from "./App";
 
 type FetchLike = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 
@@ -130,6 +130,9 @@ export function createAdminApiClient({
         path: `/api/v1/posts/${encodeURIComponent(postId)}`
       });
       return mapPostDetail(payload);
+    },
+    async updatePost(_postId: string, _input: AdminPostUpdateInput) {
+      throw new Error("Admin draft update is not wired to the runtime API client yet.");
     }
   };
 }

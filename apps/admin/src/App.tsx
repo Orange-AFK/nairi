@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 
 import "./styles.css";
 
@@ -15,9 +15,17 @@ export type AdminPostDetail = AdminPostSummary & {
   revisionId: string;
 };
 
+export type AdminPostUpdateInput = {
+  title: string;
+  contentFormat: "markdown" | "mdx";
+  content: string;
+  expectedRevisionId: string;
+};
+
 export type AdminApiClient = {
   listPosts: () => Promise<AdminPostSummary[]>;
   getPost: (postId: string) => Promise<AdminPostDetail>;
+  updatePost: (postId: string, input: AdminPostUpdateInput) => Promise<AdminPostDetail>;
 };
 
 type AdminModule = "content" | "media" | "settings";
@@ -39,9 +47,13 @@ export function App({ apiClient }: AppProps) {
   const [selectedPostDetail, setSelectedPostDetail] = useState<AdminPostDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const detailRequestIdRef = useRef(0);
+  const saveRequestIdRef = useRef(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -72,9 +84,12 @@ export function App({ apiClient }: AppProps) {
   async function selectPost(post: AdminPostSummary) {
     const detailRequestId = detailRequestIdRef.current + 1;
     detailRequestIdRef.current = detailRequestId;
+    saveRequestIdRef.current += 1;
     setSelectedPost(post);
     setSelectedPostDetail(null);
     setDetailError(null);
+    setSaveStatus(null);
+    setSaveError(null);
     setIsDetailLoading(true);
 
     try {
@@ -89,6 +104,60 @@ export function App({ apiClient }: AppProps) {
     } finally {
       if (detailRequestIdRef.current === detailRequestId) {
         setIsDetailLoading(false);
+      }
+    }
+  }
+
+  async function saveDraftEdits(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!selectedPostDetail) {
+      return;
+    }
+
+    const formData = new FormData(event.currentTarget);
+    const saveRequestId = saveRequestIdRef.current + 1;
+    const savedPostId = selectedPostDetail.id;
+    const savedRevisionId = selectedPostDetail.revisionId;
+    saveRequestIdRef.current = saveRequestId;
+    setIsSavingDraft(true);
+    setSaveStatus(null);
+    setSaveError(null);
+
+    try {
+      const updatedPost = await apiClient.updatePost(savedPostId, {
+        title: String(formData.get("title") ?? ""),
+        contentFormat: selectedPostDetail.contentFormat,
+        content: String(formData.get("content") ?? ""),
+        expectedRevisionId: savedRevisionId
+      });
+      if (
+        saveRequestIdRef.current === saveRequestId &&
+        selectedPostDetail?.id === savedPostId &&
+        selectedPostDetail.revisionId === savedRevisionId
+      ) {
+        setSelectedPost(updatedPost);
+        setSelectedPostDetail(updatedPost);
+        setPosts((currentPosts) =>
+          currentPosts.map((post) =>
+            post.id === updatedPost.id
+              ? {
+                  id: updatedPost.id,
+                  title: updatedPost.title,
+                  status: updatedPost.status,
+                  updatedAt: updatedPost.updatedAt
+                }
+              : post
+          )
+        );
+        setSaveStatus("Draft changes saved.");
+      }
+    } catch {
+      if (saveRequestIdRef.current === saveRequestId) {
+        setSaveError("Draft changes could not be saved.");
+      }
+    } finally {
+      if (saveRequestIdRef.current === saveRequestId) {
+        setIsSavingDraft(false);
       }
     }
   }
@@ -170,7 +239,23 @@ export function App({ apiClient }: AppProps) {
                     </>
                   ) : null}
                 </dl>
-                {selectedPostDetail ? <pre className="draft-content">{selectedPostDetail.content}</pre> : null}
+                {selectedPostDetail ? (
+                  <form className="draft-edit-form" onSubmit={(event) => void saveDraftEdits(event)}>
+                    <label>
+                      Draft title
+                      <input name="title" defaultValue={selectedPostDetail.title} />
+                    </label>
+                    <label>
+                      Draft content
+                      <textarea name="content" defaultValue={selectedPostDetail.content} rows={8} />
+                    </label>
+                    <button type="submit" disabled={isSavingDraft}>
+                      {isSavingDraft ? "Saving draft changes…" : "Save draft changes"}
+                    </button>
+                    {saveStatus ? <p role="status">{saveStatus}</p> : null}
+                    {saveError ? <p role="status">{saveError}</p> : null}
+                  </form>
+                ) : null}
               </>
             ) : (
               <p>Select a draft from the list to load its API-backed detail.</p>

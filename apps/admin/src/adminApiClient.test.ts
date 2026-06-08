@@ -89,4 +89,43 @@ describe("createAdminApiClient", () => {
 
     await expect(client.listPosts()).rejects.toThrow("Admin API request failed.");
   });
+
+  it("reads a draft detail through the authenticated management API", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      expect(String(input)).toBe("https://api.example.test/api/v1/posts/post-1");
+      expect(init?.method).toBe("GET");
+      expect(init?.headers).toEqual({
+        Accept: "application/json",
+        Authorization: "Bearer tkn"
+      });
+
+      return new Response(
+        JSON.stringify({
+          postId: "post-1",
+          title: "First draft",
+          status: "draft",
+          contentFormat: "markdown",
+          content: "# First draft\n\nDraft body from the management API.",
+          revisionId: "revision-post-1-1",
+          updatedAt: "2026-06-08T00:00:00Z"
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
+    });
+    const client = createAdminApiClient({
+      apiBaseUrl: "https://api.example.test/",
+      getAuthToken: () => "tkn",
+      fetchImpl: fetchMock
+    });
+
+    await expect(client.getPost("post-1")).resolves.toEqual({
+      id: "post-1",
+      title: "First draft",
+      status: "draft",
+      contentFormat: "markdown",
+      content: "# First draft\n\nDraft body from the management API.",
+      revisionId: "revision-post-1-1",
+      updatedAt: "2026-06-08T00:00:00Z"
+    });
+  });
 });

@@ -794,3 +794,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: added `Admin modules` navigation with `Content`, `Media`, and `Settings`, default `Content` active state, accessible `aria-current`, and placeholder panels for reserved modules.
 3. Boundary: no TanStack Router wiring, no media/settings business logic, no create/edit/publish mutation, no audit/token workflows, and no backend API expansion.
 4. Verification: RED module-navigation RTL test, full admin tests, admin typecheck/build, and admin foundation guard.
+
+## Admin Draft Detail Readback Boundary
+
+1. Status: completed for selected-draft detail readback.
+2. Scope: extended the injected admin UI client with `getPost(postId)`, added runtime `GET /api/v1/posts/{postId}` support, and rendered content format, revision id, and draft content in the `Content` module.
+3. Boundary: summary list remains separate from detail readback; no edit/create/publish mutation, public API reuse, router expansion, token persistence, or direct database access.
+4. Verification: RED UI/client tests, full admin tests, admin typecheck/build, and admin foundation guard.

@@ -145,6 +145,6 @@
 
 ## Admin Runtime API Client Boundary
 
-1. Status: completed through minimal admin module shell boundary.
-2. Completed: runtime `createAdminApiClient`, fail-closed `createAdminTokenProvider`, and `Admin modules` navigation with `Content`, `Media`, and `Settings` shells.
-3. Next candidate: draft list UX, admin content detail/readback, or explicit router adoption, still without create/edit/publish mutation unless selected.
+1. Status: completed through admin draft detail readback boundary.
+2. Completed: runtime `createAdminApiClient`, fail-closed `createAdminTokenProvider`, `Admin modules` navigation with `Content`, `Media`, and `Settings` shells, and `Content` module draft detail readback via `getPost(postId)`.
+3. Next candidate: draft list/detail UX refinement, explicit router adoption, or the first edit form boundary, still without create/publish mutation unless selected.

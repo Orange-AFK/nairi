@@ -117,3 +117,13 @@ dd {
 .post-preview dd {
   margin: 4px 0 0;
 }
+
+.draft-content {
+  background: #ffffff;
+  border: 1px solid #e5ddce;
+  border-radius: 16px;
+  color: #344054;
+  overflow-x: auto;
+  padding: 16px;
+  white-space: pre-wrap;
+}

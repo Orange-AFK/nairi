@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import "./styles.css";
 
@@ -9,8 +9,15 @@ export type AdminPostSummary = {
   updatedAt: string;
 };
 
+export type AdminPostDetail = AdminPostSummary & {
+  contentFormat: "markdown" | "mdx";
+  content: string;
+  revisionId: string;
+};
+
 export type AdminApiClient = {
   listPosts: () => Promise<AdminPostSummary[]>;
+  getPost: (postId: string) => Promise<AdminPostDetail>;
 };
 
 type AdminModule = "content" | "media" | "settings";
@@ -29,8 +36,12 @@ export function App({ apiClient }: AppProps) {
   const [activeModule, setActiveModule] = useState<AdminModule>("content");
   const [posts, setPosts] = useState<AdminPostSummary[]>([]);
   const [selectedPost, setSelectedPost] = useState<AdminPostSummary | null>(null);
+  const [selectedPostDetail, setSelectedPostDetail] = useState<AdminPostDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDetailLoading, setIsDetailLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [detailError, setDetailError] = useState<string | null>(null);
+  const detailRequestIdRef = useRef(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -57,6 +68,32 @@ export function App({ apiClient }: AppProps) {
       cancelled = true;
     };
   }, [apiClient]);
+
+  async function selectPost(post: AdminPostSummary) {
+    const detailRequestId = detailRequestIdRef.current + 1;
+    detailRequestIdRef.current = detailRequestId;
+    setSelectedPost(post);
+    setSelectedPostDetail(null);
+    setDetailError(null);
+    setIsDetailLoading(true);
+
+    try {
+      const detail = await apiClient.getPost(post.id);
+      if (detailRequestIdRef.current === detailRequestId) {
+        setSelectedPostDetail(detail);
+      }
+    } catch {
+      if (detailRequestIdRef.current === detailRequestId) {
+        setDetailError("Draft detail could not be loaded.");
+      }
+    } finally {
+      if (detailRequestIdRef.current === detailRequestId) {
+        setIsDetailLoading(false);
+      }
+    }
+  }
+
+  const previewPost = selectedPostDetail ?? selectedPost;
 
   return (
     <main className="admin-shell">
@@ -90,7 +127,7 @@ export function App({ apiClient }: AppProps) {
             {isLoading ? <p>Loading admin content…</p> : null}
             {loadError ? <p role="status">{loadError}</p> : null}
             {posts.map((post) => (
-              <button key={post.id} type="button" onClick={() => setSelectedPost(post)}>
+              <button key={post.id} type="button" onClick={() => void selectPost(post)}>
                 <span>{post.title}</span>
                 <small>{post.status}</small>
               </button>
@@ -98,20 +135,35 @@ export function App({ apiClient }: AppProps) {
           </nav>
 
           <article className="post-preview">
-            {selectedPost ? (
+            {previewPost ? (
               <>
-                <p className="eyebrow">API-backed draft preview</p>
-                <h2>{selectedPost.title}</h2>
+                <p className="eyebrow">{selectedPostDetail ? "API-backed draft detail" : "API-backed draft preview"}</p>
+                <h2>{previewPost.title}</h2>
+                {isDetailLoading ? <p>Loading draft detail…</p> : null}
+                {detailError ? <p role="status">{detailError}</p> : null}
                 <dl>
                   <div>
                     <dt>Status</dt>
-                    <dd>{selectedPost.status}</dd>
+                    <dd>{previewPost.status}</dd>
                   </div>
                   <div>
                     <dt>Updated</dt>
-                    <dd>{selectedPost.updatedAt}</dd>
+                    <dd>{previewPost.updatedAt}</dd>
                   </div>
+                  {selectedPostDetail ? (
+                    <>
+                      <div>
+                        <dt>Content format</dt>
+                        <dd>{selectedPostDetail.contentFormat}</dd>
+                      </div>
+                      <div>
+                        <dt>Revision</dt>
+                        <dd>{selectedPostDetail.revisionId}</dd>
+                      </div>
+                    </>
+                  ) : null}
                 </dl>
+                {selectedPostDetail ? <pre className="draft-content">{selectedPostDetail.content}</pre> : null}
               </>
             ) : (
               <p>Select a draft to review.</p>

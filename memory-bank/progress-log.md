@@ -665,6 +665,18 @@
 8. Authority-doc impact: updated `data-model.md`, `project-state.md`, `roadmap.md`, and this progress log.
 9. Next recommended named task: Broader Migration Repair Workflow Boundary, Migration Operator Handoff Docs Boundary, or CMS Admin Console Foundation Boundary.
 
+### Broader Migration Repair Workflow Boundary
+
+1. Status: completed.
+2. Scope: documented the migration repair workflow for typed policy failures and added an executable guard that requires repair-workflow anchors in project-state, data-model, and decisions.
+3. Changed files: `scripts/checks/migration_repair_workflow_check.py`, `.github/workflows/guards.yml`, `memory-bank/decisions.md`, `memory-bank/data-model.md`, `memory-bank/project-state.md`, `memory-bank/roadmap.md`, and `memory-bank/progress-log.md`.
+4. Verification performed: added `migration_repair_workflow_check.py` first and observed RED on missing data-model/decision anchors; then documented rehearsal JSON inspection, `schema_migrations` comparison, `migration_name_mismatch` stop behavior, and the no-automatic-repair/no-live-mutation boundary.
+5. Result: migration policy conflicts now have source-of-truth operator/developer guidance: inspect rehearsal JSON, compare source/backup/rehearsal paths, counts, `schema_migrations` rows, and readback IDs, then stop for manual intervention when `migration_name_mismatch` appears.
+6. Boundary: no API contract, route behavior, SQLAlchemy/Alembic layer, PostgreSQL support, deployment integration, scheduling, automatic repair, production database access, or live database migration execution was added.
+7. Risks or blockers: executable repair tooling, Alembic integration, SQLAlchemy models, PostgreSQL support, deployment integration, and live database execution remain deferred.
+8. Decision impact: extended the accepted migration repair policy decision with workflow guidance; no new ADR was needed.
+9. Next recommended named task: Migration Operator Handoff Docs Boundary, Executable Repair Tooling Design Boundary, or CMS Admin Console Foundation Boundary.
+
 ## Progress Rule
 
 `progress-log.md` is append-only historical evidence. It is not the current roadmap and it is not the only authority for durable architecture decisions.

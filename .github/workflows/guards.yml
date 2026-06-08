@@ -43,6 +43,9 @@ jobs:
       - name: Run secret guard
         run: python3 scripts/guards/secret_guard.py
 
+      - name: Run migration repair workflow check
+        run: PYTHONPATH=scripts/guards python3 scripts/checks/migration_repair_workflow_check.py
+
       - name: Run frontend public detail check
         run: python3 scripts/checks/frontend_public_detail_check.py
 

@@ -78,6 +78,7 @@
 16. Future migration work must preserve these logical entities while replacing scaffold schema initialization with managed migrations.
 17. `schema_migrations` id/name mismatches are treated as migration policy conflicts and fail fast with `PostStoreMigrationError` code `migration_name_mismatch`; valid metadata with missing scaffold tables may still be reconciled by idempotent baseline DDL.
 18. `nairi-post-store-migration-rehearsal` is a local-only rehearsal entrypoint over caller-provided SQLite paths; it creates backup/rehearsal artifacts and emits JSON readback without connecting to production by default.
+19. The migration repair workflow treats `migration_name_mismatch` as an investigation stop: the operator must compare rehearsal JSON, source/backup/rehearsal paths, counts, `schema_migrations` rows, and readback IDs and must stop before any automatic repair or live database mutation.
 
 ## Database Support
 

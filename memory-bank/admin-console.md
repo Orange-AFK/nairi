@@ -172,3 +172,10 @@ The admin console must use documented API endpoints only. It must not perform di
 1. Runtime `createAdminApiClient.publishPost(postId, input)` now calls authenticated `POST /api/v1/posts/{post_id}/publish` with the encoded post id.
 2. The publish client sends `revisionId`, `publishMode`, and `scheduledAt`, maps the management response to a publish result with `jobId`, and fails closed before fetch when credentials are missing.
 3. Boundary: this only adds the injected runtime API client contract; the admin App UI still does not call `publishPost`, does not expose a live `Publish` button, and does not add router/login/token persistence, direct App fetch, direct database access, job runner UI, or invalidation controls.
+
+## Admin Publish Action UI Boundary
+
+1. The admin detail form now exposes `Publish confirmed draft` only after the local publish confirmation intent is recorded.
+2. The action calls the injected `apiClient.publishPost(postId, { revisionId, publishMode: "immediate", scheduledAt: null })`, validates the response post id, updates the selected/list status to the published response, and renders a safe success status with `publishedAt`.
+3. Publish failures or mismatched publish response ids render `Draft could not be published.` without exposing backend details; stale in-flight publish responses are ignored after draft selection changes.
+4. Boundary: this is the first explicit App publish action wiring; it still adds no router expansion, login UI, token persistence, direct component fetch, direct database access, scheduling UI, job runner UI, or invalidation controls.

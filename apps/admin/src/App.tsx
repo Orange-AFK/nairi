@@ -95,14 +95,18 @@ export function App({ apiClient }: AppProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [isPublishingDraft, setIsPublishingDraft] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [publishReviewStatus, setPublishReviewStatus] = useState<string | null>(null);
   const [publishConfirmationStatus, setPublishConfirmationStatus] = useState<string | null>(null);
+  const [publishActionStatus, setPublishActionStatus] = useState<string | null>(null);
+  const [publishActionError, setPublishActionError] = useState<string | null>(null);
   const detailRequestIdRef = useRef(0);
   const saveRequestIdRef = useRef(0);
+  const publishRequestIdRef = useRef(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -134,6 +138,7 @@ export function App({ apiClient }: AppProps) {
     const detailRequestId = detailRequestIdRef.current + 1;
     detailRequestIdRef.current = detailRequestId;
     saveRequestIdRef.current += 1;
+    publishRequestIdRef.current += 1;
     setSelectedPost(post);
     setSelectedPostDetail(null);
     setDetailError(null);
@@ -141,6 +146,9 @@ export function App({ apiClient }: AppProps) {
     setSaveError(null);
     setPublishReviewStatus(null);
     setPublishConfirmationStatus(null);
+    setPublishActionStatus(null);
+    setPublishActionError(null);
+    setIsPublishingDraft(false);
     setIsDetailLoading(true);
 
     try {
@@ -170,6 +178,8 @@ export function App({ apiClient }: AppProps) {
     const savedPostId = selectedPostDetail.id;
     const savedRevisionId = selectedPostDetail.revisionId;
     saveRequestIdRef.current = saveRequestId;
+    publishRequestIdRef.current += 1;
+    setIsPublishingDraft(false);
     setIsSavingDraft(true);
     setSaveStatus(null);
     setSaveError(null);
@@ -216,6 +226,8 @@ export function App({ apiClient }: AppProps) {
         setSaveStatus("Draft changes saved.");
         setPublishReviewStatus(null);
         setPublishConfirmationStatus(null);
+        setPublishActionStatus(null);
+        setPublishActionError(null);
       }
     } catch {
       if (saveRequestIdRef.current === saveRequestId) {
@@ -224,6 +236,67 @@ export function App({ apiClient }: AppProps) {
     } finally {
       if (saveRequestIdRef.current === saveRequestId) {
         setIsSavingDraft(false);
+      }
+    }
+  }
+
+  async function publishConfirmedDraft() {
+    if (isPublishingDraft || !selectedPostDetail || publishConfirmationStatus === null) {
+      return;
+    }
+
+    const publishRequestId = publishRequestIdRef.current + 1;
+    const publishedPostId = selectedPostDetail.id;
+    const publishedRevisionId = selectedPostDetail.revisionId;
+    publishRequestIdRef.current = publishRequestId;
+    setIsPublishingDraft(true);
+    setPublishActionStatus(null);
+    setPublishActionError(null);
+
+    try {
+      const publishedPost = await apiClient.publishPost(publishedPostId, {
+        revisionId: publishedRevisionId,
+        publishMode: "immediate",
+        scheduledAt: null
+      });
+      if (publishedPost.id !== publishedPostId) {
+        throw new Error("publish response id mismatch");
+      }
+      if (
+        publishRequestIdRef.current === publishRequestId &&
+        selectedPostDetail?.id === publishedPostId &&
+        selectedPostDetail.revisionId === publishedRevisionId
+      ) {
+        const updatedSummary = {
+          id: publishedPost.id,
+          title: selectedPostDetail.title,
+          slug: selectedPostDetail.slug,
+          summary: selectedPostDetail.summary,
+          categoryId: selectedPostDetail.categoryId,
+          seriesId: selectedPostDetail.seriesId,
+          tags: selectedPostDetail.tags,
+          status: publishedPost.status,
+          updatedAt: publishedPost.publishedAt
+        };
+        setSelectedPost(updatedSummary);
+        setSelectedPostDetail({
+          ...selectedPostDetail,
+          status: publishedPost.status,
+          updatedAt: publishedPost.publishedAt
+        });
+        setPosts((currentPosts) => currentPosts.map((post) => (post.id === publishedPost.id ? updatedSummary : post)));
+        setPublishActionStatus(`Draft published at ${publishedPost.publishedAt}.`);
+        setPublishActionError(null);
+        setPublishReviewStatus(null);
+        setPublishConfirmationStatus(null);
+      }
+    } catch {
+      if (publishRequestIdRef.current === publishRequestId) {
+        setPublishActionError("Draft could not be published.");
+      }
+    } finally {
+      if (publishRequestIdRef.current === publishRequestId) {
+        setIsPublishingDraft(false);
       }
     }
   }
@@ -335,12 +408,12 @@ export function App({ apiClient }: AppProps) {
                       Draft content
                       <textarea name="content" defaultValue={selectedPostDetail.content} rows={8} />
                     </label>
-                    <button type="submit" disabled={isSavingDraft}>
+                    <button type="submit" disabled={isSavingDraft || isPublishingDraft}>
                       {isSavingDraft ? "Saving draft changes…" : "Save draft changes"}
                     </button>
                     <button
                       type="button"
-                      disabled={isSavingDraft}
+                      disabled={isSavingDraft || isPublishingDraft}
                       onClick={() => {
                         setPublishReviewStatus(
                           `Publish review request staged for revision ${selectedPostDetail.revisionId}.`
@@ -363,11 +436,13 @@ export function App({ apiClient }: AppProps) {
                         <p>Review revision {selectedPostDetail.revisionId} before any future publish action.</p>
                         <button
                           type="button"
-                          disabled={publishConfirmationStatus !== null}
+                          disabled={publishConfirmationStatus !== null || isPublishingDraft}
                           onClick={() => {
                             setPublishConfirmationStatus(
                               `Publication intent confirmed locally for revision ${selectedPostDetail.revisionId}.`
                             );
+                            setPublishActionStatus(null);
+                            setPublishActionError(null);
                           }}
                         >
                           Confirm publication intent
@@ -377,6 +452,21 @@ export function App({ apiClient }: AppProps) {
                     {publishConfirmationStatus ? (
                       <p role="status" aria-label="Publish confirmation intent status">
                         {publishConfirmationStatus}
+                      </p>
+                    ) : null}
+                    {publishConfirmationStatus && selectedPostDetail.status === "draft" ? (
+                      <button type="button" disabled={isPublishingDraft} onClick={() => void publishConfirmedDraft()}>
+                        {isPublishingDraft ? "Publishing confirmed draft…" : "Publish confirmed draft"}
+                      </button>
+                    ) : null}
+                    {publishActionStatus ? (
+                      <p role="status" aria-label="Publish action status">
+                        {publishActionStatus}
+                      </p>
+                    ) : null}
+                    {publishActionError ? (
+                      <p role="status" aria-label="Publish action error">
+                        {publishActionError}
                       </p>
                     ) : null}
                   </form>

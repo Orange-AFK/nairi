@@ -253,3 +253,10 @@ Any development task that affects documents, contracts, public capability, API s
 1. `scripts/checks/frontend_admin_foundation_check.py` now also requires `apps/admin/src/adminApiClient.ts` and `apps/admin/src/adminApiClient.test.ts`.
 2. The guard verifies the runtime client uses the authenticated management list endpoint `/api/v1/posts?status=draft` while the React `App` component stays injected and env-free.
 3. Guards CI continues to run admin tests, typecheck, and build.
+
+## GitHub Actions Node Runtime Hygiene
+
+1. Status: current CI maintenance slice.
+2. Scope: updated Guards workflow JavaScript actions to Node-24-ready major refs: `actions/checkout@v6`, `actions/setup-python@v6`, and `actions/setup-node@v6`.
+3. Boundary: no Docker/GHCR publishing, deployment behavior, product feature work, or guard semantic changes.
+4. Reason: previous Guards runs passed but emitted a Node.js 20 deprecation annotation for older JavaScript action refs even with `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24`.

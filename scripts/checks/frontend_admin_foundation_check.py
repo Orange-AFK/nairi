@@ -77,6 +77,7 @@ required_test = [
     "stages a publish review request without calling a publish mutation",
     "publishes a confirmed draft through the injected publish contract",
     "renders a safe publish action error when injected publish fails",
+    "removes only the published draft from a multi-draft review list",
     "ignores stale publish responses after selecting another draft",
     "renders a safe publish error when the publish response id does not match the selected draft",
     "renders a safe edit error state when injected update fails",

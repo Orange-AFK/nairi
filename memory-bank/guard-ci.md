@@ -186,7 +186,7 @@ Nairi uses automated guards to enforce documentation boundaries, bilingual synch
 1. Requires `docs/migration-operator-handoff.md` and `docs/migration-operator-handoff-cn.md` to document `nairi-post-store-repair-dry-run`.
 2. Requires sample evidence bundle anchors such as `commandInvocation`, `sourceDatabasePath`, `backupArtifactPath`, `rehearsalArtifactPath`, `stdout`, `stderr`, `rehearsalJson`, `observedStopCondition`, and `operatorEscalationNote`.
 3. Requires dry-run status anchors: `analysis_ready`, `refused`, and `needs_manual_intervention`.
-4. Requires refusal-case policy codes including `missing_evidence_field`, `missing_artifact`, `path_aliasing`, `invalid_rehearsal_json`, `missing_rehearsal_json_field`, `missing_schema_migrations`, `count_mismatch`, `missing_escalation_note`, and `secret_like_evidence`.
+4. Requires refusal-case policy codes including `missing_evidence_field`, `missing_artifact`, `path_aliasing`, `invalid_rehearsal_json`, `missing_rehearsal_json_field`, `missing_schema_migrations`, `count_mismatch`, `missing_escalation_note`, `secret_like_evidence`, `unreadable_evidence_bundle`, and `invalid_evidence_bundle`.
 5. Requires `migration_name_mismatch` manual intervention and no-automatic-metadata-repair, no-production-database-mutation, and no-live-database-migration-execution boundaries.
 
 ### Known Limits

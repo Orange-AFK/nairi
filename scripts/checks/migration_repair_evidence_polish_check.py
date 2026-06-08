@@ -31,6 +31,8 @@ REQUIRED_RUNBOOK_ANCHORS = [
     "count_mismatch",
     "missing_escalation_note",
     "secret_like_evidence",
+    "unreadable_evidence_bundle",
+    "invalid_evidence_bundle",
     "migration_name_mismatch",
     "no automatic metadata repair",
     "no production database mutation",

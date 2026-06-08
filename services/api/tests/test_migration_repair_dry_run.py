@@ -123,6 +123,109 @@ def test_repair_dry_run_refuses_missing_required_evidence(tmp_path: Path) -> Non
     assert "stdout" in result["reason"]
 
 
+def test_repair_dry_run_refuses_missing_artifact(tmp_path: Path) -> None:
+    evidence = evidence_bundle(tmp_path)
+    Path(evidence["backupArtifactPath"]).unlink()  # type: ignore[arg-type]
+
+    result = analyze_evidence_bundle(evidence)
+
+    assert result["status"] == "refused"
+    assert result["policyCode"] == "missing_artifact"
+
+
+def test_repair_dry_run_refuses_path_aliasing(tmp_path: Path) -> None:
+    evidence = evidence_bundle(tmp_path)
+    evidence["rehearsalArtifactPath"] = evidence["backupArtifactPath"]
+
+    result = analyze_evidence_bundle(evidence)
+
+    assert result["status"] == "refused"
+    assert result["policyCode"] == "path_aliasing"
+
+
+def test_repair_dry_run_refuses_invalid_rehearsal_json(tmp_path: Path) -> None:
+    evidence = evidence_bundle(tmp_path)
+    evidence["rehearsalJson"] = "not structured json"
+
+    result = analyze_evidence_bundle(evidence)
+
+    assert result["status"] == "refused"
+    assert result["policyCode"] == "invalid_rehearsal_json"
+
+
+def test_repair_dry_run_refuses_missing_rehearsal_json_field(tmp_path: Path) -> None:
+    evidence = evidence_bundle(tmp_path)
+    rehearsal_json = evidence["rehearsalJson"]
+    assert isinstance(rehearsal_json, dict)
+    del rehearsal_json["readbackPostIds"]
+
+    result = analyze_evidence_bundle(evidence)
+
+    assert result["status"] == "refused"
+    assert result["policyCode"] == "missing_rehearsal_json_field"
+    assert "readbackPostIds" in result["reason"]
+
+
+def test_repair_dry_run_refuses_count_mismatch(tmp_path: Path) -> None:
+    evidence = evidence_bundle(tmp_path)
+    evidence["rehearsalJson"] = {
+        **evidence["rehearsalJson"],  # type: ignore[arg-type]
+        "postMigrationCounts": {"posts": 2, "post_revisions": 1, "audit_events": 1},
+    }
+
+    result = analyze_evidence_bundle(evidence)
+
+    assert result["status"] == "refused"
+    assert result["policyCode"] == "count_mismatch"
+
+
+def test_repair_dry_run_refuses_missing_escalation_note(tmp_path: Path) -> None:
+    evidence = evidence_bundle(tmp_path)
+    evidence["operatorEscalationNote"] = "Looks fine."
+
+    result = analyze_evidence_bundle(evidence)
+
+    assert result["status"] == "refused"
+    assert result["policyCode"] == "missing_escalation_note"
+
+
+def test_repair_dry_run_refuses_secret_like_evidence(tmp_path: Path) -> None:
+    evidence = evidence_bundle(tmp_path)
+    evidence["stdout"] = "__SECRET_LIKE__"
+
+    result = analyze_evidence_bundle(evidence)
+
+    assert result["status"] == "refused"
+    assert result["policyCode"] == "secret_like_evidence"
+
+
+def test_repair_dry_run_cli_fails_closed_for_unreadable_evidence_file(tmp_path: Path, capsys) -> None:
+    evidence_path = tmp_path / "missing-evidence.json"
+
+    exit_code = main(["--evidence", str(evidence_path)])
+
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    payload = json.loads(captured.out)
+    assert payload["status"] == "refused"
+    assert payload["policyCode"] == "unreadable_evidence_bundle"
+    assert captured.err == ""
+
+
+def test_repair_dry_run_cli_fails_closed_for_non_object_evidence(tmp_path: Path, capsys) -> None:
+    evidence_path = tmp_path / "evidence.json"
+    evidence_path.write_text(json.dumps(["not", "an", "object"]))
+
+    exit_code = main(["--evidence", str(evidence_path)])
+
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    payload = json.loads(captured.out)
+    assert payload["status"] == "refused"
+    assert payload["policyCode"] == "invalid_evidence_bundle"
+    assert captured.err == ""
+
+
 def test_repair_dry_run_cli_reads_evidence_file_and_outputs_json(tmp_path: Path, capsys) -> None:
     evidence_path = tmp_path / "evidence.json"
     evidence_path.write_text(json.dumps(evidence_bundle(tmp_path)))

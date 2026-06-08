@@ -787,3 +787,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: added `createAdminTokenProvider`, wired it into `main.tsx`, and extended the admin guard/tests so the current provider supplies no credentials, reads no browser-bundled token env, and writes no browser storage.
 3. Boundary: no login UI, token persistence, session restoration, refresh/logout, cookie/session auth, or live browser auth smoke.
 4. Verification: focused admin token provider tests, full admin tests, admin typecheck/build, and `frontend_admin_foundation_check.py`.
+
+## Admin Module Shell Boundary
+
+1. Status: completed for minimal module navigation shell.
+2. Scope: added `Admin modules` navigation with `Content`, `Media`, and `Settings`, default `Content` active state, accessible `aria-current`, and placeholder panels for reserved modules.
+3. Boundary: no TanStack Router wiring, no media/settings business logic, no create/edit/publish mutation, no audit/token workflows, and no backend API expansion.
+4. Verification: RED module-navigation RTL test, full admin tests, admin typecheck/build, and admin foundation guard.

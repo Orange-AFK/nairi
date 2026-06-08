@@ -145,6 +145,6 @@
 
 ## Admin Runtime API Client Boundary
 
-1. Status: completed through fail-closed admin token provider boundary.
-2. Completed: runtime `createAdminApiClient` for authenticated draft-list reads plus a first `createAdminTokenProvider` contract wired from `main.tsx` without browser-bundled token env or browser storage.
-3. Next candidate: admin module shell/routing or draft list UX, still without create/edit/publish mutation unless explicitly selected.
+1. Status: completed through minimal admin module shell boundary.
+2. Completed: runtime `createAdminApiClient`, fail-closed `createAdminTokenProvider`, and `Admin modules` navigation with `Content`, `Media`, and `Settings` shells.
+3. Next candidate: draft list UX, admin content detail/readback, or explicit router adoption, still without create/edit/publish mutation unless selected.

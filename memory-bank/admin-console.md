@@ -191,3 +191,9 @@ The admin console must use documented API endpoints only. It must not perform di
 1. After a confirmed publish succeeds, the selected published detail remains visible for readback and publish action status stays visible outside the draft edit form.
 2. Published details in the draft review workflow render the stable copy `Published detail is read-only in the draft review workflow.` and no longer show draft edit, save, publish review, confirmation, or publish action controls.
 3. Boundary: this slice only gates draft controls by selected detail status; it does not add a published-list module, router state, live refetching, archive/history UI, or backend/API contract changes.
+
+## Admin Published Detail Label Boundary
+
+1. Non-draft selected details now render the eyebrow `API-backed published detail` instead of reusing `API-backed draft detail`.
+2. Draft detail and draft preview labels remain unchanged, and published read-only behavior remains unchanged.
+3. Boundary: this slice changes only local admin detail label semantics; it does not add routing, refetching, published-list navigation, archive/history UI, or backend/API contract changes.

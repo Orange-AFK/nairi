@@ -7,8 +7,8 @@
 1. Nairi is in early alpha implementation.
 2. The implementation still follows the accepted API-first, agent-first CMS direction.
 3. Core public and management content flows exist as scaffold implementations with verified route tests and guards.
-4. The current development focus is Migration Repair Policy Boundary.
-5. Data migration rehearsal has merged; migration work is now making metadata mismatch behavior explicit and stable before adding any CLI or live repair path.
+4. The current development focus is Broader Migration Repair Workflow Boundary.
+5. Standalone migration rehearsal CLI has merged into the current branch scope; migration work can now define operator guidance and explicit repair workflows without turning rehearsal into a live migration path.
 
 ### Current Authority Snapshot
 
@@ -92,8 +92,9 @@
 3. Existing pre-migration SQLite files can be adopted by creating migration metadata without losing posts, revisions, or audit rows.
 4. A local rehearsal helper can copy a source SQLite file to backup and rehearsal paths, trigger migration on the rehearsal copy, and verify metadata/count/readback safety.
 5. Migration metadata name mismatches fail fast with a stable `PostStoreMigrationError` carrying `migration_name_mismatch` policy metadata; they are not auto-repaired.
-6. SQLAlchemy and Alembic are target stack components but are not yet introduced in code.
-7. PostgreSQL remains a future production option after managed migrations exist.
+6. `nairi-post-store-migration-rehearsal` is a local-only console script that rehearses migration against caller-provided source/backup/rehearsal paths and emits a JSON summary.
+7. SQLAlchemy and Alembic are target stack components but are not yet introduced in code.
+8. PostgreSQL remains a future production option after managed migrations exist.
 
 ### Admin Console
 
@@ -117,13 +118,13 @@
 
 ## Next Named Work
 
-### Migration Repair Policy Boundary
+### Broader Migration Repair Workflow Boundary
 
-1. Status: in progress.
-2. Scope: add stable typed migration-policy errors for `schema_migrations` metadata mismatch and document the fail-fast repair policy.
-3. Boundary: preserve current API contracts and route behavior; do not introduce SQLAlchemy, Alembic, PostgreSQL, external migration CLIs, route/UI changes, production database access, deployment changes, live database operations, or automatic metadata repair.
-4. Verification: RED metadata-mismatch policy test, focused migration/persistence tests, full API tests, guards, scans, PR CI, and main CI.
-5. After completion: continue toward standalone migration rehearsal CLI, broader migration repair workflow, or CMS Admin Console Foundation.
+1. Status: candidate next work.
+2. Scope: define operator/developer guidance for typed migration policy failures, including how to inspect rehearsal JSON and when to stop for manual intervention.
+3. Boundary: preserve current API contracts and route behavior; do not introduce SQLAlchemy, Alembic, PostgreSQL, deployment changes, production database access, automatic repair, scheduling, or live database migration execution.
+4. Verification: documentation/guard contract first, focused migration-policy tests only if behavior changes, full API tests, guards, scans, PR CI, and main CI.
+5. Alternative next work: Migration Operator Handoff Docs Boundary or CMS Admin Console Foundation.
 
 ## Blockers
 

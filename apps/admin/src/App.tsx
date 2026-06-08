@@ -68,10 +68,26 @@ export type AdminPostPublishResult = {
   publicInvalidation: AdminPublicInvalidationResult;
 };
 
+export type AdminPublishReviewRequestInput = {
+  revisionId: string;
+};
+
+export type AdminPublishReviewRequestResult = {
+  requestId: string;
+  postId: string;
+  revisionId: string;
+  status: "pending";
+  requestedAt: string;
+};
+
 export type AdminApiClient = {
   listPosts: () => Promise<AdminPostSummary[]>;
   getPost: (postId: string) => Promise<AdminPostDetail>;
   updatePost: (postId: string, input: AdminPostUpdateInput) => Promise<AdminPostDetail>;
+  requestPublishReview: (
+    postId: string,
+    input: AdminPublishReviewRequestInput
+  ) => Promise<AdminPublishReviewRequestResult>;
   publishPost: (postId: string, input: AdminPostPublishInput) => Promise<AdminPostPublishResult>;
 };
 
@@ -152,6 +168,7 @@ export function App({ apiClient }: AppProps) {
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [publishReviewStatus, setPublishReviewStatus] = useState<string | null>(null);
+  const [publishReviewRequest, setPublishReviewRequest] = useState<AdminPublishReviewRequestResult | null>(null);
   const [publishConfirmationStatus, setPublishConfirmationStatus] = useState<string | null>(null);
   const [publishActionStatus, setPublishActionStatus] = useState<string | null>(null);
   const [publishActionError, setPublishActionError] = useState<string | null>(null);
@@ -217,6 +234,7 @@ export function App({ apiClient }: AppProps) {
     setSaveStatus(null);
     setSaveError(null);
     setPublishReviewStatus(null);
+    setPublishReviewRequest(null);
     setPublishConfirmationStatus(null);
     setPublishActionStatus(null);
     setPublishActionError(null);
@@ -302,6 +320,7 @@ export function App({ apiClient }: AppProps) {
         );
         setSaveStatus("Draft changes saved.");
         setPublishReviewStatus(null);
+        setPublishReviewRequest(null);
         setPublishConfirmationStatus(null);
         setPublishActionStatus(null);
         setPublishActionError(null);
@@ -375,6 +394,46 @@ export function App({ apiClient }: AppProps) {
     } finally {
       if (publishRequestIdRef.current === publishRequestId) {
         setIsPublishingDraft(false);
+      }
+    }
+  }
+
+  async function requestDraftPublishReview() {
+    if (!selectedPostDetail || isSavingDraft || isPublishingDraft) {
+      return;
+    }
+
+    const publishRequestId = publishRequestIdRef.current + 1;
+    const requestedPostId = selectedPostDetail.id;
+    const requestedRevisionId = selectedPostDetail.revisionId;
+    publishRequestIdRef.current = publishRequestId;
+    setPublishReviewStatus(null);
+    setPublishReviewRequest(null);
+    setPublishConfirmationStatus(null);
+    setPublishActionStatus(null);
+    setPublishActionError(null);
+
+    try {
+      const publishRequest = await apiClient.requestPublishReview(requestedPostId, {
+        revisionId: requestedRevisionId
+      });
+      if (publishRequest.postId !== requestedPostId || publishRequest.revisionId !== requestedRevisionId) {
+        throw new Error("publish review response mismatch");
+      }
+      if (
+        publishRequestIdRef.current === publishRequestId &&
+        selectedPostDetail?.id === requestedPostId &&
+        selectedPostDetail.revisionId === requestedRevisionId
+      ) {
+        setPublishReviewRequest(publishRequest);
+        setPublishReviewStatus(
+          `Publish review request ${publishRequest.requestId} is ${publishRequest.status} for revision ${publishRequest.revisionId}.`
+        );
+      }
+    } catch {
+      if (publishRequestIdRef.current === publishRequestId) {
+        setPublishReviewRequest(null);
+        setPublishReviewStatus("Publish review request could not be created.");
       }
     }
   }
@@ -522,12 +581,7 @@ export function App({ apiClient }: AppProps) {
                       <button
                         type="button"
                         disabled={isSavingDraft || isPublishingDraft}
-                        onClick={() => {
-                          setPublishReviewStatus(
-                            `Publish review request staged for revision ${selectedPostDetail.revisionId}.`
-                          );
-                          setPublishConfirmationStatus(null);
-                        }}
+                        onClick={() => void requestDraftPublishReview()}
                       >
                         Request publish review
                       </button>
@@ -538,7 +592,7 @@ export function App({ apiClient }: AppProps) {
                           {publishReviewStatus}
                         </p>
                       ) : null}
-                      {publishReviewStatus ? (
+                      {publishReviewRequest ? (
                         <section aria-label="Publish confirmation contract">
                           <h3>Publish confirmation contract</h3>
                           <p>Review revision {selectedPostDetail.revisionId} before any future publish action.</p>

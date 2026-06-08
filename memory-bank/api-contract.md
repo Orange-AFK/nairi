@@ -141,6 +141,19 @@
 18. Public invalidation execution boundary: recorded execution, dispatch bookkeeping, dispatcher configuration, the no-op dispatcher interface, the contract-only dispatcher adapter, the Cloudflare missing-settings/dry-run adapter, inert Cloudflare request-plan construction, route-level dispatcher result mapping, dispatcher result persistence, and dispatcher exception bookkeeping are durable/configuration/in-process bookkeeping only; they do not trigger CDN purge, Cloudflare API calls, HTTP clients, `revalidateTag`, `revalidatePath`, webhooks, cache headers, or any external invalidation side effect.
 19. Duplicate capability warning: admin, MCP, and agents must use this capability instead of creating parallel publish endpoints.
 
+### Request Publish Review
+
+1. Method: `POST`
+2. Path: `/api/v1/posts/{post_id}/publish-requests`
+3. Scope: `posts:publish`
+4. Request body fields: `revisionId`
+5. Response fields: `requestId`, `postId`, `revisionId`, `status`, `requestedAt`
+6. Current persistence boundary: validates that the target post exists, remains a draft, and that `revisionId` matches the current draft revision; then creates a durable `publish_requests` row with `status=pending` and deterministic `id=publish-request-{post_id}-{revision_id}`.
+7. Side-effect boundary: request-review creation records `post.publish_requested` but does not change post status, does not call `POST /api/v1/posts/{post_id}/publish`, does not create `publish_jobs`, and does not trigger public invalidation dispatch.
+8. Errors: `404` with code `not_found` when `post_id` is unknown or does not identify a draft.
+9. Errors: `409` with code `conflict` when `revisionId` does not match the current draft revision. The conflict response must not create a `publish_requests` row or audit event, and must not mutate the post.
+10. Audit event: `post.publish_requested` with `revisionId` and `requestId` metadata.
+
 ## MDX Component API
 
 ### List MDX Components

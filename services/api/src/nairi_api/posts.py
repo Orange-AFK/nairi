@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 import sqlite3
@@ -15,6 +16,10 @@ POST_STORE_BASELINE_MIGRATION_NAME = "post_store_baseline"
 
 def utc_timestamp(value: datetime) -> str:
     return value.astimezone(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def audit_token_actor_id(actor_token: str) -> str:
+    return f"token-sha256:{hashlib.sha256(actor_token.encode()).hexdigest()[:16]}"
 
 
 @dataclass(frozen=True)
@@ -62,6 +67,15 @@ class PublishedPost:
     public_invalidation_dispatch_reason: str | None
     public_invalidation_dispatch_attempted: bool
     public_invalidation_dispatch_attempted_at: str | None
+
+
+@dataclass(frozen=True)
+class PublishReviewRequest:
+    request_id: str
+    post_id: str
+    revision_id: str
+    status: Literal["pending"]
+    requested_at: str
 
 
 @dataclass(frozen=True)
@@ -539,6 +553,88 @@ class PostStore:
             public_invalidation_dispatch_attempted_at=public_invalidation_dispatch_attempted_at,
         )
 
+    def request_publish_review(self, post_id: str, revision_id: str, actor_token: str) -> PublishReviewRequest:
+        request_id = f"publish-request-{post_id}-{revision_id}"
+        with self._connect() as connection:
+            self._init_schema(connection)
+            row = connection.execute(
+                """
+                SELECT current_revision_id
+                FROM posts
+                WHERE id = ? AND status = ?
+                """,
+                (post_id, DRAFT_STATUS),
+            ).fetchone()
+            if row is None:
+                raise PostDraftNotFoundError(post_id)
+            current_revision_id = cast(str, row[0])
+            if current_revision_id != revision_id:
+                raise PostRevisionConflictError(current_revision_id)
+            existing_request_row = connection.execute(
+                """
+                SELECT requested_at
+                FROM publish_requests
+                WHERE id = ?
+                """,
+                (request_id,),
+            ).fetchone()
+            if existing_request_row is not None:
+                return PublishReviewRequest(
+                    request_id=request_id,
+                    post_id=post_id,
+                    revision_id=revision_id,
+                    status="pending",
+                    requested_at=cast(str, existing_request_row[0]),
+                )
+            requested_at = utc_timestamp(self.clock())
+            insert_cursor = connection.execute(
+                """
+                INSERT OR IGNORE INTO publish_requests (id, post_id, revision_id, status, requested_at)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (request_id, post_id, revision_id, "pending", requested_at),
+            )
+            if insert_cursor.rowcount == 0:
+                raced_request_row = connection.execute(
+                    """
+                    SELECT requested_at
+                    FROM publish_requests
+                    WHERE id = ?
+                    """,
+                    (request_id,),
+                ).fetchone()
+                if raced_request_row is None:
+                    raise RuntimeError("publish request insert conflict without existing row")
+                return PublishReviewRequest(
+                    request_id=request_id,
+                    post_id=post_id,
+                    revision_id=revision_id,
+                    status="pending",
+                    requested_at=cast(str, raced_request_row[0]),
+                )
+            connection.execute(
+                """
+                INSERT INTO audit_events (event_type, actor_type, actor_id, target_type, target_id, metadata, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    "post.publish_requested",
+                    "api_token",
+                    audit_token_actor_id(actor_token),
+                    "post",
+                    post_id,
+                    json.dumps({"revisionId": revision_id, "requestId": request_id}, separators=(",", ":")),
+                    requested_at,
+                ),
+            )
+            return PublishReviewRequest(
+                request_id=request_id,
+                post_id=post_id,
+                revision_id=revision_id,
+                status="pending",
+                requested_at=requested_at,
+            )
+
     def record_public_invalidation_dispatch(
         self,
         job_id: str,
@@ -765,6 +861,17 @@ class PostStore:
                 public_invalidation_dispatch_reason TEXT,
                 public_invalidation_dispatch_attempted INTEGER NOT NULL DEFAULT 0,
                 public_invalidation_dispatch_attempted_at TEXT
+            )
+            """
+        )
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS publish_requests (
+                id TEXT PRIMARY KEY,
+                post_id TEXT NOT NULL REFERENCES posts(id),
+                revision_id TEXT NOT NULL REFERENCES post_revisions(id),
+                status TEXT NOT NULL,
+                requested_at TEXT NOT NULL
             )
             """
         )

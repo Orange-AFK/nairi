@@ -384,6 +384,50 @@ describe("createAdminApiClient", () => {
     expect(fetchMock).toHaveBeenCalledOnce();
   });
 
+  it("creates a publish review request through the authenticated management API without publishing", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      expect(String(input)).toBe("https://api.example.test/api/v1/posts/post%2F1/publish-requests");
+      expect(init?.method).toBe("POST");
+      expect(init?.headers).toEqual({
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: "Bearer tkn"
+      });
+      expect(JSON.parse(String(init?.body))).toEqual({
+        revisionId: "revision-post-1-1"
+      });
+
+      return new Response(
+        JSON.stringify({
+          requestId: "publish-request-post-1-revision-post-1-1",
+          postId: "post/1",
+          revisionId: "revision-post-1-1",
+          status: "pending",
+          requestedAt: "2026-06-08T00:06:00Z"
+        }),
+        { status: 201, headers: { "Content-Type": "application/json" } }
+      );
+    });
+    const client = createAdminApiClient({
+      apiBaseUrl: "https://api.example.test/",
+      getAuthToken: () => "tkn",
+      fetchImpl: fetchMock
+    });
+
+    await expect(
+      client.requestPublishReview("post/1", {
+        revisionId: "revision-post-1-1"
+      })
+    ).resolves.toEqual({
+      requestId: "publish-request-post-1-revision-post-1-1",
+      postId: "post/1",
+      revisionId: "revision-post-1-1",
+      status: "pending",
+      requestedAt: "2026-06-08T00:06:00Z"
+    });
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
   it("fails closed before publish when credentials are missing", async () => {
     const fetchMock = vi.fn();
     const client = createAdminApiClient({

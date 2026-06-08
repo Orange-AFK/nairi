@@ -5,7 +5,9 @@ import type {
   AdminPostPublishInput,
   AdminPostPublishResult,
   AdminPostSummary,
-  AdminPostUpdateInput
+  AdminPostUpdateInput,
+  AdminPublishReviewRequestInput,
+  AdminPublishReviewRequestResult
 } from "./App";
 
 type FetchLike = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
@@ -49,6 +51,14 @@ type ManagementPostPublishResponse = {
   publishedAt: string;
   jobId: string;
   publicInvalidation: AdminPostPublishResult["publicInvalidation"];
+};
+
+type ManagementPublishReviewRequestResponse = {
+  requestId: string;
+  postId: string;
+  revisionId: string;
+  status: "pending";
+  requestedAt: string;
 };
 
 type ListPostsResponse = {
@@ -113,6 +123,18 @@ function mapPostPublishResult(payload: ManagementPostPublishResponse): AdminPost
     publishedAt: payload.publishedAt,
     jobId: payload.jobId,
     publicInvalidation: payload.publicInvalidation
+  };
+}
+
+function mapPublishReviewRequestResult(
+  payload: ManagementPublishReviewRequestResponse
+): AdminPublishReviewRequestResult {
+  return {
+    requestId: payload.requestId,
+    postId: payload.postId,
+    revisionId: payload.revisionId,
+    status: payload.status,
+    requestedAt: payload.requestedAt
   };
 }
 
@@ -217,6 +239,17 @@ export function createAdminApiClient({
         revisionId: payload.revisionId,
         updatedAt: payload.updatedAt
       };
+    },
+    async requestPublishReview(postId: string, input: AdminPublishReviewRequestInput) {
+      const payload = await fetchManagementJson<ManagementPublishReviewRequestResponse>({
+        ...clientOptions,
+        path: `/api/v1/posts/${encodeURIComponent(postId)}/publish-requests`,
+        method: "POST",
+        body: {
+          revisionId: input.revisionId
+        }
+      });
+      return mapPublishReviewRequestResult(payload);
     },
     async publishPost(postId: string, input: AdminPostPublishInput) {
       const payload = await fetchManagementJson<ManagementPostPublishResponse>({

@@ -26,10 +26,11 @@
 2. `Role`
 3. `ApiToken`
 4. `PublishJob`
-5. `AgentTask`
-6. `AuditEvent`
-7. `SiteSetting`
-8. `WebhookEndpoint`
+5. `PublishRequest`
+6. `AgentTask`
+7. `AuditEvent`
+8. `SiteSetting`
+9. `WebhookEndpoint`
 
 ## Permission Scopes
 
@@ -85,9 +86,10 @@
 1. `post.created`
 2. `post.updated`
 3. `post.review_requested`
-4. `post.published`
-5. `post.archived`
-6. `mdx.risk_detected`
+4. `post.publish_requested`
+5. `post.published`
+6. `post.archived`
+7. `mdx.risk_detected`
 
 ### System Events
 

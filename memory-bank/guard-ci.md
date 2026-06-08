@@ -17,7 +17,8 @@ Nairi uses automated guards to enforce documentation boundaries, bilingual synch
 7. `data-model.md`: persistence and migration boundaries.
 8. `frontend-design.md`: public frontend behavior, SEO, RSS/sitemap, rendering, and cache policy.
 9. `integration-map.md`: allowed integration paths and duplicate capability prevention.
-10. `project-review.md`: historical audit artifact only, not a normally updated source of truth.
+10. `project-audit.md`: project-health audit cadence, triggers, finding taxonomy, report locations, and remediation rules.
+11. `project-review.md` and dated audit reports: historical audit artifacts only, not normally updated sources of truth.
 
 ## Documentation Update Triggers
 
@@ -27,6 +28,27 @@ Nairi uses automated guards to enforce documentation boundaries, bilingual synch
 4. Update `progress-log.md` after every completed named task.
 5. Update `README.md` only when GitHub-facing positioning, repository state, setup, or public project description changes.
 6. Update local Chinese `memory-bank/*-cn.md` companions when local guards require them, but do not push them.
+7. Update `project-audit.md` when audit cadence, triggers, finding taxonomy, report locations, or remediation rules change.
+8. Create a dated audit report when a lightweight, phase-transition, or high-risk audit produces evidence that should remain reviewable after the session.
+
+## Project Health Audit Cadence
+
+### Source
+
+1. Path: `memory-bank/project-audit.md`.
+2. Purpose: defines lightweight, phase-transition, and high-risk mandatory audit triggers plus finding taxonomy and remediation rules.
+
+### Check Scope
+
+1. Audits verify semantic freshness across source-of-truth documents, implementation, guards, public docs, deferred work, and secret/runtime-artifact hygiene.
+2. Audit findings are classified as blocker, drift risk, docs sync debt, guard gap, or accepted future work.
+3. Blockers and drift risks stop feature work until remediated or explicitly approved by the owner.
+4. Audit reports are evidence; active rules must be migrated into the relevant source-of-truth documents.
+
+### Known Limits
+
+1. Current automated guards enforce placement, tokens, contracts, schemas, secrets, and structural anchors, but they do not prove semantic freshness.
+2. Semantic audit remains a project-health review step unless a future named task adds more automation.
 
 ## Docs Guard
 

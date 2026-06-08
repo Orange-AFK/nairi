@@ -49,6 +49,31 @@ function adminApiClient(overrides: Partial<AdminApiClient> = {}): AdminApiClient
         updatedAt: "2026-06-08T00:02:00Z"
       };
     },
+    async publishPost(postId: string) {
+      return {
+        id: postId,
+        status: "published",
+        publishedAt: "2026-06-08T00:10:00Z",
+        jobId: "publish-job-post-1",
+        publicInvalidation: {
+          mode: "recorded",
+          surfaces: ["/posts", "/posts/first-draft", "/rss.xml", "/sitemap.xml"],
+          execution: {
+            status: "recorded",
+            executor: "none",
+            executedAt: "2026-06-08T00:10:00Z",
+            errorCode: null,
+            errorMessage: null
+          },
+          dispatch: {
+            status: "dispatch_skipped",
+            reason: "no_dispatcher_configured",
+            attempted: false,
+            attemptedAt: null
+          }
+        }
+      };
+    },
     ...overrides
   };
 }

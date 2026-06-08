@@ -1,4 +1,11 @@
-import type { AdminApiClient, AdminPostDetail, AdminPostSummary, AdminPostUpdateInput } from "./App";
+import type {
+  AdminApiClient,
+  AdminPostDetail,
+  AdminPostPublishInput,
+  AdminPostPublishResult,
+  AdminPostSummary,
+  AdminPostUpdateInput
+} from "./App";
 
 type FetchLike = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 
@@ -32,6 +39,14 @@ type ManagementPostUpdateResponse = {
   status: string;
   revisionId: string;
   updatedAt: string;
+};
+
+type ManagementPostPublishResponse = {
+  postId: string;
+  status: string;
+  publishedAt: string;
+  jobId: string;
+  publicInvalidation: AdminPostPublishResult["publicInvalidation"];
 };
 
 type ListPostsResponse = {
@@ -88,6 +103,16 @@ function mapPostDetail(post: ManagementPostDetail): AdminPostDetail {
   };
 }
 
+function mapPostPublishResult(payload: ManagementPostPublishResponse): AdminPostPublishResult {
+  return {
+    id: payload.postId,
+    status: payload.status,
+    publishedAt: payload.publishedAt,
+    jobId: payload.jobId,
+    publicInvalidation: payload.publicInvalidation
+  };
+}
+
 function buildManagementUrl(apiBaseUrl: string, path: string): string {
   try {
     return buildUrl(apiBaseUrl, path);
@@ -112,7 +137,7 @@ async function fetchManagementJson<T>({
   path,
   method = "GET",
   body
-}: RuntimeAdminApiClientOptions & { path: string; method?: "GET" | "PATCH"; body?: unknown }): Promise<T> {
+}: RuntimeAdminApiClientOptions & { path: string; method?: "GET" | "PATCH" | "POST"; body?: unknown }): Promise<T> {
   const url = buildManagementUrl(apiBaseUrl, path);
   const headers: Record<string, string> = {
     Accept: "application/json",
@@ -187,6 +212,19 @@ export function createAdminApiClient({
         revisionId: payload.revisionId,
         updatedAt: payload.updatedAt
       };
+    },
+    async publishPost(postId: string, input: AdminPostPublishInput) {
+      const payload = await fetchManagementJson<ManagementPostPublishResponse>({
+        ...clientOptions,
+        path: `/api/v1/posts/${encodeURIComponent(postId)}/publish`,
+        method: "POST",
+        body: {
+          revisionId: input.revisionId,
+          publishMode: input.publishMode,
+          scheduledAt: input.scheduledAt
+        }
+      });
+      return mapPostPublishResult(payload);
     }
   };
 }

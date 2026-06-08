@@ -145,6 +145,6 @@
 
 ## Admin Runtime API Client Boundary
 
-1. Status: completed through admin publish confirmation contract boundary.
-2. Completed: runtime `createAdminApiClient`, fail-closed `createAdminTokenProvider`, `Admin modules` navigation with `Content`, `Media`, and `Settings` shells, `Content` module draft detail readback via `getPost(postId)`, selected draft affordance, empty draft-list copy, injected draft edit form contract via `updatePost(postId, input)`, runtime `PATCH /api/v1/posts/{post_id}` client wiring, editable draft slug payloads, editable draft summary payloads, editable draft tags payloads, editable draft category ID payloads, editable draft series ID payloads, a non-executing `Request publish review` UI affordance, and a non-executing publish confirmation intent contract.
-3. Next candidate: real publish mutation client wiring, explicit router adoption, richer edit metadata fields, or publish-request persistence when selected.
+1. Status: completed through admin publish runtime client boundary.
+2. Completed: runtime `createAdminApiClient`, fail-closed `createAdminTokenProvider`, `Admin modules` navigation with `Content`, `Media`, and `Settings` shells, `Content` module draft detail readback via `getPost(postId)`, selected draft affordance, empty draft-list copy, injected draft edit form contract via `updatePost(postId, input)`, runtime `PATCH /api/v1/posts/{post_id}` client wiring, editable draft slug payloads, editable draft summary payloads, editable draft tags payloads, editable draft category ID payloads, editable draft series ID payloads, a non-executing `Request publish review` UI affordance, a non-executing publish confirmation intent contract, and runtime `POST /api/v1/posts/{post_id}/publish` client wiring through `publishPost(postId, input)`.
+3. Next candidate: explicit App publish action wiring behind confirmation, explicit router adoption, richer edit metadata fields, or publish-request persistence when selected.

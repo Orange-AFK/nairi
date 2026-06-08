@@ -7,6 +7,7 @@ export type AdminPostSummary = {
   title: string;
   slug: string;
   summary?: string | null;
+  tags?: string[];
   status: string;
   updatedAt: string;
 };
@@ -21,6 +22,7 @@ export type AdminPostUpdateInput = {
   title: string;
   slug: string;
   summary: string | null;
+  tags: string[];
   contentFormat: "markdown" | "mdx";
   content: string;
   expectedRevisionId: string;
@@ -43,6 +45,10 @@ const adminModules: Array<{ id: AdminModule; label: string }> = [
   { id: "media", label: "Media" },
   { id: "settings", label: "Settings" }
 ];
+
+function parseDraftTags(value: string): string[] {
+  return [...new Set(value.split(",").map((tag) => tag.trim()).filter(Boolean))];
+}
 
 export function App({ apiClient }: AppProps) {
   const [activeModule, setActiveModule] = useState<AdminModule>("content");
@@ -133,6 +139,7 @@ export function App({ apiClient }: AppProps) {
         title: String(formData.get("title") ?? ""),
         slug: String(formData.get("slug") ?? ""),
         summary: summary || null,
+        tags: parseDraftTags(String(formData.get("tags") ?? "")),
         contentFormat: selectedPostDetail.contentFormat,
         content: String(formData.get("content") ?? ""),
         expectedRevisionId: savedRevisionId
@@ -152,6 +159,7 @@ export function App({ apiClient }: AppProps) {
                   title: updatedPost.title,
                   slug: updatedPost.slug,
                   summary: updatedPost.summary,
+                  tags: updatedPost.tags,
                   status: updatedPost.status,
                   updatedAt: updatedPost.updatedAt
                 }
@@ -261,6 +269,10 @@ export function App({ apiClient }: AppProps) {
                     <label>
                       Draft summary
                       <textarea name="summary" defaultValue={selectedPostDetail.summary ?? ""} rows={3} />
+                    </label>
+                    <label>
+                      Draft tags
+                      <input name="tags" defaultValue={(selectedPostDetail.tags ?? []).join(", ")} />
                     </label>
                     <label>
                       Draft content

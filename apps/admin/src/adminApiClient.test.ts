@@ -20,6 +20,7 @@ describe("createAdminApiClient", () => {
               title: "First draft",
               slug: "first-draft",
               summary: "First draft summary.",
+              tags: ["draft", "release-notes"],
               status: "draft",
               updatedAt: "2026-06-08T00:00:00Z"
             }
@@ -42,6 +43,7 @@ describe("createAdminApiClient", () => {
         title: "First draft",
         slug: "first-draft",
         summary: "First draft summary.",
+        tags: ["draft", "release-notes"],
         status: "draft",
         updatedAt: "2026-06-08T00:00:00Z"
       }
@@ -106,6 +108,7 @@ describe("createAdminApiClient", () => {
         title: "Updated draft",
         slug: "updated-draft",
         summary: "Updated draft summary.",
+        tags: ["updated", "release-notes"],
         contentFormat: "markdown",
         content: "Updated draft body.",
         expectedRevisionId: "revision-post-1-1"
@@ -132,6 +135,7 @@ describe("createAdminApiClient", () => {
         title: "Updated draft",
         slug: "updated-draft",
         summary: "Updated draft summary.",
+        tags: ["updated", "release-notes"],
         contentFormat: "markdown",
         content: "Updated draft body.",
         expectedRevisionId: "revision-post-1-1"
@@ -141,6 +145,7 @@ describe("createAdminApiClient", () => {
       title: "Updated draft",
       slug: "updated-draft",
       summary: "Updated draft summary.",
+      tags: ["updated", "release-notes"],
       status: "draft",
       contentFormat: "markdown",
       content: "Updated draft body.",
@@ -162,6 +167,7 @@ describe("createAdminApiClient", () => {
         title: "Updated draft",
         slug: "updated-draft",
         summary: "Updated draft summary.",
+        tags: ["updated", "release-notes"],
         contentFormat: "markdown",
         content: "Updated draft body.",
         expectedRevisionId: "revision-post-1-1"
@@ -183,6 +189,7 @@ describe("createAdminApiClient", () => {
         title: "Updated draft",
         slug: "updated-draft",
         summary: "Updated draft summary.",
+        tags: ["updated", "release-notes"],
         contentFormat: "markdown",
         content: "Updated draft body.",
         expectedRevisionId: "revision-post-1-1"

@@ -136,3 +136,9 @@ The admin console must use documented API endpoints only. It must not perform di
 1. The draft edit form now renders an editable `Draft summary` field between slug and content.
 2. Save submits the edited summary through the injected `apiClient.updatePost(postId, input)` payload and runtime PATCH body alongside title, slug, content format, content, and expected revision id.
 3. Boundary: no frontend summary validation, taxonomy/tag/series editing, create/publish mutation, router expansion, login UI, token persistence, direct fetch, or direct database access is added.
+
+## Admin Edit Tags Field Boundary
+
+1. The draft edit form now renders an editable `Draft tags` comma-separated field between summary and content.
+2. Save submits normalized tags through the injected `apiClient.updatePost(postId, input)` payload and runtime PATCH body alongside title, slug, summary, content format, content, and expected revision id.
+3. Boundary: tags are comma-separated and deduplicated locally; no taxonomy/category/series selector, frontend tag validation, create/publish mutation, router expansion, login UI, token persistence, direct fetch, or direct database access is added.

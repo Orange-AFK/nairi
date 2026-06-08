@@ -1023,3 +1023,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 4. Hardening: invalid statuses return `400 invalid_request` before side effects, unknown requests return `404 not_found`, repeat resolution returns `409 conflict` without overwriting the first decision or creating another resolve audit row, and existing SQLite stores get a guarded `resolved_at` compatibility column.
 5. Verification: focused RED/GREEN backend route tests, full backend post persistence tests, docs/i18n/contract/API schema/secret guards, full local check runner, admin tests, admin typecheck/build, diff check, staged/HEAD/tight secret scans, independent re-review, PR Guards, main Guards, and GitHub Contents API readback passed.
 6. Next recommended named task: Published History/List Boundary if product wants a human-facing history module, another narrow admin edit boundary, Executable Repair Tooling Design Boundary, or Cloudflare Live Execution Design Boundary after a high-risk audit.
+
+## Admin Published History List Boundary
+
+1. Status: implemented locally; PR verification pending.
+2. Scope: added a separate injected admin `listPublishedPosts()` client path backed by authenticated `GET /api/v1/posts?status=published`, and rendered a dedicated Published history list beside the existing draft review list.
+3. Boundary: admin UI read-only published-history list only; no new backend route, no public API change, no publish workflow change, no filters/pagination UI, no router expansion, no token storage, no direct database access, and no live external side effects.
+4. Verification: focused RED/GREEN admin component and runtime client tests passed locally; full guards/checks/admin verification remain pending before PR.

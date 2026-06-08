@@ -271,7 +271,7 @@ Any development task that affects documents, contracts, public capability, API s
 ## Frontend Admin Runtime API Client Check
 
 1. `scripts/checks/frontend_admin_foundation_check.py` now also requires `apps/admin/src/adminApiClient.ts` and `apps/admin/src/adminApiClient.test.ts`.
-2. The guard verifies the runtime client uses the authenticated management list endpoint `/api/v1/posts?status=draft` while the React `App` component stays injected and env-free.
+2. The guard verifies the runtime client uses the authenticated management list endpoints `/api/v1/posts?status=draft` and `/api/v1/posts?status=published` while the React `App` component stays injected and env-free.
 3. Guards CI continues to run admin tests, typecheck, and build.
 
 ## GitHub Actions Node Runtime Hygiene

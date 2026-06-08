@@ -199,6 +199,13 @@ export function createAdminApiClient({
       });
       return (payload.items ?? []).map(mapPostSummary);
     },
+    async listPublishedPosts() {
+      const payload = await fetchManagementJson<ListPostsResponse>({
+        ...clientOptions,
+        path: "/api/v1/posts?status=published"
+      });
+      return (payload.items ?? []).map(mapPostSummary);
+    },
     async getPost(postId: string) {
       const payload = await fetchManagementJson<ManagementPostDetail>({
         ...clientOptions,

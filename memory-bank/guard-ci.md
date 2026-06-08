@@ -114,6 +114,26 @@ Nairi uses automated guards to enforce documentation boundaries, bilingual synch
 2. Blocks private keys, GitHub tokens, bearer tokens, likely Cloudflare-style tokens, AWS access keys, and suspicious secret assignments.
 3. Allows documented placeholder values.
 
+## Migration Repair Workflow Check
+
+### Script
+
+1. Path: `scripts/checks/migration_repair_workflow_check.py`
+2. CI status: enabled in `.github/workflows/guards.yml`.
+
+### Check Scope
+
+1. Requires source-of-truth anchors for rehearsal JSON inspection.
+2. Requires source/backup/rehearsal path comparison guidance.
+3. Requires counts, `schema_migrations` rows, readback IDs, `migration_name_mismatch`, and manual intervention guidance.
+4. Requires no-automatic-repair and no-live/production-database-mutation boundaries.
+5. Requires project-state to advance beyond a completed Broader Migration Repair Workflow Boundary.
+
+### Known Limits
+
+1. The check verifies documentation anchors, not live database state.
+2. It does not execute repair tooling, create migrations, or authorize production database mutation.
+
 ## Shared Guard Utilities
 
 ### Script
@@ -134,7 +154,7 @@ Nairi uses automated guards to enforce documentation boundaries, bilingual synch
 7. Runs contract guard.
 8. Runs API schema guard.
 9. Runs secret guard.
-10. Runs API tests.
+10. Runs `scripts/checks/migration_repair_workflow_check.py`.
 11. Runs `scripts/checks/frontend_public_detail_check.py`.
 12. Runs `scripts/checks/frontend_public_list_check.py`.
 13. Runs `scripts/checks/frontend_public_style_check.py`.

@@ -146,4 +146,6 @@
 3. Decision: `schema_migrations` metadata mismatches fail fast with stable, typed migration-policy errors instead of ad hoc generic exceptions.
 4. Rationale: Migration metadata is the authority for applied schema history. A recorded id/name mismatch may indicate renamed or corrupted migration history and must not be auto-repaired silently.
 5. Consequence: Idempotent baseline DDL reconciliation may still repair missing scaffold tables when metadata is valid, but metadata mismatches require explicit operator/developer intervention.
-6. Revisit when: standalone migration CLI, Alembic integration, or live database repair workflow is introduced.
+6. Current workflow: operators/developers should inspect the rehearsal JSON first, compare source/backup/rehearsal paths, counts, `schema_migrations` rows, and readback IDs, then stop for operator/developer intervention when the stable policy code is `migration_name_mismatch`.
+7. Repair boundary: typed policy failures guide investigation only; they do not approve automatic metadata repair, live database migration execution, or production database mutation.
+8. Revisit when: Alembic integration, SQLAlchemy models, PostgreSQL support, or live database repair workflow is explicitly introduced.

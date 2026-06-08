@@ -7,8 +7,8 @@
 1. Nairi is in early alpha implementation.
 2. The implementation still follows the accepted API-first, agent-first CMS direction.
 3. Core public and management content flows exist as scaffold implementations with verified route tests and guards.
-4. The current development focus is Broader Migration Repair Workflow Boundary.
-5. Standalone migration rehearsal CLI has merged into the current branch scope; migration work can now define operator guidance and explicit repair workflows without turning rehearsal into a live migration path.
+4. The current development focus is Migration Operator Handoff Docs Boundary.
+5. Broader migration repair workflow guidance has merged into the current branch scope; migration work can now package operator-facing handoff docs without turning rehearsal into a live migration path.
 
 ### Current Authority Snapshot
 
@@ -118,13 +118,13 @@
 
 ## Next Named Work
 
-### Broader Migration Repair Workflow Boundary
+### Migration Operator Handoff Docs Boundary
 
 1. Status: candidate next work.
-2. Scope: define operator/developer guidance for typed migration policy failures, including how to inspect rehearsal JSON and when to stop for manual intervention.
+2. Scope: turn the internal repair workflow for typed migration policy failures into operator-facing documentation for local rehearsal, stop conditions, manual intervention, evidence capture, and escalation.
 3. Boundary: preserve current API contracts and route behavior; do not introduce SQLAlchemy, Alembic, PostgreSQL, deployment changes, production database access, automatic repair, scheduling, or live database migration execution.
-4. Verification: documentation/guard contract first, focused migration-policy tests only if behavior changes, full API tests, guards, scans, PR CI, and main CI.
-5. Alternative next work: Migration Operator Handoff Docs Boundary or CMS Admin Console Foundation.
+4. Verification: documentation/guard contract first, full API tests, guards, scans, PR CI, and main CI.
+5. Alternative next work: Executable Repair Tooling Design Boundary or CMS Admin Console Foundation.
 
 ## Blockers
 

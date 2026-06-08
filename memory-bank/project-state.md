@@ -7,8 +7,8 @@
 1. Nairi is in early alpha implementation.
 2. The implementation still follows the accepted API-first, agent-first CMS direction.
 3. Core public and management content flows exist as scaffold implementations with verified route tests and guards.
-4. The current development focus is a follow-up candidate after Migration Repair Refusal Matrix Test Expansion Boundary.
-5. Migration repair refusal matrix test expansion has merged into the current branch scope through focused `nairi-post-store-repair-dry-run` analyzer and CLI tests; it extends the Migration Operator Handoff Docs Boundary for typed migration policy failures by locking every documented refusal policy code, additional CLI fail-closed evidence cases, `migration_name_mismatch` manual intervention, and local-only dry-run behavior.
+4. The current development focus is a follow-up candidate after CMS Admin Console Foundation Boundary.
+5. CMS admin console foundation has merged into the current branch scope through `apps/admin`, a Vite React shell, injected API-client tests, a frontend admin structural guard, and Guards CI admin test/typecheck/build coverage; it follows the Migration Operator Handoff Docs Boundary for typed migration policy failures and preserves manual intervention for migration repair workflows.
 
 ### Current Authority Snapshot
 
@@ -98,8 +98,9 @@
 
 ### Admin Console
 
-1. CMS admin console implementation remains future work.
+1. CMS admin console foundation exists under `apps/admin` as a minimal Vite React shell.
 2. Admin must use authenticated API contracts and must not write directly to the database.
+3. Current shell uses an injected API client in tests and has no live writes, token storage, router, publish action, scheduler, or production mutation.
 
 ### Agent and MCP
 
@@ -118,12 +119,12 @@
 
 ## Next Named Work
 
-### CMS Admin Console Foundation Boundary
+### CMS Admin Post List API Client Boundary
 
 1. Status: candidate next work.
-2. Scope: begin a minimal admin console foundation or choose an explicit alternate design boundary.
-3. Boundary: preserve current migration repair local-only contracts; do not introduce production database mutation, automatic repair, scheduling, or live database migration execution.
-4. Verification: TDD/guard-first for the selected slice, full API tests, guards, scans, PR CI, and main CI.
+2. Scope: add the first runtime admin API client boundary for listing posts from documented authenticated management APIs while preserving injected component tests.
+3. Boundary: no direct database access, no token persistence, no live publish action, no scheduler, no repair action, no production mutation, and no live database migration execution.
+4. Verification: TDD/guard-first, admin tests, admin typecheck/build, full API tests, guards, scans, PR CI, and main CI.
 5. Alternative next work: Cloudflare Live Execution Design Boundary or Migration Repair Executable Action Design Boundary.
 
 ## Blockers

@@ -4,7 +4,7 @@
 
 ### 作用
 
-本文档说明人类管理员如何使用 CMS 后台。
+本文档说明人类管理员如何使用 CMS 后台。当前实现是 `apps/admin` 下的最小 foundation shell。
 
 ## 计划区域
 
@@ -27,3 +27,10 @@
 ## API 规则
 
 后台只使用已文档化 API，不绕过 API 权限，也不直接写数据库。
+
+## Current Foundation
+
+1. 当前 admin shell 是 `apps/admin` 下的 Vite React app。
+2. 它渲染 `Nairi Admin` workspace，并通过 injected API client boundary 加载 draft summaries。
+3. 它不执行 live writes、direct database access、token management、publication、scheduling、repair actions 或 production mutation。
+4. 后续 admin modules 仍必须只使用 documented API contracts。

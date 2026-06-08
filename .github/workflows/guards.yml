@@ -82,12 +82,17 @@ jobs:
       - name: Run frontend public RSS check
         run: python3 scripts/checks/frontend_public_rss_check.py
 
+      - name: Run frontend admin foundation check
+        run: python3 scripts/checks/frontend_admin_foundation_check.py
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
-          cache-dependency-path: apps/public-site/package-lock.json
+          cache-dependency-path: |
+            apps/public-site/package-lock.json
+            apps/admin/package-lock.json
 
       - name: Install public site dependencies
         run: npm ci --prefix apps/public-site
@@ -97,3 +102,15 @@ jobs:
 
       - name: Build public site
         run: npm run build --prefix apps/public-site
+
+      - name: Install admin dependencies
+        run: npm ci --prefix apps/admin
+
+      - name: Test admin app
+        run: npm test --prefix apps/admin -- --no-file-parallelism
+
+      - name: Typecheck admin app
+        run: npm run typecheck --prefix apps/admin
+
+      - name: Build admin app
+        run: npm run build --prefix apps/admin

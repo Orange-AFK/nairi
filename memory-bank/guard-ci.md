@@ -203,6 +203,11 @@ Nairi uses automated guards to enforce documentation boundaries, bilingual synch
 
 ## CI Design
 
+### Admin App Coverage
+
+1. Runs `scripts/checks/frontend_admin_foundation_check.py`.
+2. Runs `npm ci`, `npm test -- --no-file-parallelism`, `npm run typecheck`, and `npm run build` under `apps/admin`.
+
 ### GitHub Actions
 
 1. Workflow path: `.github/workflows/guards.yml`.
@@ -235,3 +240,10 @@ Nairi uses automated guards to enforce documentation boundaries, bilingual synch
 ## Completion Rule
 
 Any development task that affects documents, contracts, public capability, API schema, environment variables, security, source-of-truth roles, or repository safety must pass the relevant guards. A task is not complete when relevant guards fail.
+
+### Frontend Admin Foundation Check
+
+1. Script: `scripts/checks/frontend_admin_foundation_check.py`.
+2. Scope: requires the minimal `apps/admin` Vite React app files, injected `AdminApiClient` boundary, admin shell copy, component tests, and package scripts.
+3. Guardrail: the foundation app must not call `fetch` directly or reference direct database access in this boundary.
+4. CI: Guards installs admin dependencies, runs admin tests, runs admin typecheck, and builds the admin app.

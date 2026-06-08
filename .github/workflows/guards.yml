@@ -52,6 +52,9 @@ jobs:
       - name: Run executable repair tooling design check
         run: PYTHONPATH=scripts/guards python3 scripts/checks/executable_repair_tooling_design_check.py
 
+      - name: Run migration repair evidence polish check
+        run: PYTHONPATH=scripts/guards python3 scripts/checks/migration_repair_evidence_polish_check.py
+
       - name: Run frontend public detail check
         run: python3 scripts/checks/frontend_public_detail_check.py
 

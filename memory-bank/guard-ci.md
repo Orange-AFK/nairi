@@ -174,6 +174,26 @@ Nairi uses automated guards to enforce documentation boundaries, bilingual synch
 1. The check verifies design-contract anchors, not executable repair behavior.
 2. It does not implement repair tooling, create migrations, repair metadata, or authorize production database mutation.
 
+## Migration Repair Evidence Polish Check
+
+### Script
+
+1. Path: `scripts/checks/migration_repair_evidence_polish_check.py`
+2. CI status: enabled in `.github/workflows/guards.yml`.
+
+### Check Scope
+
+1. Requires `docs/migration-operator-handoff.md` and `docs/migration-operator-handoff-cn.md` to document `nairi-post-store-repair-dry-run`.
+2. Requires sample evidence bundle anchors such as `commandInvocation`, `sourceDatabasePath`, `backupArtifactPath`, `rehearsalArtifactPath`, `stdout`, `stderr`, `rehearsalJson`, `observedStopCondition`, and `operatorEscalationNote`.
+3. Requires dry-run status anchors: `analysis_ready`, `refused`, and `needs_manual_intervention`.
+4. Requires refusal-case policy codes including `missing_evidence_field`, `missing_artifact`, `path_aliasing`, `invalid_rehearsal_json`, `missing_rehearsal_json_field`, `missing_schema_migrations`, `count_mismatch`, `missing_escalation_note`, and `secret_like_evidence`.
+5. Requires `migration_name_mismatch` manual intervention and no-automatic-metadata-repair, no-production-database-mutation, and no-live-database-migration-execution boundaries.
+
+### Known Limits
+
+1. The check validates operator documentation anchors only.
+2. It does not run repair tooling, execute metadata repair, mutate databases, or authorize live database migration execution.
+
 ## Shared Guard Utilities
 
 ### Script
@@ -197,19 +217,20 @@ Nairi uses automated guards to enforce documentation boundaries, bilingual synch
 10. Runs `scripts/checks/migration_repair_workflow_check.py`.
 11. Runs `scripts/checks/migration_operator_handoff_check.py`.
 12. Runs `scripts/checks/executable_repair_tooling_design_check.py`.
-13. Runs `scripts/checks/frontend_public_detail_check.py`.
-14. Runs `scripts/checks/frontend_public_list_check.py`.
-15. Runs `scripts/checks/frontend_public_style_check.py`.
-16. Runs `scripts/checks/frontend_public_metadata_check.py`.
-17. Runs `scripts/checks/frontend_public_canonical_check.py`.
-18. Runs `scripts/checks/frontend_public_render_check.py`.
-19. Runs `scripts/checks/frontend_public_cache_check.py`.
-20. Runs `scripts/checks/frontend_public_sitemap_check.py`.
-21. Runs `scripts/checks/frontend_public_rss_check.py`.
-22. Runs `npm ci`, `npm run typecheck`, and `npm run build` under `apps/public-site`.
-23. Does not publish container images yet.
-24. Uses concurrency cancellation so superseded Guards runs on the same ref are cancelled.
-25. Forces JavaScript actions to run on Node.js 24.
+13. Runs `scripts/checks/migration_repair_evidence_polish_check.py`.
+14. Runs `scripts/checks/frontend_public_detail_check.py`.
+15. Runs `scripts/checks/frontend_public_list_check.py`.
+16. Runs `scripts/checks/frontend_public_style_check.py`.
+17. Runs `scripts/checks/frontend_public_metadata_check.py`.
+18. Runs `scripts/checks/frontend_public_canonical_check.py`.
+19. Runs `scripts/checks/frontend_public_render_check.py`.
+20. Runs `scripts/checks/frontend_public_cache_check.py`.
+21. Runs `scripts/checks/frontend_public_sitemap_check.py`.
+22. Runs `scripts/checks/frontend_public_rss_check.py`.
+23. Runs `npm ci`, `npm run typecheck`, and `npm run build` under `apps/public-site`.
+24. Does not publish container images yet.
+25. Uses concurrency cancellation so superseded Guards runs on the same ref are cancelled.
+26. Forces JavaScript actions to run on Node.js 24.
 
 ## Completion Rule
 

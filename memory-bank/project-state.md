@@ -7,8 +7,8 @@
 1. Nairi is in early alpha implementation.
 2. The implementation still follows the accepted API-first, agent-first CMS direction.
 3. Core public and management content flows exist as scaffold implementations with verified route tests and guards.
-4. The current development focus is a follow-up candidate after Local Repair Tooling Dry-Run Implementation Boundary.
-5. Local repair tooling dry-run implementation has merged into the current branch scope through `nairi-post-store-repair-dry-run` and `nairi_api.migration_repair_dry_run`; it extends the Migration Operator Handoff Docs Boundary for typed migration policy failures, preserves manual intervention, and consumes the `memory-bank/executable-repair-tooling.md` contract without mutating metadata or databases.
+4. The current development focus is a follow-up candidate after Migration Repair Operator Evidence Polish Boundary.
+5. Migration repair operator evidence polish has merged into the current branch scope through `docs/migration-operator-handoff.md`, `docs/migration-operator-handoff-cn.md`, and `scripts/checks/migration_repair_evidence_polish_check.py`; it extends the Migration Operator Handoff Docs Boundary for typed migration policy failures, documents the `nairi-post-store-repair-dry-run` sample evidence bundle and additional refusal-case documentation, and preserves manual intervention.
 
 ### Current Authority Snapshot
 
@@ -118,12 +118,12 @@
 
 ## Next Named Work
 
-### Migration Repair Operator Evidence Polish Boundary
+### Migration Repair Refusal Matrix Test Expansion Boundary
 
 1. Status: candidate next work.
-2. Scope: refine operator-facing evidence examples and checks around `nairi-post-store-repair-dry-run`, including sample evidence bundle shape and additional refusal-case documentation.
+2. Scope: add focused CLI/analyzer tests for every documented `nairi-post-store-repair-dry-run` refusal policy code and keep the operator evidence docs aligned.
 3. Boundary: preserve current API contracts and route behavior; do not introduce SQLAlchemy, Alembic, PostgreSQL, deployment changes, production database access, automatic repair, scheduling, or live database migration execution.
-4. Verification: documentation/guard contract first, focused CLI tests, full API tests, guards, scans, PR CI, and main CI.
+4. Verification: TDD first for each refusal policy code, full API tests, guards, scans, PR CI, and main CI.
 5. Alternative next work: CMS Admin Console Foundation or Cloudflare Live Execution Design Boundary.
 
 ## Blockers

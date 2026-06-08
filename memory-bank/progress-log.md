@@ -808,3 +808,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: added `aria-pressed` selected draft affordance, selected-item styling, and stable no-drafts/detail-prompt copy.
 3. Boundary: preserved the injected API client and existing detail readback only; no edit/create/publish mutation, router expansion, token persistence, or media/settings logic.
 4. Verification: RED RTL tests for selected state and empty draft list, full admin tests, admin typecheck/build, and admin foundation guard.
+
+## Admin First Edit Form Boundary
+
+1. Status: completed for first injected draft edit form contract.
+2. Scope: added `AdminPostUpdateInput`, `apiClient.updatePost(postId, input)`, editable draft title/content fields, save success/error states, and list/detail refresh after an injected update.
+3. Boundary: runtime API PATCH wiring remains deferred; no create/publish mutation, router expansion, token persistence, media/settings logic, direct fetch, or direct database access.
+4. Verification: RED RTL tests for update payload and safe update failure, stale edit response regression, focused admin tests/typecheck, and admin foundation guard.

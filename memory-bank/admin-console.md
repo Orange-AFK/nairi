@@ -111,3 +111,10 @@ The admin console must use documented API endpoints only. It must not perform di
 2. Empty draft lists now show a stable message instead of a generic unselected-preview prompt.
 3. The unselected detail panel prompt is explicit that selecting a draft loads API-backed detail.
 4. Boundary: no create/edit/publish mutation, no router expansion, no direct fetch, no token persistence, and no media/settings business logic.
+
+## Admin First Edit Form Boundary
+
+1. The `Content` module now renders a first draft edit form after draft detail readback.
+2. The form submits through injected `apiClient.updatePost(postId, input)` using `title`, `contentFormat`, `content`, and `expectedRevisionId` from the current detail revision.
+3. Successful injected updates refresh the displayed draft detail and list summary; failed updates show the safe fallback `Draft changes could not be saved.`, and stale edit responses are ignored after a newer selection
+4. Boundary: this is an injected UI contract only; runtime `createAdminApiClient` intentionally does not wire `PATCH /api/v1/posts/{post_id}` yet. No publish button, create flow, router expansion, direct fetch, token persistence, media/settings logic, or direct database access is added.

@@ -87,9 +87,10 @@
 2. `post.updated`
 3. `post.review_requested`
 4. `post.publish_requested`
-5. `post.published`
-6. `post.archived`
-7. `mdx.risk_detected`
+5. `admin.publish_request.resolve`
+6. `post.published`
+7. `post.archived`
+8. `mdx.risk_detected`
 
 ### System Events
 

@@ -74,8 +74,9 @@ class PublishReviewRequest:
     request_id: str
     post_id: str
     revision_id: str
-    status: Literal["pending"]
+    status: Literal["pending", "approved", "rejected"]
     requested_at: str
+    resolved_at: str | None = None
 
 
 @dataclass(frozen=True)
@@ -274,6 +275,24 @@ class PublishJobNotFoundError(Exception):
 
     def __init__(self, job_id: str) -> None:
         self.job_id = job_id
+
+
+class PublishReviewRequestNotFoundError(Exception):
+
+    def __init__(self, request_id: str) -> None:
+        self.request_id = request_id
+
+
+class PublishReviewRequestAlreadyResolvedError(Exception):
+
+    def __init__(self, request_id: str) -> None:
+        self.request_id = request_id
+
+
+class PublishReviewRequestConflictError(Exception):
+
+    def __init__(self, request_id: str) -> None:
+        self.request_id = request_id
 
 
 class PostStore:
@@ -572,19 +591,21 @@ class PostStore:
                 raise PostRevisionConflictError(current_revision_id)
             existing_request_row = connection.execute(
                 """
-                SELECT requested_at
+                SELECT status, requested_at
                 FROM publish_requests
                 WHERE id = ?
                 """,
                 (request_id,),
             ).fetchone()
             if existing_request_row is not None:
+                if cast(str, existing_request_row[0]) != "pending":
+                    raise PublishReviewRequestConflictError(request_id)
                 return PublishReviewRequest(
                     request_id=request_id,
                     post_id=post_id,
                     revision_id=revision_id,
                     status="pending",
-                    requested_at=cast(str, existing_request_row[0]),
+                    requested_at=cast(str, existing_request_row[1]),
                 )
             requested_at = utc_timestamp(self.clock())
             insert_cursor = connection.execute(
@@ -597,7 +618,7 @@ class PostStore:
             if insert_cursor.rowcount == 0:
                 raced_request_row = connection.execute(
                     """
-                    SELECT requested_at
+                    SELECT status, requested_at
                     FROM publish_requests
                     WHERE id = ?
                     """,
@@ -605,12 +626,14 @@ class PostStore:
                 ).fetchone()
                 if raced_request_row is None:
                     raise RuntimeError("publish request insert conflict without existing row")
+                if cast(str, raced_request_row[0]) != "pending":
+                    raise PublishReviewRequestConflictError(request_id)
                 return PublishReviewRequest(
                     request_id=request_id,
                     post_id=post_id,
                     revision_id=revision_id,
                     status="pending",
-                    requested_at=cast(str, raced_request_row[0]),
+                    requested_at=cast(str, raced_request_row[1]),
                 )
             connection.execute(
                 """
@@ -633,6 +656,67 @@ class PostStore:
                 revision_id=revision_id,
                 status="pending",
                 requested_at=requested_at,
+            )
+
+    def resolve_publish_review_request(
+        self,
+        request_id: str,
+        status: Literal["approved", "rejected"],
+        actor_token: str,
+    ) -> PublishReviewRequest:
+        resolved_at = utc_timestamp(self.clock())
+        with self._connect() as connection:
+            self._init_schema(connection)
+            row = connection.execute(
+                """
+                SELECT id, post_id, revision_id, status, requested_at, resolved_at
+                FROM publish_requests
+                WHERE id = ?
+                """,
+                (request_id,),
+            ).fetchone()
+            if row is None:
+                raise PublishReviewRequestNotFoundError(request_id)
+            if cast(str, row[3]) != "pending":
+                raise PublishReviewRequestAlreadyResolvedError(request_id)
+            post_id = cast(str, row[1])
+            revision_id = cast(str, row[2])
+            requested_at = cast(str, row[4])
+            cursor = connection.execute(
+                """
+                UPDATE publish_requests
+                SET status = ?, resolved_at = ?
+                WHERE id = ? AND status = 'pending'
+                """,
+                (status, resolved_at, request_id),
+            )
+            if cursor.rowcount != 1:
+                raise PublishReviewRequestAlreadyResolvedError(request_id)
+            connection.execute(
+                """
+                INSERT INTO audit_events (event_type, actor_type, actor_id, target_type, target_id, metadata, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    "admin.publish_request.resolve",
+                    "api_token",
+                    audit_token_actor_id(actor_token),
+                    "publish_request",
+                    request_id,
+                    json.dumps(
+                        {"postId": post_id, "revisionId": revision_id, "status": status},
+                        separators=(",", ":"),
+                    ),
+                    resolved_at,
+                ),
+            )
+            return PublishReviewRequest(
+                request_id=request_id,
+                post_id=post_id,
+                revision_id=revision_id,
+                status=status,
+                requested_at=requested_at,
+                resolved_at=resolved_at,
             )
 
     def record_public_invalidation_dispatch(
@@ -871,10 +955,14 @@ class PostStore:
                 post_id TEXT NOT NULL REFERENCES posts(id),
                 revision_id TEXT NOT NULL REFERENCES post_revisions(id),
                 status TEXT NOT NULL,
-                requested_at TEXT NOT NULL
+                requested_at TEXT NOT NULL,
+                resolved_at TEXT
             )
             """
         )
+        publish_request_columns = {cast(str, row[1]) for row in connection.execute("PRAGMA table_info(publish_requests)").fetchall()}
+        if "resolved_at" not in publish_request_columns:
+            connection.execute("ALTER TABLE publish_requests ADD COLUMN resolved_at TEXT")
         publish_job_columns = {cast(str, row[1]) for row in connection.execute("PRAGMA table_info(publish_jobs)").fetchall()}
         if "public_invalidation_surfaces" not in publish_job_columns:
             connection.execute("ALTER TABLE publish_jobs ADD COLUMN public_invalidation_surfaces TEXT NOT NULL DEFAULT '[]'")

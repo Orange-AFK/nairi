@@ -1014,3 +1014,11 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 4. Hardening: duplicate requests are idempotent through deterministic IDs and database conflict handling, failed admin request creation does not expose confirmation/publish controls, saving a new draft revision clears stale publish-review request state, and new publish-request audit rows avoid raw bearer-token storage.
 5. Verification: docs/i18n/contract/API schema/secret guards, full local check runner, admin tests, admin typecheck/build, backend post persistence tests, diff check, staged/HEAD/tight secret scans, independent review, PR Guards, main Guards, and GitHub Contents API readback passed.
 6. Next recommended named task: Publish Request Resolve Workflow Boundary.
+
+## Publish Request Resolve Workflow Boundary
+
+1. Status: implemented locally; PR verification pending.
+2. Scope: added authenticated admin resolution for pending publish-review requests through `POST /api/v1/publish-requests/{request_id}/resolve`, storing `approved` or `rejected` plus request-time `resolvedAt` on `publish_requests`.
+3. Boundary: resolution requires `admin:all`, records `admin.publish_request.resolve`, and does not mutate post status, call live publish, create `publish_jobs`, trigger public invalidation dispatch, or add admin UI/router behavior.
+4. Hardening: invalid statuses return `400 invalid_request` before side effects, unknown requests return `404 not_found`, repeat resolution returns `409 conflict` without overwriting the first decision or creating another resolve audit row, and existing SQLite stores get a guarded `resolved_at` compatibility column.
+5. Verification: focused RED/GREEN backend route tests and full backend post persistence tests passed locally; full guards/checks/admin verification remain pending before PR.

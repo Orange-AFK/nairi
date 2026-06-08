@@ -123,9 +123,9 @@
 
 ### Publish Request Resolve Workflow Boundary
 
-1. Status: next recommended narrow admin/API workflow boundary after Admin Publish Request Persistence Boundary merged and read back on `main`.
+1. Status: implemented locally; PR verification pending.
 2. Starting point: `POST /api/v1/posts/{post_id}/publish-requests`, `publish_requests` persistence, `post.publish_requested` audit event, and admin injected/runtime `requestPublishReview` wiring exist and are verified.
-3. Goal: add the smallest authenticated review/resolve workflow for pending publish requests.
+3. Goal: add the smallest authenticated review/resolve workflow for pending publish requests through `POST /api/v1/publish-requests/{request_id}/resolve`.
 4. Boundary: approval or rejection updates only the publish request review state; it must not mutate post status, call live publish, create `publish_jobs`, trigger invalidation dispatch, add deployment behavior, or bypass API scopes/audit.
 5. Alternative candidate next work: separate published-history/list module if product wants it, another narrow admin edit boundary, Executable Repair Tooling Design Boundary, or Cloudflare Live Execution Design Boundary after a high-risk audit.
 

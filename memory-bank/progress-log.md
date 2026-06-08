@@ -773,3 +773,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: added a tested runtime `createAdminApiClient` for authenticated draft-list reads via `GET /api/v1/posts?status=draft`, wired from absolute `VITE_API_BASE_URL` in `main.tsx` with an injected token provider and no bundled token, while preserving the injected `AdminApiClient` boundary in `App`.
 3. Verification: focused client tests, full admin tests, typecheck, build, and frontend admin foundation guard.
 4. Deferred: token persistence, router, create/edit/publish UI, settings, media, scheduler, browser E2E, and production mutation.
+
+## GitHub Actions Node Runtime Hygiene
+
+1. Status: current CI maintenance slice.
+2. Scope: updated Guards workflow JavaScript actions to Node-24-ready major refs: `actions/checkout@v6`, `actions/setup-python@v6`, and `actions/setup-node@v6`.
+3. Boundary: no Docker/GHCR publishing, deployment behavior, product feature work, or guard semantic changes.
+4. Reason: previous Guards runs passed but emitted a Node.js 20 deprecation annotation for older JavaScript action refs even with `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24`.

@@ -920,3 +920,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: mixed-status detail selection loading copy now uses `Loading item detail…`; draft selection loading copy remains `Loading draft detail…`.
 3. Tests: added a RED React test with a pending published-detail promise, then implemented the smallest derived loading-copy branch.
 4. Boundary: no router, refetch, published navigation, filtering, empty-list behavior, or backend/API contract changes.
+
+## Admin Published Read-Only Copy Hardening Boundary
+
+1. Status: completed for local implementation.
+2. Scope: strengthened published/non-draft read-only copy with `Draft editing and publishing controls are hidden for this content item.`
+3. Tests: extended the non-draft detail read-only regression to require the explanatory copy while preserving absence of draft workflow controls.
+4. Boundary: no router, refetch, published navigation, filtering, draft-control exposure, or backend/API contract changes.

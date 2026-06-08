@@ -471,7 +471,10 @@ export function App({ apiClient }: AppProps) {
                       ) : null}
                     </form>
                   ) : (
-                    <p>Published detail is read-only in the draft review workflow.</p>
+                    <>
+                      <p>Published detail is read-only in the draft review workflow.</p>
+                      <p>Draft editing and publishing controls are hidden for this content item.</p>
+                    </>
                   )
                 ) : null}
                 {publishActionStatus ? (

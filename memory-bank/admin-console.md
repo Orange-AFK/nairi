@@ -209,3 +209,9 @@ The admin console must use documented API endpoints only. It must not perform di
 1. Draft selections continue to show `Loading draft detail…` while detail readback is pending.
 2. Non-draft selections now show `Loading item detail…` while detail readback is pending, avoiding draft-only copy for published content items.
 3. Boundary: this is loading-copy semantics only; no empty-list behavior, router, live refetch, published-list navigation, archive/history UI, filtering, or backend/API contract changes are added.
+
+## Admin Published Read-Only Copy Hardening Boundary
+
+1. Published/non-draft detail remains read-only in the draft review workflow.
+2. The read-only detail copy now explicitly says `Draft editing and publishing controls are hidden for this content item.` so hidden controls are explained without adding actions.
+3. Boundary: copy and regression coverage only; no router, live refetch, published-list navigation, archive/history UI, filtering, draft-control exposure, or backend/API contract changes.

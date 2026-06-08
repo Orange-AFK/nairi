@@ -174,6 +174,102 @@ describe("Nairi admin console shell", () => {
     expect(screen.queryByRole("link", { name: /Published/i })).not.toBeInTheDocument();
   });
 
+  it("keeps draft loading copy for pending draft detail selections", async () => {
+    const user = userEvent.setup();
+    let resolveDraftDetail: (detail: AdminPostDetail) => void = () => {};
+    const draftDetail = new Promise<AdminPostDetail>((resolve) => {
+      resolveDraftDetail = resolve;
+    });
+
+    render(
+      <App
+        apiClient={adminApiClient({
+          async getPost(postId: string) {
+            if (postId === "post-1") {
+              return draftDetail;
+            }
+            return adminApiClient().getPost(postId);
+          }
+        })}
+      />
+    );
+
+    await user.click(await screen.findByRole("button", { name: /First draft/ }));
+
+    expect(screen.getByText("Loading draft detail…")).toBeInTheDocument();
+    expect(screen.queryByText("Loading item detail…")).not.toBeInTheDocument();
+
+    await act(async () => {
+      resolveDraftDetail({
+        id: "post-1",
+        title: "First draft",
+        slug: "first-draft",
+        status: "draft",
+        contentFormat: "markdown",
+        content: "# First draft\n\nDraft body.",
+        revisionId: "revision-post-1-1",
+        updatedAt: "2026-06-08T00:00:00Z"
+      });
+    });
+  });
+
+  it("uses item loading copy for mixed-status detail selections", async () => {
+    const user = userEvent.setup();
+    let resolvePublishedDetail: (detail: AdminPostDetail) => void = () => {};
+    const publishedDetail = new Promise<AdminPostDetail>((resolve) => {
+      resolvePublishedDetail = resolve;
+    });
+
+    render(
+      <App
+        apiClient={adminApiClient({
+          async listPosts() {
+            return [
+              {
+                id: "post-1",
+                title: "First draft",
+                slug: "first-draft",
+                status: "draft",
+                updatedAt: "2026-06-08T00:00:00Z"
+              },
+              {
+                id: "post-2",
+                title: "Published field note",
+                slug: "published-field-note",
+                status: "published",
+                updatedAt: "2026-06-08T00:10:00Z"
+              }
+            ];
+          },
+          async getPost(postId: string) {
+            if (postId === "post-2") {
+              return publishedDetail;
+            }
+            return adminApiClient().getPost(postId);
+          }
+        })}
+      />
+    );
+
+    await user.click(await screen.findByRole("button", { name: /Published field note/ }));
+
+    expect(screen.getByText("Loading item detail…")).toBeInTheDocument();
+    expect(screen.queryByText("Loading draft detail…")).not.toBeInTheDocument();
+
+    await act(async () => {
+      resolvePublishedDetail({
+        id: "post-2",
+        title: "Published field note",
+        slug: "published-field-note",
+        status: "published",
+        contentFormat: "markdown",
+        content: "# Published field note\n\nPublished body.",
+        revisionId: "revision-post-2-published",
+        updatedAt: "2026-06-08T00:10:00Z"
+      });
+    });
+  });
+
   it("selects a post and reads draft detail through the injected API boundary", async () => {
     const user = userEvent.setup();
     const getPost = vi.fn(async (postId: string): Promise<AdminPostDetail> => ({

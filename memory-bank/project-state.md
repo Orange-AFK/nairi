@@ -7,7 +7,7 @@
 1. Nairi is in early alpha implementation.
 2. The implementation still follows the accepted API-first, agent-first CMS direction.
 3. Core public and management content flows exist as scaffold implementations with verified route tests and guards.
-4. The current development focus is the Admin List Status Label Boundary after the Admin Published Detail Label Boundary.
+4. The current development focus is the Admin Mixed-Status Detail Loading Copy Boundary after the Admin List Status Label Boundary.
 5. CMS admin console foundation has merged into the current branch scope through `apps/admin`, a Vite React shell, injected API-client tests, a runtime `createAdminApiClient` draft-list boundary, a frontend admin structural guard, and Guards CI admin test/typecheck/build coverage; it follows the Migration Operator Handoff Docs Boundary for typed migration policy failures and preserves manual intervention for migration repair workflows.
 
 ### Current Authority Snapshot

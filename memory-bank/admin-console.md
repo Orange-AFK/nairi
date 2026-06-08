@@ -203,3 +203,9 @@ The admin console must use documented API endpoints only. It must not perform di
 1. The admin content list label remains `Drafts` when every loaded summary is a draft.
 2. If a mixed-status list is injected, the label changes to `Content items` so published entries are not presented under a draft-only heading.
 3. Boundary: this is copy/semantics only; no router, live refetch, published-list navigation, archive/history UI, filtering, or backend/API contract changes are added.
+
+## Admin Mixed-Status Detail Loading Copy Boundary
+
+1. Draft selections continue to show `Loading draft detail…` while detail readback is pending.
+2. Non-draft selections now show `Loading item detail…` while detail readback is pending, avoiding draft-only copy for published content items.
+3. Boundary: this is loading-copy semantics only; no empty-list behavior, router, live refetch, published-list navigation, archive/history UI, filtering, or backend/API contract changes are added.

@@ -30,7 +30,8 @@ If local Chinese `memory-bank/*-cn.md` files exist, update them together with th
 8. `frontend-design.md`: public frontend behavior, rendering, SEO, RSS/sitemap, and public cache policy.
 9. `integration-map.md`: allowed integration paths and duplicate capability prevention.
 10. `guard-ci.md`: guard and CI behavior, document synchronization rules, and executable check coverage.
-11. Review files such as `project-review.md` are historical audit artifacts, not normal active sources of truth.
+11. `project-audit.md`: project-health audit cadence, triggers, finding taxonomy, report locations, and remediation rules.
+12. Review files such as `project-review.md` and dated audit reports are historical audit artifacts, not normal active sources of truth.
 
 ## Documentation Boundaries
 
@@ -81,7 +82,8 @@ Development memory for maintainers and agents.
 14. Contract index
 15. Integration map
 16. Guard and CI design
-17. Historical review artifacts created by explicit review tasks
+17. Project-health audit cadence and finding taxonomy
+18. Historical review artifacts created by explicit review tasks
 
 ### Git Rule
 
@@ -222,7 +224,16 @@ If the roadmap mentions a feature, the progress log, decisions, and design docum
 6. Every changed line must map to the current named task.
 7. Run verification that proves the task.
 8. Update all affected documents.
-9. Stop after the named task is complete.
+9. Check `memory-bank/project-audit.md` before continuing feature work. If an audit trigger is active, perform the appropriate audit or complete the active audit-remediation queue before starting another feature task.
+10. Stop after the named task is complete.
+
+## Project Health Audit Rule
+
+1. `memory-bank/project-audit.md` defines Nairi's lightweight, phase-transition, and high-risk mandatory audit triggers.
+2. Audit findings must use the taxonomy in `project-audit.md`: blocker, drift risk, docs sync debt, guard gap, or accepted future work.
+3. Blockers and drift risks stop feature work until remediated or explicitly approved by the owner.
+4. Audit reports are evidence; active rules and corrected state must be migrated into the relevant source-of-truth document.
+5. Do not hide audit remediation inside unrelated feature work. Prefer small docs-only or guard-only remediation tasks when behavior is already correct.
 
 ## Security Rule
 

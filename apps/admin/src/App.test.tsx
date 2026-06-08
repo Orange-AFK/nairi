@@ -37,6 +37,10 @@ function adminApiClient(overrides: Partial<AdminApiClient> = {}): AdminApiClient
         categoryId: "dispatches",
         seriesId: "field-journal",
         tags: ["draft", "release-notes"],
+        metadata: {
+          audience: "operators",
+          priority: 2
+        },
         status: "draft",
         contentFormat: "markdown",
         content: "# First draft\n\nDraft body from the management API.",
@@ -427,6 +431,7 @@ describe("Nairi admin console shell", () => {
       categoryId: input.categoryId,
       seriesId: input.seriesId,
       tags: input.tags,
+      metadata: input.metadata,
       status: "draft",
       contentFormat: input.contentFormat,
       content: input.content,
@@ -444,12 +449,14 @@ describe("Nairi admin console shell", () => {
     const categoryField = screen.getByLabelText("Draft category ID");
     const seriesField = screen.getByLabelText("Draft series ID");
     const tagsField = screen.getByLabelText("Draft tags");
+    const metadataField = screen.getByLabelText("Draft metadata JSON");
     const contentField = screen.getByLabelText("Draft content");
     expect(slugField).toHaveValue("first-draft");
     expect(summaryField).toHaveValue("First draft summary.");
     expect(categoryField).toHaveValue("dispatches");
     expect(seriesField).toHaveValue("field-journal");
     expect(tagsField).toHaveValue("draft, release-notes");
+    expect(metadataField).toHaveValue(JSON.stringify({ audience: "operators", priority: 2 }, null, 2));
     await user.clear(titleField);
     await user.type(titleField, "Updated draft title");
     await user.clear(slugField);
@@ -462,6 +469,9 @@ describe("Nairi admin console shell", () => {
     await user.type(seriesField, "monthly-field-journal");
     await user.clear(tagsField);
     await user.type(tagsField, "updated, release-notes, updated");
+    await user.clear(metadataField);
+    await user.click(metadataField);
+    await user.paste('{"audience":"maintainers","priority":3}');
     await user.clear(contentField);
     await user.type(contentField, "Updated draft body from the admin form.");
     await user.click(screen.getByRole("button", { name: "Save draft changes" }));
@@ -473,6 +483,10 @@ describe("Nairi admin console shell", () => {
       categoryId: "field-notes",
       seriesId: "monthly-field-journal",
       tags: ["updated", "release-notes"],
+      metadata: {
+        audience: "maintainers",
+        priority: 3
+      },
       contentFormat: "markdown",
       content: "Updated draft body from the admin form.",
       expectedRevisionId: "revision-post-1-1"
@@ -491,6 +505,7 @@ describe("Nairi admin console shell", () => {
       categoryId: input.categoryId,
       seriesId: input.seriesId,
       tags: input.tags,
+      metadata: input.metadata,
       status: "draft",
       contentFormat: input.contentFormat,
       content: input.content,
@@ -585,6 +600,7 @@ describe("Nairi admin console shell", () => {
       categoryId: input.categoryId,
       seriesId: input.seriesId,
       tags: input.tags,
+      metadata: input.metadata,
       status: "draft",
       contentFormat: input.contentFormat,
       content: input.content,
@@ -894,6 +910,7 @@ describe("Nairi admin console shell", () => {
       categoryId: input.categoryId,
       seriesId: input.seriesId,
       tags: input.tags,
+      metadata: input.metadata,
       status: "draft",
       contentFormat: input.contentFormat,
       content: input.content,
@@ -925,6 +942,7 @@ describe("Nairi admin console shell", () => {
       categoryId: input.categoryId,
       seriesId: input.seriesId,
       tags: input.tags,
+      metadata: input.metadata,
       status: "draft",
       contentFormat: input.contentFormat,
       content: input.content,
@@ -957,6 +975,7 @@ describe("Nairi admin console shell", () => {
       categoryId: input.categoryId,
       seriesId: input.seriesId,
       tags: input.tags,
+      metadata: input.metadata,
       status: "draft",
       contentFormat: input.contentFormat,
       content: input.content,
@@ -989,6 +1008,7 @@ describe("Nairi admin console shell", () => {
       categoryId: input.categoryId,
       seriesId: input.seriesId,
       tags: input.tags,
+      metadata: input.metadata,
       status: "draft",
       contentFormat: input.contentFormat,
       content: input.content,
@@ -1009,6 +1029,71 @@ describe("Nairi admin console shell", () => {
       "post-1",
       expect.objectContaining({ tags: [] })
     );
+  });
+
+  it("normalizes blank draft metadata JSON to an empty object before update", async () => {
+    const user = userEvent.setup();
+    const updatePost = vi.fn(async (_postId: string, input: AdminPostUpdateInput): Promise<AdminPostDetail> => ({
+      id: "post-1",
+      title: input.title,
+      slug: input.slug,
+      summary: input.summary,
+      categoryId: input.categoryId,
+      seriesId: input.seriesId,
+      tags: input.tags,
+      metadata: input.metadata,
+      status: "draft",
+      contentFormat: input.contentFormat,
+      content: input.content,
+      revisionId: "revision-post-1-2",
+      updatedAt: "2026-06-08T00:02:00Z"
+    }));
+    render(<App apiClient={adminApiClient({ updatePost })} />);
+
+    await user.click(await screen.findByRole("button", { name: /First draft/ }));
+    await screen.findByText("revision-post-1-1");
+
+    const metadataField = screen.getByLabelText("Draft metadata JSON");
+    await user.clear(metadataField);
+    await user.type(metadataField, "   ");
+    await user.click(screen.getByRole("button", { name: "Save draft changes" }));
+
+    expect(updatePost).toHaveBeenCalledWith(
+      "post-1",
+      expect.objectContaining({ metadata: {} })
+    );
+  });
+
+  it("rejects non-object draft metadata JSON without calling update", async () => {
+    const user = userEvent.setup();
+    const updatePost = vi.fn(async (_postId: string, input: AdminPostUpdateInput): Promise<AdminPostDetail> => ({
+      id: "post-1",
+      title: input.title,
+      slug: input.slug,
+      summary: input.summary,
+      categoryId: input.categoryId,
+      seriesId: input.seriesId,
+      tags: input.tags,
+      metadata: input.metadata,
+      status: "draft",
+      contentFormat: input.contentFormat,
+      content: input.content,
+      revisionId: "revision-post-1-2",
+      updatedAt: "2026-06-08T00:02:00Z"
+    }));
+    render(<App apiClient={adminApiClient({ updatePost })} />);
+
+    await user.click(await screen.findByRole("button", { name: /First draft/ }));
+    await screen.findByText("revision-post-1-1");
+
+    const metadataField = screen.getByLabelText("Draft metadata JSON");
+    await user.clear(metadataField);
+    await user.click(metadataField);
+    await user.paste("[]");
+    await user.click(screen.getByRole("button", { name: "Save draft changes" }));
+
+    expect(updatePost).not.toHaveBeenCalled();
+    expect(await screen.findByText("Draft changes could not be saved.")).toBeInTheDocument();
   });
 
   it("ignores stale draft edit responses after a newer selection", async () => {

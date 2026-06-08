@@ -7,7 +7,7 @@
 1. Nairi is in early alpha implementation.
 2. The implementation still follows the accepted API-first, agent-first CMS direction.
 3. Core public and management content flows exist as scaffold implementations with verified route tests and guards.
-4. The current development focus is post-merge source-of-truth closeout after Admin Edit Metadata JSON Field Boundary merged and passed main readback.
+4. The current development focus is post-merge source-of-truth closeout after Admin Published History List Boundary merged and passed main readback.
 5. CMS admin console work has advanced beyond the foundation shell into the runtime API client boundary through draft list/detail, draft update, publish-review staging, publish confirmation, injected `publishPost` wiring, post-publish list/read-only behavior, separate published-history list readback, mixed-status copy, publish-review status scoping coverage, and explicit hash routing; it follows the Migration Operator Handoff Docs Boundary for typed migration policy failures, remains bounded to authenticated API contracts, and preserves manual intervention for migration repair workflows.
 
 ### Current Authority Snapshot
@@ -127,7 +127,13 @@
 2. Starting point: `POST /api/v1/posts/{post_id}/publish-requests`, `publish_requests` persistence, `post.publish_requested` audit event, and admin injected/runtime `requestPublishReview` wiring exist and are verified.
 3. Completed scope: `POST /api/v1/publish-requests/{request_id}/resolve` resolves pending publish requests to `approved` or `rejected`, stores request-time `resolvedAt`, records `admin.publish_request.resolve`, and preserves the no-publish side-effect boundary.
 4. Boundary: approval or rejection updates only the publish request review state; it does not mutate post status, call live publish, create `publish_jobs`, trigger invalidation dispatch, add deployment behavior, or bypass API scopes/audit.
-5. Candidate next work: another narrow admin edit boundary, Executable Repair Tooling Design Boundary, or Cloudflare Live Execution Design Boundary after a high-risk audit.
+
+### Admin Published History List Boundary
+
+1. Status: completed, merged, and read back on `main`.
+2. Completed scope: admin runtime client now exposes a separate injected `listPublishedPosts()` request backed by authenticated `GET /api/v1/posts?status=published`, and the Content workspace renders a dedicated read-only Published history list beside the draft review list.
+3. Boundary: no backend route change, no public API change, no publish workflow state-machine change, no filters/pagination UI, no router expansion, no token storage, no direct database access, and no live external side effects.
+4. Candidate next work: another narrow admin edit boundary, Executable Repair Tooling Design Boundary, or Cloudflare Live Execution Design Boundary after a high-risk audit.
 
 ## Blockers
 

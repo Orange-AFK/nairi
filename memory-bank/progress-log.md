@@ -1026,7 +1026,9 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 
 ## Admin Published History List Boundary
 
-1. Status: implemented locally; PR verification pending.
+1. Status: completed and merged.
 2. Scope: added a separate injected admin `listPublishedPosts()` client path backed by authenticated `GET /api/v1/posts?status=published`, and rendered a dedicated Published history list beside the existing draft review list.
 3. Boundary: admin UI read-only published-history list only; no new backend route, no public API change, no publish workflow change, no filters/pagination UI, no router expansion, no token storage, no direct database access, and no live external side effects.
-4. Verification: focused RED/GREEN admin component and runtime client tests passed locally; full guards/checks/admin verification remain pending before PR.
+4. Hardening: independent review found stale local published-history state after publishing a draft and stale guard documentation; both were fixed before PR by moving newly published summaries into Published history and documenting both draft and published management list endpoints in guard docs.
+5. Verification: focused RED/GREEN admin component and runtime client tests, docs/i18n/contract/API schema/secret guards, full local check runner, admin tests, admin typecheck/build, diff check, staged/tight secret scans, independent re-review, PR Guards, main Guards, and GitHub Contents API readback passed.
+6. Next recommended named task: another narrow admin edit boundary, Executable Repair Tooling Design Boundary, or Cloudflare Live Execution Design Boundary after a high-risk audit.

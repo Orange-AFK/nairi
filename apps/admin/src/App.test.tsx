@@ -8,7 +8,9 @@ import {
   type AdminPostDetail,
   type AdminPostPublishInput,
   type AdminPostPublishResult,
-  type AdminPostUpdateInput
+  type AdminPostUpdateInput,
+  type AdminPublishReviewRequestInput,
+  type AdminPublishReviewRequestResult
 } from "./App";
 
 afterEach(() => {
@@ -87,6 +89,15 @@ function adminApiClient(overrides: Partial<AdminApiClient> = {}): AdminApiClient
             attemptedAt: null
           }
         }
+      };
+    },
+    async requestPublishReview(postId: string, input: AdminPublishReviewRequestInput) {
+      return {
+        requestId: `publish-request-${postId}-${input.revisionId}`,
+        postId,
+        revisionId: input.revisionId,
+        status: "pending",
+        requestedAt: "2026-06-08T00:06:00Z"
       };
     },
     ...overrides
@@ -495,7 +506,58 @@ describe("Nairi admin console shell", () => {
     expect(screen.getByText("revision-post-1-2")).toBeInTheDocument();
   });
 
-  it("stages a publish review request without calling a publish mutation", async () => {
+  it("persists a publish review request through the injected request contract without publishing", async () => {
+    const user = userEvent.setup();
+    const updatePost = vi.fn();
+    const publishPost = vi.fn();
+    const requestPublishReview = vi.fn(
+      async (postId: string, input: AdminPublishReviewRequestInput): Promise<AdminPublishReviewRequestResult> => ({
+        requestId: `publish-request-${postId}-${input.revisionId}`,
+        postId,
+        revisionId: input.revisionId,
+        status: "pending",
+        requestedAt: "2026-06-08T00:06:00Z"
+      })
+    );
+    render(<App apiClient={adminApiClient({ updatePost, publishPost, requestPublishReview })} />);
+
+    await user.click(await screen.findByRole("button", { name: /First draft/ }));
+    await screen.findByText("revision-post-1-1");
+
+    await user.click(screen.getByRole("button", { name: "Request publish review" }));
+
+    expect(requestPublishReview).toHaveBeenCalledWith("post-1", { revisionId: "revision-post-1-1" });
+    expect(updatePost).not.toHaveBeenCalled();
+    expect(publishPost).not.toHaveBeenCalled();
+    expect(screen.getByRole("status", { name: "Publish review request status" })).toHaveTextContent(
+      "Publish review request publish-request-post-1-revision-post-1-1 is pending for revision revision-post-1-1."
+    );
+    expect(screen.queryByRole("button", { name: /^publish$/i })).not.toBeInTheDocument();
+  });
+
+  it("hides publish confirmation controls when publish review request creation fails", async () => {
+    const user = userEvent.setup();
+    const publishPost = vi.fn();
+    const requestPublishReview = vi.fn(async () => {
+      throw new Error("request failed");
+    });
+    render(<App apiClient={adminApiClient({ publishPost, requestPublishReview })} />);
+
+    await user.click(await screen.findByRole("button", { name: /First draft/ }));
+    await screen.findByText("revision-post-1-1");
+
+    await user.click(screen.getByRole("button", { name: "Request publish review" }));
+
+    expect(await screen.findByRole("status", { name: "Publish review request status" })).toHaveTextContent(
+      "Publish review request could not be created."
+    );
+    expect(screen.queryByText("Publish confirmation contract")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Confirm publication intent" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Publish confirmed draft" })).not.toBeInTheDocument();
+    expect(publishPost).not.toHaveBeenCalled();
+  });
+
+  it("clears a persisted publish review request after saving a new draft revision", async () => {
     const user = userEvent.setup();
     const updatePost = vi.fn(async (_postId: string, input: AdminPostUpdateInput): Promise<AdminPostDetail> => ({
       id: "post-1",
@@ -516,14 +578,15 @@ describe("Nairi admin console shell", () => {
 
     await user.click(await screen.findByRole("button", { name: /First draft/ }));
     await screen.findByText("revision-post-1-1");
-
     await user.click(screen.getByRole("button", { name: "Request publish review" }));
+    expect(screen.getByText("Publish confirmation contract")).toBeInTheDocument();
 
-    expect(updatePost).not.toHaveBeenCalled();
-    expect(screen.getByRole("status", { name: "Publish review request status" })).toHaveTextContent(
-      "Publish review request staged for revision revision-post-1-1."
-    );
-    expect(screen.queryByRole("button", { name: /^publish$/i })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Save draft changes" }));
+
+    expect(await screen.findByText("Draft changes saved.")).toBeInTheDocument();
+    expect(screen.queryByText("Publish confirmation contract")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Confirm publication intent" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Publish confirmed draft" })).not.toBeInTheDocument();
   });
 
   it("clears staged publish review status when selecting another draft", async () => {
@@ -573,7 +636,7 @@ describe("Nairi admin console shell", () => {
     await user.click(screen.getByRole("button", { name: "Request publish review" }));
 
     expect(screen.getByRole("status", { name: "Publish review request status" })).toHaveTextContent(
-      "Publish review request staged for revision revision-post-1-1."
+      "Publish review request publish-request-post-1-revision-post-1-1 is pending for revision revision-post-1-1."
     );
     await user.click(screen.getByRole("button", { name: "Confirm publication intent" }));
     expect(screen.getByRole("status", { name: "Publish confirmation intent status" })).toHaveTextContent(

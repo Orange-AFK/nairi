@@ -54,6 +54,8 @@ Every product module integrates through documented API capabilities unless expli
 
 All clients use the same publishing capability: `POST /api/v1/posts/{post_id}/publish`.
 
+All clients use the same publish-review request capability: `POST /api/v1/posts/{post_id}/publish-requests`.
+
 Parallel publish endpoints are forbidden unless a future versioned contract explicitly replaces this capability.
 
 ## Permission Boundary

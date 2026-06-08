@@ -860,10 +860,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 
 ## Admin Publish Request Review Boundary
 
-1. Status: completed for the first non-executing admin publish review request affordance.
-2. Scope: added a `Request publish review` button to the loaded draft detail form and a local status message tied to the current `revisionId`.
-3. Boundary: the button does not call `updatePost`, does not expose a live publish API client method, does not mutate post status, and does not call `POST /api/v1/posts/{post_id}/publish`.
-4. Verification: RED RTL test for the missing review-request button, focused admin tests/typecheck, and admin foundation guard.
+1. Status: superseded by the persisted publish review request boundary.
+2. Scope: the original local `Request publish review` affordance has been replaced by an injected request contract and runtime client call to `POST /api/v1/posts/{post_id}/publish-requests`.
+3. Boundary: the request path does not call `updatePost`, does not call `POST /api/v1/posts/{post_id}/publish`, does not mutate post status, does not create `publish_jobs`, and does not trigger invalidation dispatch.
+4. Verification: RED backend/API and admin client tests first failed on missing persistence/request wiring, then focused admin tests/typecheck, backend persistence tests, and admin foundation guard passed locally.
 
 ## Admin Publish Confirmation Contract Boundary
 

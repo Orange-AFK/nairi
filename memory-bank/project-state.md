@@ -36,10 +36,11 @@
 
 ### Content Draft and Publishing
 
-1. SQLite-backed scaffold persistence uses `PostStore` for posts, revisions, audit events, and publish jobs.
+1. SQLite-backed scaffold persistence uses `PostStore` for posts, revisions, audit events, publish jobs, and publish review requests.
 2. Authenticated draft create, read, list, update, duplicate slug handling, update conflict handling, validation, request-time timestamps, and immutable revisions exist.
-3. Authenticated publish requests perform the first immediate publish transition, preserve current revision, record `post.published`, and create durable publish-job bookkeeping.
-4. Authenticated published read/list/filter/pagination exists through management routes with `posts:read` scope.
+3. Authenticated publish-review requests persist pending human review intent with `post.publish_requested` audit rows while leaving draft status unchanged.
+4. Authenticated publish requests perform the first immediate publish transition, preserve current revision, record `post.published`, and create durable publish-job bookkeeping.
+5. Authenticated published read/list/filter/pagination exists through management routes with `posts:read` scope.
 
 ### Public Content API
 
@@ -99,9 +100,9 @@
 
 ### Admin Console
 
-1. CMS admin console foundation exists under `apps/admin` as a minimal Vite React shell with runtime API client wiring for list, detail, update, and publish actions.
+1. CMS admin console foundation exists under `apps/admin` as a minimal Vite React shell with runtime API client wiring for list, detail, update, publish-review request, and publish actions.
 2. Admin must use authenticated API contracts and must not write directly to the database.
-3. Current shell uses an injected API client in tests, has a confirmed publish action through the injected `publishPost` contract, and has explicit client-side hash routing for admin modules and selected content detail; it still has no token storage, routing library, scheduler, direct database writes, production mutation outside documented APIs, or live database migration execution.
+3. Current shell uses an injected API client in tests, has a persisted publish-review request through `requestPublishReview`, has a confirmed publish action through the injected `publishPost` contract, and has explicit client-side hash routing for admin modules and selected content detail; it still has no token storage, routing library, scheduler, direct database writes, production mutation outside documented APIs, or live database migration execution.
 
 ### Agent and MCP
 
@@ -120,13 +121,13 @@
 
 ## Next Named Work
 
-### Admin Edit Metadata JSON Field Boundary
+### Admin Publish Request Persistence Boundary
 
-1. Status: merged into `main` as PR #102 and passed main readback.
-2. Scope: added one editable metadata JSON field to the React admin draft edit form and runtime update payload while preserving authenticated API-contract access and existing injected-client behavior.
-3. Boundary: admin edit metadata UI and update payload only; no metadata validation beyond safe JSON parsing, taxonomy selectors, create flow, publish behavior changes, token storage, routing library, direct database writes, production mutation outside documented APIs, scheduler behavior, live migration execution, public API changes, or deployment changes.
-4. Verification: focused RED/GREEN admin component and runtime client tests, full admin tests, admin typecheck/build, frontend admin structural check, docs/i18n/contract/API schema/secret guards, full local check runner, diff check, secret-shaped scans, independent review, PR Guards, main Guards, and GitHub contents readback passed.
-5. Alternative next work: publish-request persistence when selected, separate published-history/list module if product wants it, another narrow admin edit boundary, Executable Repair Tooling Design Boundary candidate next work, or Cloudflare Live Execution Design Boundary after a high-risk audit.
+1. Status: in local verification on branch `feat/admin-publish-review-request-persistence`.
+2. Scope: adds a durable `POST /api/v1/posts/{post_id}/publish-requests` API, `publish_requests` persistence, `post.publish_requested` audit event, and admin injected/runtime `requestPublishReview` wiring.
+3. Boundary: request-review creation uses `posts:publish` but does not mutate post status, does not call live publish, does not create `publish_jobs`, does not trigger invalidation dispatch, and does not add router/login/token persistence/direct database writes.
+4. Verification so far: focused backend persistence tests, admin component/client tests, admin typecheck, and frontend admin structural guard pass locally; full guard/review/PR/CI/readback remains in progress.
+5. Alternative next work after merge: publish-request review/resolve workflow, separate published-history/list module if product wants it, another narrow admin edit boundary, Executable Repair Tooling Design Boundary candidate next work, or Cloudflare Live Execution Design Boundary after a high-risk audit.
 
 ## Blockers
 

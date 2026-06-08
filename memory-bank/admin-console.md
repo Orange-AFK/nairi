@@ -163,13 +163,13 @@ The admin console must use documented API endpoints only. It must not perform di
 
 ## Admin Publish Request Review Boundary
 
-1. The draft detail form now exposes a non-executing `Request publish review` button after `Save draft changes`.
-2. Clicking it stages a local review status for the current `revisionId` without calling `updatePost`, without introducing a runtime publish API client method, and without changing the post status.
-3. Boundary: this is a human-review UI affordance only; no `POST /api/v1/posts/{post_id}/publish` call, publish mutation, job creation, invalidation dispatch, router expansion, login UI, token persistence, direct fetch, or direct database access is added.
+1. The draft detail form exposes `Request publish review` after `Save draft changes` and calls the injected `apiClient.requestPublishReview(postId, { revisionId })` contract.
+2. Runtime `createAdminApiClient.requestPublishReview(postId, input)` calls authenticated `POST /api/v1/posts/{post_id}/publish-requests`, maps `requestId`, `postId`, `revisionId`, `status`, and `requestedAt`, and fails through the safe admin request error path.
+3. Boundary: this persists review-request intent only; no `updatePost`, no `POST /api/v1/posts/{post_id}/publish`, no publish mutation, no `publish_jobs` creation, no invalidation dispatch, no router expansion, no login UI, no token persistence, no direct App fetch, and no direct database access is added.
 
 ## Admin Publish Confirmation Contract Boundary
 
-1. After a local `Request publish review`, the draft detail form now exposes a `Publish confirmation contract` panel for the current `revisionId`.
+1. After a pending `Request publish review` response for the current revision, the draft detail form exposes a `Publish confirmation contract` panel for the current `revisionId`.
 2. `Confirm publication intent` records a local confirmation status for that revision without calling `updatePost`, without introducing a runtime publish API client method, and without changing the post status.
 3. Boundary: this is a confirmation-intent contract only; no `POST /api/v1/posts/{post_id}/publish` call, publish mutation, publish job creation, invalidation dispatch, router expansion, login UI, token persistence, direct fetch, or direct database access is added.
 

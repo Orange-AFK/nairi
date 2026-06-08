@@ -16,6 +16,7 @@ from nairi_api.posts import (
     PostRevisionConflictError,
     PostStore,
     PublishedPost,
+    PublishReviewRequest,
     StoredPostDraft,
     UpdatedPostDraft,
 )
@@ -55,6 +56,18 @@ class PublishPostRequest(BaseModel):
     revision_id: str = Field(alias="revisionId")
     publish_mode: Literal["immediate", "scheduled"] = Field(alias="publishMode")
     scheduled_at: str | None = Field(default=None, alias="scheduledAt")
+
+
+class CreatePublishReviewRequest(BaseModel):
+    revision_id: str = Field(alias="revisionId")
+
+
+class CreatePublishReviewRequestResponse(BaseModel):
+    request_id: str = Field(alias="requestId")
+    post_id: str = Field(alias="postId")
+    revision_id: str = Field(alias="revisionId")
+    status: Literal["pending"]
+    requested_at: str = Field(alias="requestedAt")
 
 
 class PublicInvalidationExecutionResponse(BaseModel):
@@ -432,6 +445,35 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return ReadPublishedPostResponse(
             **published_post_summary_response(published_post).model_dump(by_alias=True),
             content=published_post.content,
+        )
+
+    @app.post("/api/v1/posts/{post_id}/publish-requests", status_code=201)
+    def create_publish_review_request(
+        post_id: str,
+        request: CreatePublishReviewRequest,
+        actor: AuthenticatedActor = Depends(require_scope("posts:publish")),
+    ) -> CreatePublishReviewRequestResponse:
+        try:
+            publish_request: PublishReviewRequest = app.state.post_store.request_publish_review(
+                post_id,
+                request.revision_id,
+                actor.token,
+            )
+        except PostDraftNotFoundError as error:
+            raise ApiError(404, "not_found", "Post not found", {"postId": error.post_id}) from error
+        except PostRevisionConflictError as error:
+            raise ApiError(
+                409,
+                "conflict",
+                "Post revision conflict",
+                {"currentRevisionId": error.current_revision_id},
+            ) from error
+        return CreatePublishReviewRequestResponse(
+            requestId=publish_request.request_id,
+            postId=publish_request.post_id,
+            revisionId=publish_request.revision_id,
+            status=publish_request.status,
+            requestedAt=publish_request.requested_at,
         )
 
     @app.post("/api/v1/posts/{post_id}/publish")

@@ -9,6 +9,7 @@ from nairi_api.config import Settings
 from nairi_api.invalidation_dispatch import PublicInvalidationDispatchResult
 from nairi_api.main import create_app
 from nairi_api.posts import (
+    audit_token_actor_id,
     PostDraftInput,
     PostStore,
     PostStoreMigration,
@@ -752,6 +753,177 @@ def test_publish_post_draft_transitions_to_published_and_records_audit(tmp_path:
             "2026-06-07T08:11:12Z",
         ),
     ]
+
+
+def test_request_publish_review_persists_pending_request_without_publishing(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    settings = Settings(
+        api_tokens={
+            "post-writer-token": ["posts:write"],
+            "post-reader-token": ["posts:read"],
+            "post-publisher-token": ["posts:publish"],
+        },
+        database_path=str(database_path),
+    )
+    app = create_app(settings=settings)
+    app.state.post_store = PostStore(
+        str(database_path),
+        clock=lambda: datetime(2026, 6, 7, 8, 11, 12, tzinfo=UTC),
+    )
+    client = TestClient(app)
+    create_response = client.post(
+        "/api/v1/posts",
+        json=draft_payload(),
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+    post_id = create_response.json()["postId"]
+    revision_id = create_response.json()["revisionId"]
+
+    response = client.post(
+        f"/api/v1/posts/{post_id}/publish-requests",
+        json={"revisionId": revision_id},
+        headers={"Authorization": "Bearer post-publisher-token"},
+    )
+
+    assert response.status_code == 201
+    assert response.json() == {
+        "requestId": f"publish-request-{post_id}-{revision_id}",
+        "postId": post_id,
+        "revisionId": revision_id,
+        "status": "pending",
+        "requestedAt": "2026-06-07T08:11:12Z",
+    }
+    read_response = client.get(
+        f"/api/v1/posts/{post_id}",
+        headers={"Authorization": "Bearer post-reader-token"},
+    )
+
+    assert read_response.status_code == 200
+    assert read_response.json()["status"] == "draft"
+    with sqlite3.connect(database_path) as connection:
+        post_row = connection.execute(
+            "SELECT status, current_revision_id, published_at FROM posts WHERE id = ?",
+            (post_id,),
+        ).fetchone()
+        publish_request_row = connection.execute(
+            """
+            SELECT id, post_id, revision_id, status, requested_at
+            FROM publish_requests
+            WHERE id = ?
+            """,
+            (f"publish-request-{post_id}-{revision_id}",),
+        ).fetchone()
+        publish_job_count = connection.execute("SELECT COUNT(*) FROM publish_jobs").fetchone()[0]
+        audit_rows = connection.execute(
+            """
+            SELECT event_type, actor_type, actor_id, target_type, target_id, metadata, created_at
+            FROM audit_events
+            WHERE event_type = 'post.publish_requested'
+            """
+        ).fetchall()
+
+    assert post_row == ("draft", revision_id, None)
+    assert publish_request_row == (
+        f"publish-request-{post_id}-{revision_id}",
+        post_id,
+        revision_id,
+        "pending",
+        "2026-06-07T08:11:12Z",
+    )
+    assert publish_job_count == 0
+    assert audit_rows == [
+        (
+            "post.publish_requested",
+            "api_token",
+            audit_token_actor_id("post-publisher-token"),
+            "post",
+            post_id,
+            f'{{"revisionId":"{revision_id}","requestId":"publish-request-{post_id}-{revision_id}"}}',
+            "2026-06-07T08:11:12Z",
+        )
+    ]
+
+
+def test_request_publish_review_is_idempotent_for_existing_pending_request(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    settings = Settings(
+        api_tokens={
+            "post-writer-token": ["posts:write"],
+            "post-publisher-token": ["posts:publish"],
+        },
+        database_path=str(database_path),
+    )
+    timestamps = iter(
+        [
+            datetime(2026, 6, 7, 8, 11, 12, tzinfo=UTC),
+            datetime(2026, 6, 7, 8, 12, 13, tzinfo=UTC),
+        ]
+    )
+    app = create_app(settings=settings)
+    app.state.post_store = PostStore(str(database_path), clock=lambda: next(timestamps))
+    client = TestClient(app)
+    create_response = client.post(
+        "/api/v1/posts",
+        json=draft_payload(),
+        headers={"Authorization": "Bearer post-writer-token"},
+    )
+    post_id = create_response.json()["postId"]
+    revision_id = create_response.json()["revisionId"]
+    request_body = {"revisionId": revision_id}
+
+    first_response = client.post(
+        f"/api/v1/posts/{post_id}/publish-requests",
+        json=request_body,
+        headers={"Authorization": "Bearer post-publisher-token"},
+    )
+    second_response = client.post(
+        f"/api/v1/posts/{post_id}/publish-requests",
+        json=request_body,
+        headers={"Authorization": "Bearer post-publisher-token"},
+    )
+
+    assert first_response.status_code == 201
+    assert second_response.status_code == 201
+    assert second_response.json() == first_response.json()
+    with sqlite3.connect(database_path) as connection:
+        request_count = connection.execute("SELECT COUNT(*) FROM publish_requests").fetchone()[0]
+        audit_count = connection.execute(
+            "SELECT COUNT(*) FROM audit_events WHERE event_type = 'post.publish_requested'"
+        ).fetchone()[0]
+    assert request_count == 1
+    assert audit_count == 1
+
+
+def test_request_publish_review_rejects_stale_revision_without_side_effects(tmp_path: Path) -> None:
+    database_path = tmp_path / "nairi.db"
+    settings = Settings(
+        api_tokens={"post-writer-token": ["posts:write"], "post-publisher-token": ["posts:publish"]},
+        database_path=str(database_path),
+    )
+    app = create_app(settings=settings)
+    app.state.post_store = PostStore(str(database_path))
+    client = TestClient(app)
+    post_id = client.post(
+        "/api/v1/posts",
+        json=draft_payload(),
+        headers={"Authorization": "Bearer post-writer-token"},
+    ).json()["postId"]
+
+    response = client.post(
+        f"/api/v1/posts/{post_id}/publish-requests",
+        json={"revisionId": "stale-revision"},
+        headers={"Authorization": "Bearer post-publisher-token"},
+    )
+
+    assert response.status_code == 409
+    assert response.json()["code"] == "conflict"
+    with sqlite3.connect(database_path) as connection:
+        request_count = connection.execute("SELECT COUNT(*) FROM publish_requests").fetchone()[0]
+        audit_count = connection.execute(
+            "SELECT COUNT(*) FROM audit_events WHERE event_type = 'post.publish_requested'"
+        ).fetchone()[0]
+    assert request_count == 0
+    assert audit_count == 0
 
 
 def test_publish_post_records_dispatch_failure_without_rolling_back_publish(tmp_path: Path) -> None:

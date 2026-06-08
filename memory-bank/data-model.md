@@ -77,6 +77,7 @@
 15. This boundary is intentionally smaller than the final SQLAlchemy/Alembic model layer.
 16. Future migration work must preserve these logical entities while replacing scaffold schema initialization with managed migrations.
 17. `schema_migrations` id/name mismatches are treated as migration policy conflicts and fail fast with `PostStoreMigrationError` code `migration_name_mismatch`; valid metadata with missing scaffold tables may still be reconciled by idempotent baseline DDL.
+18. `nairi-post-store-migration-rehearsal` is a local-only rehearsal entrypoint over caller-provided SQLite paths; it creates backup/rehearsal artifacts and emits JSON readback without connecting to production by default.
 
 ## Database Support
 

@@ -302,6 +302,8 @@ export function App({ apiClient }: AppProps) {
   }
 
   const previewPost = selectedPostDetail ?? selectedPost;
+  const listContainsOnlyDrafts = posts.every((post) => post.status === "draft");
+  const postListLabel = listContainsOnlyDrafts ? "Drafts" : "Content items";
 
   return (
     <main className="admin-shell">
@@ -329,9 +331,9 @@ export function App({ apiClient }: AppProps) {
 
       {activeModule === "content" ? (
         <section className="admin-layout" aria-label="Admin content workspace">
-          <nav className="post-list" aria-label="Draft posts">
+          <nav className="post-list" aria-label={postListLabel === "Drafts" ? "Draft posts" : "Content items"}>
             <h2>Content workspace</h2>
-            <p className="section-label">Drafts</p>
+            <p className="section-label">{postListLabel}</p>
             {isLoading ? <p>Loading admin content…</p> : null}
             {loadError ? <p role="status">{loadError}</p> : null}
             {!isLoading && !loadError && posts.length === 0 ? <p>No draft posts are ready for review.</p> : null}

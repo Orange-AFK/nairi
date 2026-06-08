@@ -114,6 +114,9 @@ describe("Nairi admin console shell", () => {
     expect(screen.getByRole("heading", { name: "Nairi Admin" })).toBeInTheDocument();
     expect(screen.getByText("Loading admin content…")).toBeInTheDocument();
 
+    expect(screen.getByText("Drafts")).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Draft posts" })).toBeInTheDocument();
+
     const firstDraft = await screen.findByRole("button", { name: /First draft/ });
     expect(firstDraft).toBeInTheDocument();
     expect(firstDraft).toHaveAttribute("aria-pressed", "true");
@@ -134,6 +137,41 @@ describe("Nairi admin console shell", () => {
 
     expect(await screen.findByText("No draft posts are ready for review.")).toBeInTheDocument();
     expect(screen.getByText("Select a draft from the list to load its API-backed detail.")).toBeInTheDocument();
+  });
+
+  it("labels a mixed-status admin list as content items without adding published navigation", async () => {
+    render(
+      <App
+        apiClient={adminApiClient({
+          async listPosts() {
+            return [
+              {
+                id: "post-1",
+                title: "First draft",
+                slug: "first-draft",
+                status: "draft",
+                updatedAt: "2026-06-08T00:00:00Z"
+              },
+              {
+                id: "post-2",
+                title: "Published field note",
+                slug: "published-field-note",
+                status: "published",
+                updatedAt: "2026-06-08T00:10:00Z"
+              }
+            ];
+          }
+        })}
+      />
+    );
+
+    expect(await screen.findByText("Content items")).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Content items" })).toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: "Draft posts" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Drafts")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /First draft/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Published field note/ })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Published/i })).not.toBeInTheDocument();
   });
 
   it("selects a post and reads draft detail through the injected API boundary", async () => {

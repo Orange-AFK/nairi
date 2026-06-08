@@ -75,3 +75,10 @@ The admin console must use documented API endpoints only. It must not perform di
 3. Current behavior: a minimal API-injected shell renders `Nairi Admin`, loads draft summaries through an injected `AdminApiClient`, and shows an API-backed draft preview.
 4. Boundary: no live fetch, no direct database access, no production mutation, no token storage, no router, no settings, no media, no publish action, and no scheduler.
 5. CI: `scripts/checks/frontend_admin_foundation_check.py`, admin tests, admin typecheck, and admin build run in Guards.
+
+## Runtime API Client Boundary
+
+1. `apps/admin/src/adminApiClient.ts` now provides `createAdminApiClient` for runtime management API reads.
+2. It calls `GET /api/v1/posts?status=draft` with absolute `VITE_API_BASE_URL` from the Vite entrypoint and an injected token provider.
+3. The top-level React `App` still receives an injected `AdminApiClient` and does not read env, call `fetch`, or touch direct database access.
+4. The first runtime client boundary lists draft summaries only; edit, create, publish, settings, token persistence, routing, and live browser smoke remain deferred.

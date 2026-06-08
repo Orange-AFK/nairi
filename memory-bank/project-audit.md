@@ -147,7 +147,7 @@ Required handling:
 1. Date: 2026-06-08.
 2. Report: `memory-bank/project-audit-2026-06-08.md`.
 3. Result: no blocker or high-risk implementation drift was found.
-4. Active remediation queue: local check-runner ergonomics.
+4. Active remediation queue: none.
 
 ### Next Audit Trigger
 

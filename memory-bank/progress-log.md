@@ -927,3 +927,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: strengthened published/non-draft read-only copy with `Draft editing and publishing controls are hidden for this content item.`
 3. Tests: extended the non-draft detail read-only regression to require the explanatory copy while preserving absence of draft workflow controls.
 4. Boundary: no router, refetch, published navigation, filtering, draft-control exposure, or backend/API contract changes.
+
+## Admin Draft Workflow Copy Boundary
+
+1. Status: completed for local implementation.
+2. Scope: added draft-only form copy `Draft controls only affect the selected draft.` to clarify the selected-draft boundary.
+3. Tests: extended the draft detail readback regression to require the copy and paired it with the existing non-draft read-only regression.
+4. Boundary: no update/publish API behavior changes, router, refetch, published navigation, filtering, or backend/API contract changes.

@@ -294,6 +294,7 @@ describe("Nairi admin console shell", () => {
     expect(screen.getByText("API-backed draft detail"));
     expect(screen.getByText(/Draft body from the management API\./)).toBeInTheDocument();
     expect(screen.getByText("revision-post-1-1")).toBeInTheDocument();
+    expect(screen.getByText("Draft controls only affect the selected draft.")).toBeInTheDocument();
   });
 
   it("renders non-draft detail as read-only without draft workflow controls", async () => {
@@ -330,6 +331,7 @@ describe("Nairi admin console shell", () => {
     expect(screen.queryByRole("button", { name: "Publish confirmed draft" })).not.toBeInTheDocument();
     expect(screen.getByText("Published detail is read-only in the draft review workflow.")).toBeInTheDocument();
     expect(screen.getByText("Draft editing and publishing controls are hidden for this content item.")).toBeInTheDocument();
+    expect(screen.queryByText("Draft controls only affect the selected draft.")).not.toBeInTheDocument();
   });
 
   it("submits draft edits through the injected update contract without publishing", async () => {

@@ -390,6 +390,7 @@ export function App({ apiClient }: AppProps) {
                 {selectedPostDetail ? (
                   selectedPostDetail.status === "draft" ? (
                     <form className="draft-edit-form" onSubmit={(event) => void saveDraftEdits(event)}>
+                      <p>Draft controls only affect the selected draft.</p>
                       <label>
                         Draft title
                         <input name="title" defaultValue={selectedPostDetail.title} />

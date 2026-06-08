@@ -215,3 +215,9 @@ The admin console must use documented API endpoints only. It must not perform di
 1. Published/non-draft detail remains read-only in the draft review workflow.
 2. The read-only detail copy now explicitly says `Draft editing and publishing controls are hidden for this content item.` so hidden controls are explained without adding actions.
 3. Boundary: copy and regression coverage only; no router, live refetch, published-list navigation, archive/history UI, filtering, draft-control exposure, or backend/API contract changes.
+
+## Admin Draft Workflow Copy Boundary
+
+1. Draft detail forms now show `Draft controls only affect the selected draft.` above the draft edit/publish controls.
+2. Published/non-draft detail remains read-only and continues to hide draft workflow controls.
+3. Boundary: copy and regression coverage only; no update/publish API behavior changes, router, live refetch, published-list navigation, archive/history UI, filtering, or backend/API contract changes.

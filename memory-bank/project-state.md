@@ -8,7 +8,7 @@
 2. The implementation still follows the accepted API-first, agent-first CMS direction.
 3. Core public and management content flows exist as scaffold implementations with verified route tests and guards.
 4. The current development focus is post-merge source-of-truth closeout after Admin Draft Content Format Edit Boundary merged and passed main readback.
-5. CMS admin console work has advanced beyond the foundation shell into the runtime API client boundary through draft list/detail, draft update, content-format edit payloads, publish-review staging, publish confirmation, injected `publishPost` wiring, post-publish list/read-only behavior, separate published-history list readback, mixed-status copy, publish-review status scoping coverage, and explicit hash routing; it follows the Migration Operator Handoff Docs Boundary for typed migration policy failures, remains bounded to authenticated API contracts, and preserves manual intervention for migration repair workflows.
+5. CMS admin console work has advanced beyond the foundation shell into the runtime API client boundary through draft list/detail, draft update, content-format edit payloads, targeted metadata JSON error copy, publish-review staging, publish confirmation, injected `publishPost` wiring, post-publish list/read-only behavior, separate published-history list readback, mixed-status copy, publish-review status scoping coverage, and explicit hash routing; it follows the Migration Operator Handoff Docs Boundary for typed migration policy failures, remains bounded to authenticated API contracts, and preserves manual intervention for migration repair workflows.
 
 ### Current Authority Snapshot
 

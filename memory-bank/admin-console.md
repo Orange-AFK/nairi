@@ -161,6 +161,12 @@ The admin console must use documented API endpoints only. It must not perform di
 2. Save parses the field as a JSON object and submits `metadata` through the injected `apiClient.updatePost(postId, input)` payload and runtime PATCH body alongside title, slug, summary, category ID, series ID, tags, content format, content, and expected revision id.
 3. Boundary: blank metadata normalizes to `{}` and non-object JSON fails safely through the existing edit error path; no richer metadata validation, taxonomy selectors, create/publish mutation, router expansion, login UI, token persistence, direct fetch, direct database access, public API change, or backend/API contract change is added.
 
+## Admin Edit Metadata Error Detail UX Boundary
+
+1. Non-object `Draft metadata JSON` now renders the targeted safe error copy `Draft metadata JSON must be an object.` instead of only the generic save failure copy.
+2. The invalid metadata branch remains local to the injected edit form and does not call `apiClient.updatePost`.
+3. Boundary: safe admin validation copy only; no backend route change, API contract change, public API change, richer metadata schema validation, token storage, direct fetch, direct database access, create/publish mutation, router expansion, renderer behavior, or live external side effect is added.
+
 ## Admin Publish Request Review Boundary
 
 1. The draft detail form exposes `Request publish review` after `Save draft changes` and calls the injected `apiClient.requestPublishReview(postId, { revisionId })` contract.

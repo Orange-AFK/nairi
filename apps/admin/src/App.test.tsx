@@ -1222,7 +1222,7 @@ describe("Nairi admin console shell", () => {
     await user.click(screen.getByRole("button", { name: "Save draft changes" }));
 
     expect(updatePost).not.toHaveBeenCalled();
-    expect(await screen.findByText("Draft changes could not be saved.")).toBeInTheDocument();
+    expect(await screen.findByText("Draft metadata JSON must be an object.")).toBeInTheDocument();
   });
 
   it("ignores stale draft edit responses after a newer selection", async () => {

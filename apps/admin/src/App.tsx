@@ -331,9 +331,13 @@ export function App({ apiClient }: AppProps) {
         setPublishActionStatus(null);
         setPublishActionError(null);
       }
-    } catch {
+    } catch (error) {
       if (saveRequestIdRef.current === saveRequestId) {
-        setSaveError("Draft changes could not be saved.");
+        setSaveError(
+          error instanceof Error && error.message === "Draft metadata must be a JSON object."
+            ? "Draft metadata JSON must be an object."
+            : "Draft changes could not be saved."
+        );
       }
     } finally {
       if (saveRequestIdRef.current === saveRequestId) {

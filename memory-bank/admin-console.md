@@ -82,3 +82,11 @@ The admin console must use documented API endpoints only. It must not perform di
 2. It calls `GET /api/v1/posts?status=draft` with absolute `VITE_API_BASE_URL` from the Vite entrypoint and an injected token provider.
 3. The top-level React `App` still receives an injected `AdminApiClient` and does not read env, call `fetch`, or touch direct database access.
 4. The first runtime client boundary lists draft summaries only; edit, create, publish, settings, token persistence, routing, and live browser smoke remain deferred.
+
+## Admin Token Provider Boundary
+
+1. `apps/admin/src/adminTokenProvider.ts` defines the first admin token provider contract.
+2. Current provider intentionally returns an empty token so the runtime client remains fail-closed until a later admin session/login boundary supplies credentials.
+3. The provider does not read `VITE_*` token env names and does not persist bearer tokens in `localStorage` or `sessionStorage`.
+4. The Vite entrypoint wires `getAuthToken` into `createAdminApiClient` while still only reading non-secret `VITE_API_BASE_URL`.
+5. Login UI, token persistence, session restoration, refresh/logout, and live browser auth smoke remain deferred.

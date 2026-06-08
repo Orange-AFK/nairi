@@ -145,6 +145,6 @@
 
 ## Admin Runtime API Client Boundary
 
-1. Status: current follow-up slice.
-2. Goal: add the first tested runtime `createAdminApiClient` for authenticated draft-list reads with an injected token provider while keeping the React app injected and API-boundary-safe.
-3. Next after merge: admin module shell/routing or draft list UX, still without create/edit/publish mutation unless explicitly selected.
+1. Status: completed through fail-closed admin token provider boundary.
+2. Completed: runtime `createAdminApiClient` for authenticated draft-list reads plus a first `createAdminTokenProvider` contract wired from `main.tsx` without browser-bundled token env or browser storage.
+3. Next candidate: admin module shell/routing or draft list UX, still without create/edit/publish mutation unless explicitly selected.

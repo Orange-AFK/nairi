@@ -780,3 +780,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: updated Guards workflow JavaScript actions to Node-24-ready major refs: `actions/checkout@v6`, `actions/setup-python@v6`, and `actions/setup-node@v6`.
 3. Boundary: no Docker/GHCR publishing, deployment behavior, product feature work, or guard semantic changes.
 4. Reason: previous Guards runs passed but emitted a Node.js 20 deprecation annotation for older JavaScript action refs even with `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24`.
+
+## Admin Token Provider Boundary
+
+1. Status: completed for fail-closed provider contract.
+2. Scope: added `createAdminTokenProvider`, wired it into `main.tsx`, and extended the admin guard/tests so the current provider supplies no credentials, reads no browser-bundled token env, and writes no browser storage.
+3. Boundary: no login UI, token persistence, session restoration, refresh/logout, cookie/session auth, or live browser auth smoke.
+4. Verification: focused admin token provider tests, full admin tests, admin typecheck/build, and `frontend_admin_foundation_check.py`.

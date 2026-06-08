@@ -1017,8 +1017,9 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 
 ## Publish Request Resolve Workflow Boundary
 
-1. Status: implemented locally; PR verification pending.
+1. Status: completed and merged.
 2. Scope: added authenticated admin resolution for pending publish-review requests through `POST /api/v1/publish-requests/{request_id}/resolve`, storing `approved` or `rejected` plus request-time `resolvedAt` on `publish_requests`.
 3. Boundary: resolution requires `admin:all`, records `admin.publish_request.resolve`, and does not mutate post status, call live publish, create `publish_jobs`, trigger public invalidation dispatch, or add admin UI/router behavior.
 4. Hardening: invalid statuses return `400 invalid_request` before side effects, unknown requests return `404 not_found`, repeat resolution returns `409 conflict` without overwriting the first decision or creating another resolve audit row, and existing SQLite stores get a guarded `resolved_at` compatibility column.
-5. Verification: focused RED/GREEN backend route tests and full backend post persistence tests passed locally; full guards/checks/admin verification remain pending before PR.
+5. Verification: focused RED/GREEN backend route tests, full backend post persistence tests, docs/i18n/contract/API schema/secret guards, full local check runner, admin tests, admin typecheck/build, diff check, staged/HEAD/tight secret scans, independent re-review, PR Guards, main Guards, and GitHub Contents API readback passed.
+6. Next recommended named task: Published History/List Boundary if product wants a human-facing history module, another narrow admin edit boundary, Executable Repair Tooling Design Boundary, or Cloudflare Live Execution Design Boundary after a high-risk audit.

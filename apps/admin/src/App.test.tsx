@@ -518,6 +518,7 @@ describe("Nairi admin console shell", () => {
     const seriesField = screen.getByLabelText("Draft series ID");
     const tagsField = screen.getByLabelText("Draft tags");
     const metadataField = screen.getByLabelText("Draft metadata JSON");
+    const contentFormatField = screen.getByLabelText("Draft content format");
     const contentField = screen.getByLabelText("Draft content");
     expect(slugField).toHaveValue("first-draft");
     expect(summaryField).toHaveValue("First draft summary.");
@@ -525,6 +526,7 @@ describe("Nairi admin console shell", () => {
     expect(seriesField).toHaveValue("field-journal");
     expect(tagsField).toHaveValue("draft, release-notes");
     expect(metadataField).toHaveValue(JSON.stringify({ audience: "operators", priority: 2 }, null, 2));
+    expect(contentFormatField).toHaveValue("markdown");
     await user.clear(titleField);
     await user.type(titleField, "Updated draft title");
     await user.clear(slugField);
@@ -540,6 +542,7 @@ describe("Nairi admin console shell", () => {
     await user.clear(metadataField);
     await user.click(metadataField);
     await user.paste('{"audience":"maintainers","priority":3}');
+    await user.selectOptions(contentFormatField, "mdx");
     await user.clear(contentField);
     await user.type(contentField, "Updated draft body from the admin form.");
     await user.click(screen.getByRole("button", { name: "Save draft changes" }));
@@ -555,7 +558,7 @@ describe("Nairi admin console shell", () => {
         audience: "maintainers",
         priority: 3
       },
-      contentFormat: "markdown",
+      contentFormat: "mdx",
       content: "Updated draft body from the admin form.",
       expectedRevisionId: "revision-post-1-1"
     });

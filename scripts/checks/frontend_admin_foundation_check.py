@@ -59,6 +59,7 @@ required_app = [
     "Draft series ID",
     "Draft tags",
     "Draft metadata JSON",
+    "Draft content format",
     "Draft content",
     "Draft controls only affect the selected draft.",
     "Save draft changes",

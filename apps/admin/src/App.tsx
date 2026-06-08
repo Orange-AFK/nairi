@@ -295,7 +295,7 @@ export function App({ apiClient }: AppProps) {
         seriesId: seriesId || null,
         tags: parseDraftTags(String(formData.get("tags") ?? "")),
         metadata: parseDraftMetadata(String(formData.get("metadata") ?? "")),
-        contentFormat: selectedPostDetail.contentFormat,
+        contentFormat: formData.get("contentFormat") === "mdx" ? "mdx" : "markdown",
         content: String(formData.get("content") ?? ""),
         expectedRevisionId: savedRevisionId
       });
@@ -600,6 +600,13 @@ export function App({ apiClient }: AppProps) {
                           defaultValue={stringifyDraftMetadata(selectedPostDetail.metadata)}
                           rows={6}
                         />
+                      </label>
+                      <label>
+                        Draft content format
+                        <select name="contentFormat" defaultValue={selectedPostDetail.contentFormat}>
+                          <option value="markdown">markdown</option>
+                          <option value="mdx">mdx</option>
+                        </select>
                       </label>
                       <label>
                         Draft content

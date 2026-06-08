@@ -1032,3 +1032,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 4. Hardening: independent review found stale local published-history state after publishing a draft and stale guard documentation; both were fixed before PR by moving newly published summaries into Published history and documenting both draft and published management list endpoints in guard docs.
 5. Verification: focused RED/GREEN admin component and runtime client tests, docs/i18n/contract/API schema/secret guards, full local check runner, admin tests, admin typecheck/build, diff check, staged/tight secret scans, independent re-review, PR Guards, main Guards, and GitHub Contents API readback passed.
 6. Next recommended named task: another narrow admin edit boundary, Executable Repair Tooling Design Boundary, or Cloudflare Live Execution Design Boundary after a high-risk audit.
+
+## Admin Draft Content Format Edit Boundary
+
+1. Status: implemented locally; PR verification pending.
+2. Scope: added a `Draft content format` select to the injected admin draft edit form so saved `updatePost` payloads can change `contentFormat` between `markdown` and `mdx`.
+3. Boundary: admin edit payload only; no backend route change, no public API change, no renderer behavior, no MDX execution, no router expansion, no token storage, no direct database access, and no live external side effects.
+4. Verification: focused RED/GREEN admin component test, docs/i18n/contract/API schema/secret guards, full local check runner, admin tests, admin typecheck/build, diff check, tight secret scan, and independent review blocker check passed locally before PR.

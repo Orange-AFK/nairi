@@ -379,97 +379,101 @@ export function App({ apiClient }: AppProps) {
                   ) : null}
                 </dl>
                 {selectedPostDetail ? (
-                  <form className="draft-edit-form" onSubmit={(event) => void saveDraftEdits(event)}>
-                    <label>
-                      Draft title
-                      <input name="title" defaultValue={selectedPostDetail.title} />
-                    </label>
-                    <label>
-                      Draft slug
-                      <input name="slug" defaultValue={selectedPostDetail.slug} />
-                    </label>
-                    <label>
-                      Draft summary
-                      <textarea name="summary" defaultValue={selectedPostDetail.summary ?? ""} rows={3} />
-                    </label>
-                    <label>
-                      Draft category ID
-                      <input name="categoryId" defaultValue={selectedPostDetail.categoryId ?? ""} />
-                    </label>
-                    <label>
-                      Draft series ID
-                      <input name="seriesId" defaultValue={selectedPostDetail.seriesId ?? ""} />
-                    </label>
-                    <label>
-                      Draft tags
-                      <input name="tags" defaultValue={(selectedPostDetail.tags ?? []).join(", ")} />
-                    </label>
-                    <label>
-                      Draft content
-                      <textarea name="content" defaultValue={selectedPostDetail.content} rows={8} />
-                    </label>
-                    <button type="submit" disabled={isSavingDraft || isPublishingDraft}>
-                      {isSavingDraft ? "Saving draft changes…" : "Save draft changes"}
-                    </button>
-                    <button
-                      type="button"
-                      disabled={isSavingDraft || isPublishingDraft}
-                      onClick={() => {
-                        setPublishReviewStatus(
-                          `Publish review request staged for revision ${selectedPostDetail.revisionId}.`
-                        );
-                        setPublishConfirmationStatus(null);
-                      }}
-                    >
-                      Request publish review
-                    </button>
-                    {saveStatus ? <p role="status">{saveStatus}</p> : null}
-                    {saveError ? <p role="status">{saveError}</p> : null}
-                    {publishReviewStatus ? (
-                      <p role="status" aria-label="Publish review request status">
-                        {publishReviewStatus}
-                      </p>
-                    ) : null}
-                    {publishReviewStatus ? (
-                      <section aria-label="Publish confirmation contract">
-                        <h3>Publish confirmation contract</h3>
-                        <p>Review revision {selectedPostDetail.revisionId} before any future publish action.</p>
-                        <button
-                          type="button"
-                          disabled={publishConfirmationStatus !== null || isPublishingDraft}
-                          onClick={() => {
-                            setPublishConfirmationStatus(
-                              `Publication intent confirmed locally for revision ${selectedPostDetail.revisionId}.`
-                            );
-                            setPublishActionStatus(null);
-                            setPublishActionError(null);
-                          }}
-                        >
-                          Confirm publication intent
-                        </button>
-                      </section>
-                    ) : null}
-                    {publishConfirmationStatus ? (
-                      <p role="status" aria-label="Publish confirmation intent status">
-                        {publishConfirmationStatus}
-                      </p>
-                    ) : null}
-                    {publishConfirmationStatus && selectedPostDetail.status === "draft" ? (
-                      <button type="button" disabled={isPublishingDraft} onClick={() => void publishConfirmedDraft()}>
-                        {isPublishingDraft ? "Publishing confirmed draft…" : "Publish confirmed draft"}
+                  selectedPostDetail.status === "draft" ? (
+                    <form className="draft-edit-form" onSubmit={(event) => void saveDraftEdits(event)}>
+                      <label>
+                        Draft title
+                        <input name="title" defaultValue={selectedPostDetail.title} />
+                      </label>
+                      <label>
+                        Draft slug
+                        <input name="slug" defaultValue={selectedPostDetail.slug} />
+                      </label>
+                      <label>
+                        Draft summary
+                        <textarea name="summary" defaultValue={selectedPostDetail.summary ?? ""} rows={3} />
+                      </label>
+                      <label>
+                        Draft category ID
+                        <input name="categoryId" defaultValue={selectedPostDetail.categoryId ?? ""} />
+                      </label>
+                      <label>
+                        Draft series ID
+                        <input name="seriesId" defaultValue={selectedPostDetail.seriesId ?? ""} />
+                      </label>
+                      <label>
+                        Draft tags
+                        <input name="tags" defaultValue={(selectedPostDetail.tags ?? []).join(", ")} />
+                      </label>
+                      <label>
+                        Draft content
+                        <textarea name="content" defaultValue={selectedPostDetail.content} rows={8} />
+                      </label>
+                      <button type="submit" disabled={isSavingDraft || isPublishingDraft}>
+                        {isSavingDraft ? "Saving draft changes…" : "Save draft changes"}
                       </button>
-                    ) : null}
-                    {publishActionStatus ? (
-                      <p role="status" aria-label="Publish action status">
-                        {publishActionStatus}
-                      </p>
-                    ) : null}
-                    {publishActionError ? (
-                      <p role="status" aria-label="Publish action error">
-                        {publishActionError}
-                      </p>
-                    ) : null}
-                  </form>
+                      <button
+                        type="button"
+                        disabled={isSavingDraft || isPublishingDraft}
+                        onClick={() => {
+                          setPublishReviewStatus(
+                            `Publish review request staged for revision ${selectedPostDetail.revisionId}.`
+                          );
+                          setPublishConfirmationStatus(null);
+                        }}
+                      >
+                        Request publish review
+                      </button>
+                      {saveStatus ? <p role="status">{saveStatus}</p> : null}
+                      {saveError ? <p role="status">{saveError}</p> : null}
+                      {publishReviewStatus ? (
+                        <p role="status" aria-label="Publish review request status">
+                          {publishReviewStatus}
+                        </p>
+                      ) : null}
+                      {publishReviewStatus ? (
+                        <section aria-label="Publish confirmation contract">
+                          <h3>Publish confirmation contract</h3>
+                          <p>Review revision {selectedPostDetail.revisionId} before any future publish action.</p>
+                          <button
+                            type="button"
+                            disabled={publishConfirmationStatus !== null || isPublishingDraft}
+                            onClick={() => {
+                              setPublishConfirmationStatus(
+                                `Publication intent confirmed locally for revision ${selectedPostDetail.revisionId}.`
+                              );
+                              setPublishActionStatus(null);
+                              setPublishActionError(null);
+                            }}
+                          >
+                            Confirm publication intent
+                          </button>
+                        </section>
+                      ) : null}
+                      {publishConfirmationStatus ? (
+                        <p role="status" aria-label="Publish confirmation intent status">
+                          {publishConfirmationStatus}
+                        </p>
+                      ) : null}
+                      {publishConfirmationStatus ? (
+                        <button type="button" disabled={isPublishingDraft} onClick={() => void publishConfirmedDraft()}>
+                          {isPublishingDraft ? "Publishing confirmed draft…" : "Publish confirmed draft"}
+                        </button>
+                      ) : null}
+                    </form>
+                  ) : (
+                    <p>Published detail is read-only in the draft review workflow.</p>
+                  )
+                ) : null}
+                {publishActionStatus ? (
+                  <p role="status" aria-label="Publish action status">
+                    {publishActionStatus}
+                  </p>
+                ) : null}
+                {publishActionError ? (
+                  <p role="status" aria-label="Publish action error">
+                    {publishActionError}
+                  </p>
                 ) : null}
               </>
             ) : (

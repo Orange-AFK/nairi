@@ -162,6 +162,39 @@ describe("Nairi admin console shell", () => {
     expect(screen.getByText("revision-post-1-1")).toBeInTheDocument();
   });
 
+  it("renders non-draft detail as read-only without draft workflow controls", async () => {
+    const user = userEvent.setup();
+    render(
+      <App
+        apiClient={adminApiClient({
+          async getPost(postId: string) {
+            return {
+              id: postId,
+              title: "Published field note",
+              slug: "published-field-note",
+              status: "published",
+              contentFormat: "markdown",
+              content: "# Published field note\n\nPublished body from the management API.",
+              revisionId: "revision-post-1-published",
+              updatedAt: "2026-06-08T00:10:00Z"
+            };
+          }
+        })}
+      />
+    );
+
+    await user.click(await screen.findByRole("button", { name: /First draft/ }));
+
+    expect(await screen.findByRole("heading", { name: "Published field note" })).toBeInTheDocument();
+    expect(screen.getByText("published")).toBeInTheDocument();
+    expect(screen.getByText("revision-post-1-published")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Save draft changes" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Request publish review" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Confirm publication intent" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Publish confirmed draft" })).not.toBeInTheDocument();
+    expect(screen.getByText("Published detail is read-only in the draft review workflow.")).toBeInTheDocument();
+  });
+
   it("submits draft edits through the injected update contract without publishing", async () => {
     const user = userEvent.setup();
     const updatePost = vi.fn(async (_postId: string, input: AdminPostUpdateInput): Promise<AdminPostDetail> => ({
@@ -329,6 +362,10 @@ describe("Nairi admin console shell", () => {
     expect(screen.getByRole("heading", { name: "First draft" })).toBeInTheDocument();
     expect(screen.getByText("published")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Publish confirmed draft" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Save draft changes" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Request publish review" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Confirm publication intent" })).not.toBeInTheDocument();
+    expect(screen.getByText("Published detail is read-only in the draft review workflow.")).toBeInTheDocument();
   });
 
   it("removes only the published draft from a multi-draft review list", async () => {

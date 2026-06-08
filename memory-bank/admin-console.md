@@ -185,3 +185,9 @@ The admin console must use documented API endpoints only. It must not perform di
 1. After a confirmed admin publish succeeds, the published post remains visible in the detail pane for readback but is removed from the draft review list.
 2. If that published item was the only draft in the injected list, the list renders `No draft posts are ready for review.` while keeping the success status visible in the detail pane; if other drafts remain, only the published draft is removed.
 3. Boundary: this slice only clarifies list behavior after the existing injected publish action; it does not add published-list navigation, refetching, filters, router state, live fetch wiring, or archive/history UI.
+
+## Admin Published Detail Read-Only Boundary
+
+1. After a confirmed publish succeeds, the selected published detail remains visible for readback and publish action status stays visible outside the draft edit form.
+2. Published details in the draft review workflow render the stable copy `Published detail is read-only in the draft review workflow.` and no longer show draft edit, save, publish review, confirmation, or publish action controls.
+3. Boundary: this slice only gates draft controls by selected detail status; it does not add a published-list module, router state, live refetching, archive/history UI, or backend/API contract changes.

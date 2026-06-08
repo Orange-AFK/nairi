@@ -7,6 +7,7 @@ export type AdminPostSummary = {
   title: string;
   slug: string;
   summary?: string | null;
+  categoryId?: string | null;
   tags?: string[];
   status: string;
   updatedAt: string;
@@ -22,6 +23,7 @@ export type AdminPostUpdateInput = {
   title: string;
   slug: string;
   summary: string | null;
+  categoryId: string | null;
   tags: string[];
   contentFormat: "markdown" | "mdx";
   content: string;
@@ -135,10 +137,12 @@ export function App({ apiClient }: AppProps) {
 
     try {
       const summary = String(formData.get("summary") ?? "").trim();
+      const categoryId = String(formData.get("categoryId") ?? "").trim();
       const updatedPost = await apiClient.updatePost(savedPostId, {
         title: String(formData.get("title") ?? ""),
         slug: String(formData.get("slug") ?? ""),
         summary: summary || null,
+        categoryId: categoryId || null,
         tags: parseDraftTags(String(formData.get("tags") ?? "")),
         contentFormat: selectedPostDetail.contentFormat,
         content: String(formData.get("content") ?? ""),
@@ -159,6 +163,7 @@ export function App({ apiClient }: AppProps) {
                   title: updatedPost.title,
                   slug: updatedPost.slug,
                   summary: updatedPost.summary,
+                  categoryId: updatedPost.categoryId,
                   tags: updatedPost.tags,
                   status: updatedPost.status,
                   updatedAt: updatedPost.updatedAt
@@ -269,6 +274,10 @@ export function App({ apiClient }: AppProps) {
                     <label>
                       Draft summary
                       <textarea name="summary" defaultValue={selectedPostDetail.summary ?? ""} rows={3} />
+                    </label>
+                    <label>
+                      Draft category ID
+                      <input name="categoryId" defaultValue={selectedPostDetail.categoryId ?? ""} />
                     </label>
                     <label>
                       Draft tags

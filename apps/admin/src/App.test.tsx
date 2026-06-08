@@ -23,6 +23,7 @@ function adminApiClient(overrides: Partial<AdminApiClient> = {}): AdminApiClient
         title: "First draft",
         slug: "first-draft",
         summary: "First draft summary.",
+        categoryId: "dispatches",
         tags: ["draft", "release-notes"],
         status: "draft",
         contentFormat: "markdown",
@@ -37,6 +38,7 @@ function adminApiClient(overrides: Partial<AdminApiClient> = {}): AdminApiClient
         title: input.title,
         slug: input.slug,
         summary: input.summary,
+        categoryId: input.categoryId,
         tags: input.tags,
         status: "draft",
         contentFormat: input.contentFormat,
@@ -133,6 +135,7 @@ describe("Nairi admin console shell", () => {
       title: input.title,
       slug: input.slug,
       summary: input.summary,
+      categoryId: input.categoryId,
       tags: input.tags,
       status: "draft",
       contentFormat: input.contentFormat,
@@ -148,10 +151,12 @@ describe("Nairi admin console shell", () => {
     const titleField = screen.getByLabelText("Draft title");
     const slugField = screen.getByLabelText("Draft slug");
     const summaryField = screen.getByLabelText("Draft summary");
+    const categoryField = screen.getByLabelText("Draft category ID");
     const tagsField = screen.getByLabelText("Draft tags");
     const contentField = screen.getByLabelText("Draft content");
     expect(slugField).toHaveValue("first-draft");
     expect(summaryField).toHaveValue("First draft summary.");
+    expect(categoryField).toHaveValue("dispatches");
     expect(tagsField).toHaveValue("draft, release-notes");
     await user.clear(titleField);
     await user.type(titleField, "Updated draft title");
@@ -159,6 +164,8 @@ describe("Nairi admin console shell", () => {
     await user.type(slugField, "updated-draft-slug");
     await user.clear(summaryField);
     await user.type(summaryField, "Updated draft summary from the admin form.");
+    await user.clear(categoryField);
+    await user.type(categoryField, "field-notes");
     await user.clear(tagsField);
     await user.type(tagsField, "updated, release-notes, updated");
     await user.clear(contentField);
@@ -169,6 +176,7 @@ describe("Nairi admin console shell", () => {
       title: "Updated draft title",
       slug: "updated-draft-slug",
       summary: "Updated draft summary from the admin form.",
+      categoryId: "field-notes",
       tags: ["updated", "release-notes"],
       contentFormat: "markdown",
       content: "Updated draft body from the admin form.",
@@ -186,6 +194,7 @@ describe("Nairi admin console shell", () => {
       title: input.title,
       slug: input.slug,
       summary: input.summary,
+      categoryId: input.categoryId,
       tags: input.tags,
       status: "draft",
       contentFormat: input.contentFormat,
@@ -208,6 +217,37 @@ describe("Nairi admin console shell", () => {
     );
   });
 
+  it("normalizes a cleared draft category ID to null before update", async () => {
+    const user = userEvent.setup();
+    const updatePost = vi.fn(async (_postId: string, input: AdminPostUpdateInput): Promise<AdminPostDetail> => ({
+      id: "post-1",
+      title: input.title,
+      slug: input.slug,
+      summary: input.summary,
+      categoryId: input.categoryId,
+      tags: input.tags,
+      status: "draft",
+      contentFormat: input.contentFormat,
+      content: input.content,
+      revisionId: "revision-post-1-2",
+      updatedAt: "2026-06-08T00:02:00Z"
+    }));
+    render(<App apiClient={adminApiClient({ updatePost })} />);
+
+    await user.click(await screen.findByRole("button", { name: /First draft/ }));
+    await screen.findByText("revision-post-1-1");
+
+    const categoryField = screen.getByLabelText("Draft category ID");
+    await user.clear(categoryField);
+    await user.type(categoryField, "   ");
+    await user.click(screen.getByRole("button", { name: "Save draft changes" }));
+
+    expect(updatePost).toHaveBeenCalledWith(
+      "post-1",
+      expect.objectContaining({ categoryId: null })
+    );
+  });
+
   it("normalizes cleared draft tags to an empty array before update", async () => {
     const user = userEvent.setup();
     const updatePost = vi.fn(async (_postId: string, input: AdminPostUpdateInput): Promise<AdminPostDetail> => ({
@@ -215,6 +255,7 @@ describe("Nairi admin console shell", () => {
       title: input.title,
       slug: input.slug,
       summary: input.summary,
+      categoryId: input.categoryId,
       tags: input.tags,
       status: "draft",
       contentFormat: input.contentFormat,
@@ -250,6 +291,7 @@ describe("Nairi admin console shell", () => {
               title: input.title,
               slug: input.slug,
               summary: input.summary,
+              categoryId: input.categoryId,
               tags: input.tags,
               status: "draft",
               contentFormat: input.contentFormat,

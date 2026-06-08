@@ -801,3 +801,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: extended the injected admin UI client with `getPost(postId)`, added runtime `GET /api/v1/posts/{postId}` support, and rendered content format, revision id, and draft content in the `Content` module.
 3. Boundary: summary list remains separate from detail readback; no edit/create/publish mutation, public API reuse, router expansion, token persistence, or direct database access.
 4. Verification: RED UI/client tests, full admin tests, admin typecheck/build, and admin foundation guard.
+
+## Admin Draft Detail UX Refinement Boundary
+
+1. Status: completed for selected state and empty-state refinement.
+2. Scope: added `aria-pressed` selected draft affordance, selected-item styling, and stable no-drafts/detail-prompt copy.
+3. Boundary: preserved the injected API client and existing detail readback only; no edit/create/publish mutation, router expansion, token persistence, or media/settings logic.
+4. Verification: RED RTL tests for selected state and empty draft list, full admin tests, admin typecheck/build, and admin foundation guard.

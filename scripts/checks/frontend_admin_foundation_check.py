@@ -48,6 +48,7 @@ required_app = [
     "Draft detail could not be loaded.",
     "Draft title",
     "Draft slug",
+    "Draft summary",
     "Draft content",
     "Save draft changes",
     "Draft changes saved.",

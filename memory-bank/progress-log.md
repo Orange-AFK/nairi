@@ -829,3 +829,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: added a `Draft slug` input to the admin edit form and verified save payloads use the edited slug through the injected update contract.
 3. Boundary: no frontend slug validation, create/publish mutation, router expansion, login UI, token persistence, direct App fetch, or direct database access.
 4. Verification: RED RTL test for missing slug field / stale payload, focused admin tests/typecheck, and admin foundation guard.
+
+## Admin Edit Summary Field Boundary
+
+1. Status: completed for editable draft summary field.
+2. Scope: added a `Draft summary` input to the admin edit form, propagated summary through admin summary/detail/update types, and verified runtime PATCH bodies include the edited summary.
+3. Boundary: no frontend summary validation, taxonomy/tag/series editing, create/publish mutation, router expansion, login UI, token persistence, direct App fetch, or direct database access.
+4. Verification: RED RTL test for missing summary field, focused admin tests/typecheck, and admin foundation guard.

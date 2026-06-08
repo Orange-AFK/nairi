@@ -12,6 +12,7 @@ type ManagementPostSummary = {
   postId: string;
   title: string;
   slug: string;
+  summary: string | null;
   status: string;
   updatedAt?: string;
   publishedAt?: string;
@@ -66,6 +67,7 @@ function mapPostSummary(post: ManagementPostSummary): AdminPostSummary {
     id: post.postId,
     title: post.title,
     slug: post.slug,
+    summary: post.summary,
     status: post.status,
     updatedAt: post.updatedAt ?? post.publishedAt ?? ""
   };
@@ -156,6 +158,7 @@ export function createAdminApiClient({
         body: {
           title: input.title,
           slug: input.slug,
+          summary: input.summary,
           contentFormat: input.contentFormat,
           content: input.content,
           expectedRevisionId: input.expectedRevisionId
@@ -165,6 +168,7 @@ export function createAdminApiClient({
         id: payload.postId,
         title: input.title,
         slug: input.slug,
+        summary: input.summary,
         status: payload.status,
         contentFormat: input.contentFormat,
         content: input.content,

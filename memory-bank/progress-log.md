@@ -948,3 +948,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: added `memory-bank/project-audit.md` as the project-health audit cadence and finding-taxonomy authority, linked it from `AGENTS.md` and `memory-bank/guard-ci.md`, and preserved the 2026-06-08 audit report as dated evidence.
 3. Boundary: docs/governance only; no project behavior, API contract, admin UI, public frontend, deployment, live side effect, or guard semantic change.
 4. Verification: docs guard, i18n doc guard, contract guard, secret guard, `git diff --check`, focused audit-anchor scan, and pending secret-shaped scan.
+
+## Project State and Roadmap Freshness Cleanup
+
+1. Status: completed for docs-only audit remediation.
+2. Scope: updated `project-state.md`, `roadmap.md`, and `project-audit.md` so current focus, Cloudflare dry-run state, admin runtime/publish capabilities, admin roadmap status, and active remediation queue match implemented mainline behavior.
+3. Boundary: docs-only; no product behavior, API contract, admin UI, public frontend, deployment, live side effect, or guard semantic change.
+4. Verification: docs guard, i18n doc guard, contract guard, secret guard, `git diff --check`, targeted stale-wording scan, and pending secret-shaped scan.

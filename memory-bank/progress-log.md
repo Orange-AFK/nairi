@@ -713,6 +713,18 @@
 8. Decision impact: no new ADR; this implements the previously accepted dry-run contract while preserving manual intervention for policy conflicts.
 9. Next recommended named task: Migration Repair Operator Evidence Polish Boundary, CMS Admin Console Foundation Boundary, or Cloudflare Live Execution Design Boundary.
 
+### Migration Repair Operator Evidence Polish Boundary
+
+1. Status: completed.
+2. Scope: refined operator-facing evidence examples and checks around `nairi-post-store-repair-dry-run`, including sample evidence bundle shape and additional refusal-case documentation.
+3. Changed files: `.github/workflows/guards.yml`, `docs/migration-operator-handoff.md`, `docs/migration-operator-handoff-cn.md`, `scripts/checks/migration_repair_evidence_polish_check.py`, `memory-bank/guard-ci.md`, `memory-bank/project-state.md`, `memory-bank/roadmap.md`, and `memory-bank/progress-log.md`.
+4. Verification performed: added `migration_repair_evidence_polish_check.py` first and observed RED on missing dry-run CLI, sample evidence bundle, dry-run statuses, and refusal policy anchors; then updated the operator runbooks, CI wiring, and source-of-truth docs.
+5. Result: operator handoff docs now describe `nairi-post-store-repair-dry-run`, a sample evidence bundle with `commandInvocation`, path fields, `stdout`, `stderr`, `rehearsalJson`, `observedStopCondition`, and `operatorEscalationNote`, plus `analysis_ready`, `refused`, `needs_manual_intervention`, and documented refusal policy codes.
+6. Boundary: documentation/guard-only; no analyzer behavior change, repair tooling action, metadata repair, database mutation, API route, scheduler, production database access, SQLAlchemy, Alembic, PostgreSQL, deployment integration, or live database migration execution was added.
+7. Risks or blockers: focused tests for every refusal policy code, executable repair actions, Alembic integration, SQLAlchemy models, PostgreSQL support, deployment integration, and live migration execution remain deferred.
+8. Decision impact: no new ADR; this keeps operator docs aligned with the dry-run analyzer contract.
+9. Next recommended named task: Migration Repair Refusal Matrix Test Expansion Boundary, CMS Admin Console Foundation Boundary, or Cloudflare Live Execution Design Boundary.
+
 ## Progress Rule
 
 `progress-log.md` is append-only historical evidence. It is not the current roadmap and it is not the only authority for durable architecture decisions.

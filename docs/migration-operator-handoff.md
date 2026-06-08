@@ -78,6 +78,65 @@ For manual intervention, preserve this evidence bundle:
 7. `schema_migrations` rows from the rehearsal artifact.
 8. A short escalation note explaining the observed stop condition.
 
+## Dry-Run Evidence Analysis
+
+After preserving the rehearsal evidence bundle, operators may run a local dry-run analysis. This is analysis only and still does not approve repair actions.
+
+Example shape:
+
+```bash
+nairi-post-store-repair-dry-run --evidence /tmp/nairi/evidence.json
+```
+
+The dry-run analyzer reads an evidence bundle and emits one of three statuses:
+
+1. `analysis_ready`: the evidence bundle passed local preflight checks and can be reviewed.
+2. `refused`: the evidence bundle is incomplete or unsafe to summarize.
+3. `needs_manual_intervention`: the evidence is safe to summarize, but a policy conflict such as `migration_name_mismatch` requires escalation before any repair action.
+
+The analyzer does not perform automatic metadata repair, production database mutation, or live database migration execution.
+
+## Sample Evidence Bundle
+
+A sample evidence bundle uses this JSON shape. Paths are examples; do not include secrets.
+
+```json
+{
+  "commandInvocation": "nairi-post-store-migration-rehearsal --source /tmp/nairi/source.db --backup /tmp/nairi/source.backup.db --rehearsal /tmp/nairi/source.rehearsal.db",
+  "sourceDatabasePath": "/tmp/nairi/source.db",
+  "backupArtifactPath": "/tmp/nairi/source.backup.db",
+  "rehearsalArtifactPath": "/tmp/nairi/source.rehearsal.db",
+  "stdout": "{...full rehearsal JSON...}",
+  "stderr": "",
+  "rehearsalJson": {
+    "backupPath": "/tmp/nairi/source.backup.db",
+    "rehearsalPath": "/tmp/nairi/source.rehearsal.db",
+    "preMigrationCounts": {"posts": 1, "post_revisions": 1, "audit_events": 1},
+    "postMigrationCounts": {"posts": 1, "post_revisions": 1, "audit_events": 1},
+    "postMigrationRows": [[1, "post_store_baseline"]],
+    "readbackPostIds": ["draft-example"]
+  },
+  "observedStopCondition": null,
+  "operatorEscalationNote": "No automatic metadata repair, no production database mutation, and no live database migration execution were performed."
+}
+```
+
+## Dry-Run Refusal Cases
+
+`nairi-post-store-repair-dry-run` returns `refused` for these policy codes:
+
+1. `missing_evidence_field`: a required top-level field is missing.
+2. `missing_artifact`: the source, backup, or rehearsal artifact cannot be found.
+3. `path_aliasing`: source, backup, and rehearsal paths do not resolve to three different files.
+4. `invalid_rehearsal_json`: `rehearsalJson` is not structured JSON.
+5. `missing_rehearsal_json_field`: required rehearsal JSON fields are missing.
+6. `missing_schema_migrations`: `postMigrationRows` does not include usable `schema_migrations` evidence.
+7. `count_mismatch`: `preMigrationCounts` and `postMigrationCounts` are inconsistent for this boundary.
+8. `missing_escalation_note`: the escalation note does not state which actions were intentionally not taken.
+9. `secret_like_evidence`: the evidence appears to contain secret-like text and must be redacted before analysis.
+
+A `migration_name_mismatch` with usable `schema_migrations` evidence returns `needs_manual_intervention`, not repair approval.
+
 ## Escalation Note
 
 The escalation note should include:

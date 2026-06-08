@@ -224,6 +224,41 @@ describe("Nairi admin console shell", () => {
     expect(screen.queryByRole("button", { name: /^publish$/i })).not.toBeInTheDocument();
   });
 
+  it("records publish confirmation intent without calling a publish mutation", async () => {
+    const user = userEvent.setup();
+    const updatePost = vi.fn(async (_postId: string, input: AdminPostUpdateInput): Promise<AdminPostDetail> => ({
+      id: "post-1",
+      title: input.title,
+      slug: input.slug,
+      summary: input.summary,
+      categoryId: input.categoryId,
+      seriesId: input.seriesId,
+      tags: input.tags,
+      status: "draft",
+      contentFormat: input.contentFormat,
+      content: input.content,
+      revisionId: "revision-post-1-2",
+      updatedAt: "2026-06-08T00:02:00Z"
+    }));
+    render(<App apiClient={adminApiClient({ updatePost })} />);
+
+    await user.click(await screen.findByRole("button", { name: /First draft/ }));
+    await screen.findByText("revision-post-1-1");
+    await user.click(screen.getByRole("button", { name: "Request publish review" }));
+
+    expect(screen.getByText("Publish confirmation contract")).toBeInTheDocument();
+    expect(screen.getByText("Review revision revision-post-1-1 before any future publish action.")).toBeInTheDocument();
+    const confirmationButton = screen.getByRole("button", { name: "Confirm publication intent" });
+    await user.click(confirmationButton);
+
+    expect(updatePost).not.toHaveBeenCalled();
+    expect(confirmationButton).toBeDisabled();
+    expect(screen.getByRole("status", { name: "Publish confirmation intent status" })).toHaveTextContent(
+      "Publication intent confirmed locally for revision revision-post-1-1."
+    );
+    expect(screen.queryByRole("button", { name: /^publish$/i })).not.toBeInTheDocument();
+  });
+
   it("normalizes a cleared draft summary to null before update", async () => {
     const user = userEvent.setup();
     const updatePost = vi.fn(async (_postId: string, input: AdminPostUpdateInput): Promise<AdminPostDetail> => ({

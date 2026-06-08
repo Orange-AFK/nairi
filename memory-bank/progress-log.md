@@ -864,3 +864,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: added a `Request publish review` button to the loaded draft detail form and a local status message tied to the current `revisionId`.
 3. Boundary: the button does not call `updatePost`, does not expose a live publish API client method, does not mutate post status, and does not call `POST /api/v1/posts/{post_id}/publish`.
 4. Verification: RED RTL test for the missing review-request button, focused admin tests/typecheck, and admin foundation guard.
+
+## Admin Publish Confirmation Contract Boundary
+
+1. Status: completed for the first non-executing admin publish confirmation intent contract.
+2. Scope: added a confirmation panel after local publish-review staging, with revision-specific copy and a local confirmation status.
+3. Boundary: confirmation intent does not call `updatePost`, does not expose a live publish API client method, does not mutate post status, and does not call `POST /api/v1/posts/{post_id}/publish`.
+4. Verification: RED RTL test first failed on the missing confirmation panel/action, then focused admin tests/typecheck passed.

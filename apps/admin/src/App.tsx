@@ -67,6 +67,7 @@ export function App({ apiClient }: AppProps) {
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [publishReviewStatus, setPublishReviewStatus] = useState<string | null>(null);
+  const [publishConfirmationStatus, setPublishConfirmationStatus] = useState<string | null>(null);
   const detailRequestIdRef = useRef(0);
   const saveRequestIdRef = useRef(0);
 
@@ -106,6 +107,7 @@ export function App({ apiClient }: AppProps) {
     setSaveStatus(null);
     setSaveError(null);
     setPublishReviewStatus(null);
+    setPublishConfirmationStatus(null);
     setIsDetailLoading(true);
 
     try {
@@ -180,6 +182,7 @@ export function App({ apiClient }: AppProps) {
         );
         setSaveStatus("Draft changes saved.");
         setPublishReviewStatus(null);
+        setPublishConfirmationStatus(null);
       }
     } catch {
       if (saveRequestIdRef.current === saveRequestId) {
@@ -309,6 +312,7 @@ export function App({ apiClient }: AppProps) {
                         setPublishReviewStatus(
                           `Publish review request staged for revision ${selectedPostDetail.revisionId}.`
                         );
+                        setPublishConfirmationStatus(null);
                       }}
                     >
                       Request publish review
@@ -318,6 +322,28 @@ export function App({ apiClient }: AppProps) {
                     {publishReviewStatus ? (
                       <p role="status" aria-label="Publish review request status">
                         {publishReviewStatus}
+                      </p>
+                    ) : null}
+                    {publishReviewStatus ? (
+                      <section aria-label="Publish confirmation contract">
+                        <h3>Publish confirmation contract</h3>
+                        <p>Review revision {selectedPostDetail.revisionId} before any future publish action.</p>
+                        <button
+                          type="button"
+                          disabled={publishConfirmationStatus !== null}
+                          onClick={() => {
+                            setPublishConfirmationStatus(
+                              `Publication intent confirmed locally for revision ${selectedPostDetail.revisionId}.`
+                            );
+                          }}
+                        >
+                          Confirm publication intent
+                        </button>
+                      </section>
+                    ) : null}
+                    {publishConfirmationStatus ? (
+                      <p role="status" aria-label="Publish confirmation intent status">
+                        {publishConfirmationStatus}
                       </p>
                     ) : null}
                   </form>

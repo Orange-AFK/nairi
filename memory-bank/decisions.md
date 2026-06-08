@@ -138,3 +138,12 @@
 4. Rationale: The project uses docs as source-of-truth inputs; executable guards prevent silent drift.
 5. Consequence: A task is not complete when relevant guards fail. Human-readable rules in `guard-ci.md` should describe what guard scripts enforce and where guards intentionally do not enforce policy.
 6. Revisit when: new source-of-truth rules become stable enough for executable enforcement.
+
+### Use Explicit Migration Repair Policy Errors
+
+1. Status: Accepted.
+2. Origin: Emerged during the Migration Repair Policy Boundary.
+3. Decision: `schema_migrations` metadata mismatches fail fast with stable, typed migration-policy errors instead of ad hoc generic exceptions.
+4. Rationale: Migration metadata is the authority for applied schema history. A recorded id/name mismatch may indicate renamed or corrupted migration history and must not be auto-repaired silently.
+5. Consequence: Idempotent baseline DDL reconciliation may still repair missing scaffold tables when metadata is valid, but metadata mismatches require explicit operator/developer intervention.
+6. Revisit when: standalone migration CLI, Alembic integration, or live database repair workflow is introduced.

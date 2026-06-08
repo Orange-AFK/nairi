@@ -641,6 +641,18 @@
 8. Authority-doc impact: updated `project-state.md`, `roadmap.md`, and this progress log.
 9. Next recommended named task: Migration Repair Policy Boundary, Standalone Migration Rehearsal CLI Boundary, or CMS Admin Console Foundation Boundary.
 
+### Migration Repair Policy Boundary
+
+1. Status: completed.
+2. Scope: added stable typed migration-policy error metadata for `schema_migrations` id/name mismatches.
+3. Changed files: `services/api/src/nairi_api/posts.py`, `services/api/tests/test_post_persistence.py`, `memory-bank/decisions.md`, `memory-bank/data-model.md`, `memory-bank/project-state.md`, `memory-bank/roadmap.md`, and `memory-bank/progress-log.md`.
+4. Verification performed: added metadata-mismatch policy test first and observed RED on missing `PostStoreMigrationError`; implemented `PostStoreMigrationError` with `code`, `migration_id`, `recorded_name`, and `expected_name`; verified focused test and full post persistence tests.
+5. Result: recorded migration id/name mismatches now fail fast with stable `migration_name_mismatch` policy metadata while preserving existing valid-metadata baseline reconciliation and pending-migration rollback behavior. No public API contract, route behavior, SQLAlchemy/Alembic layer, PostgreSQL support, external migration CLI, deployment change, automatic metadata repair, or live database operation was added.
+6. Risks or blockers: standalone migration/rehearsal CLI, broader repair workflow, backup retention policy, SQLAlchemy models, Alembic integration, PostgreSQL support, and live database execution remain deferred.
+7. Decision impact: added `Use Explicit Migration Repair Policy Errors` to `decisions.md`.
+8. Authority-doc impact: updated `decisions.md`, `data-model.md`, `project-state.md`, `roadmap.md`, and this progress log.
+9. Next recommended named task: Standalone Migration Rehearsal CLI Boundary, Broader Migration Repair Workflow Boundary, or CMS Admin Console Foundation Boundary.
+
 ## Progress Rule
 
 `progress-log.md` is append-only historical evidence. It is not the current roadmap and it is not the only authority for durable architecture decisions.

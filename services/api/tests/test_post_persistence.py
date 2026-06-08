@@ -8,7 +8,14 @@ from fastapi.testclient import TestClient
 from nairi_api.config import Settings
 from nairi_api.invalidation_dispatch import PublicInvalidationDispatchResult
 from nairi_api.main import create_app
-from nairi_api.posts import PostDraftInput, PostStore, PostStoreMigration, rehearse_post_store_migration, run_schema_migrations
+from nairi_api.posts import (
+    PostDraftInput,
+    PostStore,
+    PostStoreMigration,
+    PostStoreMigrationError,
+    rehearse_post_store_migration,
+    run_schema_migrations,
+)
 
 
 def build_client(database_path: Path) -> TestClient:
@@ -2094,6 +2101,37 @@ def test_schema_migration_runner_applies_pending_migrations_in_order() -> None:
 
     assert applied == ["first", "second"]
     assert rows == [(1, "first"), (2, "second")]
+
+
+def test_schema_migration_runner_reports_stable_name_mismatch_policy() -> None:
+    with sqlite3.connect(":memory:") as connection:
+        connection.execute(
+            """
+            CREATE TABLE schema_migrations (
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL UNIQUE
+            )
+            """
+        )
+        connection.execute("INSERT INTO schema_migrations (id, name) VALUES (?, ?)", (1, "legacy_baseline"))
+
+        try:
+            run_schema_migrations(
+                connection,
+                [PostStoreMigration(id=1, name="post_store_baseline", apply=lambda _: None)],
+            )
+        except PostStoreMigrationError as error:
+            assert error.code == "migration_name_mismatch"
+            assert error.migration_id == 1
+            assert error.recorded_name == "legacy_baseline"
+            assert error.expected_name == "post_store_baseline"
+            assert str(error) == "schema migration 1 recorded as 'legacy_baseline', expected 'post_store_baseline'"
+        else:
+            raise AssertionError("migration name mismatch should fail fast with stable policy metadata")
+
+        rows = connection.execute("SELECT id, name FROM schema_migrations ORDER BY id").fetchall()
+
+    assert rows == [(1, "legacy_baseline")]
 
 
 def test_schema_migration_runner_rolls_back_failed_pending_migration() -> None:

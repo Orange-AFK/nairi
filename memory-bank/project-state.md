@@ -7,7 +7,7 @@
 1. Nairi is in early alpha implementation.
 2. The implementation still follows the accepted API-first, agent-first CMS direction.
 3. Core public and management content flows exist as scaffold implementations with verified route tests and guards.
-4. The current development focus is the Deployment Compose Stub Clarification after the Project State and Roadmap Freshness Cleanup.
+4. The current development focus is Local Check Runner Ergonomics after the Deployment Compose Stub Clarification.
 5. CMS admin console work has advanced beyond the foundation shell into the runtime API client boundary through draft list/detail, draft update, publish-review staging, publish confirmation, injected `publishPost` wiring, post-publish list/read-only behavior, mixed-status copy, and publish-review status scoping coverage; it follows the Migration Operator Handoff Docs Boundary for typed migration policy failures, remains bounded to authenticated API contracts, and preserves manual intervention for migration repair workflows.
 
 ### Current Authority Snapshot
@@ -120,13 +120,13 @@
 
 ## Next Named Work
 
-### Deployment Compose Stub Clarification
+### Local Check Runner Ergonomics
 
 1. Status: candidate next remediation.
-2. Scope: clarify that the Compose deployment guide is a deferred contract stub and that no Dockerfile or Compose runtime is currently shipped.
-3. Boundary: docs-only; no Dockerfile, Compose runtime, deployment behavior, smoke test, image publishing, or production configuration change.
-4. Verification: docs guard, i18n doc guard, contract guard, secret guard, targeted grep for Compose overclaiming, PR CI, and main CI.
-5. Alternative next work: Local Check Runner Ergonomics, Executable Repair Tooling Design Boundary candidate next work, explicit router adoption, richer edit metadata fields, publish-request persistence when selected, or a separate published-history/list module if product wants it.
+2. Scope: document or standardize local structural-check invocation so developers do not hit `guard_common` import failures when running `scripts/checks/*_check.py`.
+3. Boundary: docs or small local tooling only; no product behavior, API contract, deployment behavior, live side effect, or CI semantic change unless explicitly needed.
+4. Verification: docs guard, i18n doc guard, contract guard, secret guard, targeted check-runner command from a clean shell, PR CI, and main CI.
+5. Alternative next work: Executable Repair Tooling Design Boundary candidate next work, explicit router adoption, richer edit metadata fields, publish-request persistence when selected, or a separate published-history/list module if product wants it.
 
 ## Blockers
 

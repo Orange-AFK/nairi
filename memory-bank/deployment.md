@@ -4,7 +4,13 @@
 
 ### Primary Deployment
 
-Docker Compose is the primary deployment interface for self-hosted users.
+Docker Compose is the planned primary deployment interface for self-hosted users.
+
+### Current Runtime Status
+
+1. Deployment readiness is deferred.
+2. The repository does not currently ship Dockerfiles, a Compose file, container images, or deployment smoke tests.
+3. `docs/deployment-compose.md` is a deferred deployment contract stub until those runtime artifacts exist.
 
 ## Service Boundaries
 
@@ -15,6 +21,8 @@ Docker Compose is the primary deployment interface for self-hosted users.
 3. `admin`: React/Vite admin console build served as a web service or static asset service.
 4. `db`: optional PostgreSQL service under a compose profile.
 5. `reverse-proxy`: optional reverse proxy service.
+
+These services are planned boundaries only; no Compose runtime currently defines them.
 
 ## Database Modes
 

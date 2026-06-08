@@ -955,3 +955,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: updated `project-state.md`, `roadmap.md`, and `project-audit.md` so current focus, Cloudflare dry-run state, admin runtime/publish capabilities, admin roadmap status, and active remediation queue match implemented mainline behavior.
 3. Boundary: docs-only; no product behavior, API contract, admin UI, public frontend, deployment, live side effect, or guard semantic change.
 4. Verification: docs guard, i18n doc guard, contract guard, secret guard, `git diff --check`, targeted stale-wording scan, and pending secret-shaped scan.
+
+## Deployment Compose Stub Clarification
+
+1. Status: completed for docs-only audit remediation.
+2. Scope: clarified `docs/deployment-compose.md`, `docs/deployment-compose-cn.md`, and `memory-bank/deployment.md` so Compose deployment is labelled as a deferred contract stub and the absence of Dockerfiles, Compose runtime, container images, and deployment smoke tests is explicit.
+3. Boundary: docs-only; no Dockerfile, Compose file, deployment behavior, smoke test, image publishing, product behavior, API contract, admin UI, public frontend, live side effect, or guard semantic change.
+4. Verification: docs guard, i18n doc guard, contract guard, secret guard, `git diff --check`, Compose overclaim scan, and pending secret-shaped scan.

@@ -7,7 +7,7 @@
 1. Nairi is in early alpha implementation.
 2. The implementation still follows the accepted API-first, agent-first CMS direction.
 3. Core public and management content flows exist as scaffold implementations with verified route tests and guards.
-4. The current development focus is post-merge source-of-truth closeout after Admin Published History List Boundary merged and passed main readback.
+4. The current development focus is post-merge source-of-truth closeout after Admin Draft Content Format Edit Boundary merged and passed main readback.
 5. CMS admin console work has advanced beyond the foundation shell into the runtime API client boundary through draft list/detail, draft update, content-format edit payloads, publish-review staging, publish confirmation, injected `publishPost` wiring, post-publish list/read-only behavior, separate published-history list readback, mixed-status copy, publish-review status scoping coverage, and explicit hash routing; it follows the Migration Operator Handoff Docs Boundary for typed migration policy failures, remains bounded to authenticated API contracts, and preserves manual intervention for migration repair workflows.
 
 ### Current Authority Snapshot
@@ -133,6 +133,12 @@
 1. Status: completed, merged, and read back on `main`.
 2. Completed scope: admin runtime client now exposes a separate injected `listPublishedPosts()` request backed by authenticated `GET /api/v1/posts?status=published`, and the Content workspace renders a dedicated read-only Published history list beside the draft review list.
 3. Boundary: no backend route change, no public API change, no publish workflow state-machine change, no filters/pagination UI, no router expansion, no token storage, no direct database access, and no live external side effects.
+
+### Admin Draft Content Format Edit Boundary
+
+1. Status: completed, merged, and read back on `main`.
+2. Completed scope: admin draft edit form now exposes a `Draft content format` select and submits the selected `contentFormat` through the existing injected `updatePost` payload.
+3. Boundary: admin edit payload only; no backend route change, no public API change, no renderer behavior, no MDX execution, no router expansion, no token storage, no direct database access, and no live external side effects.
 4. Candidate next work: another narrow admin edit boundary, Executable Repair Tooling Design Boundary, or Cloudflare Live Execution Design Boundary after a high-risk audit.
 
 ## Blockers

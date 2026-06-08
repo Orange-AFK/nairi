@@ -850,3 +850,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: added a `Draft category ID` input to the admin edit form, propagated `categoryId` through admin summary/detail/update types, and verified runtime PATCH bodies include normalized category IDs.
 3. Boundary: no category selector, taxonomy management UI, create/publish mutation, router expansion, login UI, token persistence, direct App fetch, or direct database access.
 4. Verification: RED RTL test for missing category field / stale payload, focused admin tests/typecheck, and admin foundation guard.
+
+## Admin Edit Series Field Boundary
+
+1. Status: completed for editable draft series ID field.
+2. Scope: added a `Draft series ID` input to the admin edit form, propagated `seriesId` through admin summary/detail/update types, and verified runtime PATCH bodies include normalized series IDs.
+3. Boundary: no series selector, taxonomy/series management UI, create/publish mutation, router expansion, login UI, token persistence, direct App fetch, or direct database access.
+4. Verification: RED RTL test for missing series field / stale payload, focused admin tests/typecheck, and admin foundation guard.

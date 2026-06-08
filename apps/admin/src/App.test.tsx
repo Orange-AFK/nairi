@@ -24,6 +24,7 @@ function adminApiClient(overrides: Partial<AdminApiClient> = {}): AdminApiClient
         slug: "first-draft",
         summary: "First draft summary.",
         categoryId: "dispatches",
+        seriesId: "field-journal",
         tags: ["draft", "release-notes"],
         status: "draft",
         contentFormat: "markdown",
@@ -39,6 +40,7 @@ function adminApiClient(overrides: Partial<AdminApiClient> = {}): AdminApiClient
         slug: input.slug,
         summary: input.summary,
         categoryId: input.categoryId,
+        seriesId: input.seriesId,
         tags: input.tags,
         status: "draft",
         contentFormat: input.contentFormat,
@@ -136,6 +138,7 @@ describe("Nairi admin console shell", () => {
       slug: input.slug,
       summary: input.summary,
       categoryId: input.categoryId,
+      seriesId: input.seriesId,
       tags: input.tags,
       status: "draft",
       contentFormat: input.contentFormat,
@@ -152,11 +155,13 @@ describe("Nairi admin console shell", () => {
     const slugField = screen.getByLabelText("Draft slug");
     const summaryField = screen.getByLabelText("Draft summary");
     const categoryField = screen.getByLabelText("Draft category ID");
+    const seriesField = screen.getByLabelText("Draft series ID");
     const tagsField = screen.getByLabelText("Draft tags");
     const contentField = screen.getByLabelText("Draft content");
     expect(slugField).toHaveValue("first-draft");
     expect(summaryField).toHaveValue("First draft summary.");
     expect(categoryField).toHaveValue("dispatches");
+    expect(seriesField).toHaveValue("field-journal");
     expect(tagsField).toHaveValue("draft, release-notes");
     await user.clear(titleField);
     await user.type(titleField, "Updated draft title");
@@ -166,6 +171,8 @@ describe("Nairi admin console shell", () => {
     await user.type(summaryField, "Updated draft summary from the admin form.");
     await user.clear(categoryField);
     await user.type(categoryField, "field-notes");
+    await user.clear(seriesField);
+    await user.type(seriesField, "monthly-field-journal");
     await user.clear(tagsField);
     await user.type(tagsField, "updated, release-notes, updated");
     await user.clear(contentField);
@@ -177,6 +184,7 @@ describe("Nairi admin console shell", () => {
       slug: "updated-draft-slug",
       summary: "Updated draft summary from the admin form.",
       categoryId: "field-notes",
+      seriesId: "monthly-field-journal",
       tags: ["updated", "release-notes"],
       contentFormat: "markdown",
       content: "Updated draft body from the admin form.",
@@ -195,6 +203,7 @@ describe("Nairi admin console shell", () => {
       slug: input.slug,
       summary: input.summary,
       categoryId: input.categoryId,
+      seriesId: input.seriesId,
       tags: input.tags,
       status: "draft",
       contentFormat: input.contentFormat,
@@ -225,6 +234,7 @@ describe("Nairi admin console shell", () => {
       slug: input.slug,
       summary: input.summary,
       categoryId: input.categoryId,
+      seriesId: input.seriesId,
       tags: input.tags,
       status: "draft",
       contentFormat: input.contentFormat,
@@ -248,6 +258,38 @@ describe("Nairi admin console shell", () => {
     );
   });
 
+  it("normalizes a cleared draft series ID to null before update", async () => {
+    const user = userEvent.setup();
+    const updatePost = vi.fn(async (_postId: string, input: AdminPostUpdateInput): Promise<AdminPostDetail> => ({
+      id: "post-1",
+      title: input.title,
+      slug: input.slug,
+      summary: input.summary,
+      categoryId: input.categoryId,
+      seriesId: input.seriesId,
+      tags: input.tags,
+      status: "draft",
+      contentFormat: input.contentFormat,
+      content: input.content,
+      revisionId: "revision-post-1-2",
+      updatedAt: "2026-06-08T00:02:00Z"
+    }));
+    render(<App apiClient={adminApiClient({ updatePost })} />);
+
+    await user.click(await screen.findByRole("button", { name: /First draft/ }));
+    await screen.findByText("revision-post-1-1");
+
+    const seriesField = screen.getByLabelText("Draft series ID");
+    await user.clear(seriesField);
+    await user.type(seriesField, "   ");
+    await user.click(screen.getByRole("button", { name: "Save draft changes" }));
+
+    expect(updatePost).toHaveBeenCalledWith(
+      "post-1",
+      expect.objectContaining({ seriesId: null })
+    );
+  });
+
   it("normalizes cleared draft tags to an empty array before update", async () => {
     const user = userEvent.setup();
     const updatePost = vi.fn(async (_postId: string, input: AdminPostUpdateInput): Promise<AdminPostDetail> => ({
@@ -256,6 +298,7 @@ describe("Nairi admin console shell", () => {
       slug: input.slug,
       summary: input.summary,
       categoryId: input.categoryId,
+      seriesId: input.seriesId,
       tags: input.tags,
       status: "draft",
       contentFormat: input.contentFormat,
@@ -292,6 +335,7 @@ describe("Nairi admin console shell", () => {
               slug: input.slug,
               summary: input.summary,
               categoryId: input.categoryId,
+              seriesId: input.seriesId,
               tags: input.tags,
               status: "draft",
               contentFormat: input.contentFormat,

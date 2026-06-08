@@ -148,3 +148,9 @@ The admin console must use documented API endpoints only. It must not perform di
 1. The draft edit form now renders an editable `Draft category ID` field between summary and tags.
 2. Save trims the field and submits `categoryId` through the injected `apiClient.updatePost(postId, input)` payload and runtime PATCH body alongside title, slug, summary, tags, content format, content, and expected revision id.
 3. Boundary: blank category ID normalizes to `null`; no category selector, taxonomy management UI, create/publish mutation, router expansion, login UI, token persistence, direct fetch, or direct database access is added.
+
+## Admin Edit Series Field Boundary
+
+1. The draft edit form now renders an editable `Draft series ID` field between category ID and tags.
+2. Save trims the field and submits `seriesId` through the injected `apiClient.updatePost(postId, input)` payload and runtime PATCH body alongside title, slug, summary, category ID, tags, content format, content, and expected revision id.
+3. Boundary: blank series ID normalizes to `null`; no series selector, taxonomy/series management UI, create/publish mutation, router expansion, login UI, token persistence, direct fetch, or direct database access is added.

@@ -6,6 +6,7 @@ export type AdminPostSummary = {
   id: string;
   title: string;
   slug: string;
+  summary?: string | null;
   status: string;
   updatedAt: string;
 };
@@ -19,6 +20,7 @@ export type AdminPostDetail = AdminPostSummary & {
 export type AdminPostUpdateInput = {
   title: string;
   slug: string;
+  summary: string | null;
   contentFormat: "markdown" | "mdx";
   content: string;
   expectedRevisionId: string;
@@ -126,9 +128,11 @@ export function App({ apiClient }: AppProps) {
     setSaveError(null);
 
     try {
+      const summary = String(formData.get("summary") ?? "").trim();
       const updatedPost = await apiClient.updatePost(savedPostId, {
         title: String(formData.get("title") ?? ""),
         slug: String(formData.get("slug") ?? ""),
+        summary: summary || null,
         contentFormat: selectedPostDetail.contentFormat,
         content: String(formData.get("content") ?? ""),
         expectedRevisionId: savedRevisionId
@@ -147,6 +151,7 @@ export function App({ apiClient }: AppProps) {
                   id: updatedPost.id,
                   title: updatedPost.title,
                   slug: updatedPost.slug,
+                  summary: updatedPost.summary,
                   status: updatedPost.status,
                   updatedAt: updatedPost.updatedAt
                 }
@@ -252,6 +257,10 @@ export function App({ apiClient }: AppProps) {
                     <label>
                       Draft slug
                       <input name="slug" defaultValue={selectedPostDetail.slug} />
+                    </label>
+                    <label>
+                      Draft summary
+                      <textarea name="summary" defaultValue={selectedPostDetail.summary ?? ""} rows={3} />
                     </label>
                     <label>
                       Draft content

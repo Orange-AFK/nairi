@@ -22,6 +22,7 @@ function adminApiClient(overrides: Partial<AdminApiClient> = {}): AdminApiClient
         id: postId,
         title: "First draft",
         slug: "first-draft",
+        summary: "First draft summary.",
         status: "draft",
         contentFormat: "markdown",
         content: "# First draft\n\nDraft body from the management API.",
@@ -34,6 +35,7 @@ function adminApiClient(overrides: Partial<AdminApiClient> = {}): AdminApiClient
         id: "post-1",
         title: input.title,
         slug: input.slug,
+        summary: input.summary,
         status: "draft",
         contentFormat: input.contentFormat,
         content: input.content,
@@ -128,6 +130,7 @@ describe("Nairi admin console shell", () => {
       id: "post-1",
       title: input.title,
       slug: input.slug,
+      summary: input.summary,
       status: "draft",
       contentFormat: input.contentFormat,
       content: input.content,
@@ -141,12 +144,16 @@ describe("Nairi admin console shell", () => {
 
     const titleField = screen.getByLabelText("Draft title");
     const slugField = screen.getByLabelText("Draft slug");
+    const summaryField = screen.getByLabelText("Draft summary");
     const contentField = screen.getByLabelText("Draft content");
     expect(slugField).toHaveValue("first-draft");
+    expect(summaryField).toHaveValue("First draft summary.");
     await user.clear(titleField);
     await user.type(titleField, "Updated draft title");
     await user.clear(slugField);
     await user.type(slugField, "updated-draft-slug");
+    await user.clear(summaryField);
+    await user.type(summaryField, "Updated draft summary from the admin form.");
     await user.clear(contentField);
     await user.type(contentField, "Updated draft body from the admin form.");
     await user.click(screen.getByRole("button", { name: "Save draft changes" }));
@@ -154,6 +161,7 @@ describe("Nairi admin console shell", () => {
     expect(updatePost).toHaveBeenCalledWith("post-1", {
       title: "Updated draft title",
       slug: "updated-draft-slug",
+      summary: "Updated draft summary from the admin form.",
       contentFormat: "markdown",
       content: "Updated draft body from the admin form.",
       expectedRevisionId: "revision-post-1-1"
@@ -161,6 +169,34 @@ describe("Nairi admin console shell", () => {
     expect(await screen.findByText("Draft changes saved.")).toBeInTheDocument();
     expect(screen.getByText("revision-post-1-2")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /publish/i })).not.toBeInTheDocument();
+  });
+
+  it("normalizes a cleared draft summary to null before update", async () => {
+    const user = userEvent.setup();
+    const updatePost = vi.fn(async (_postId: string, input: AdminPostUpdateInput): Promise<AdminPostDetail> => ({
+      id: "post-1",
+      title: input.title,
+      slug: input.slug,
+      summary: input.summary,
+      status: "draft",
+      contentFormat: input.contentFormat,
+      content: input.content,
+      revisionId: "revision-post-1-2",
+      updatedAt: "2026-06-08T00:02:00Z"
+    }));
+    render(<App apiClient={adminApiClient({ updatePost })} />);
+
+    await user.click(await screen.findByRole("button", { name: /First draft/ }));
+    await screen.findByText("revision-post-1-1");
+
+    const summaryField = screen.getByLabelText("Draft summary");
+    await user.clear(summaryField);
+    await user.click(screen.getByRole("button", { name: "Save draft changes" }));
+
+    expect(updatePost).toHaveBeenCalledWith(
+      "post-1",
+      expect.objectContaining({ summary: null })
+    );
   });
 
   it("ignores stale draft edit responses after a newer selection", async () => {
@@ -174,6 +210,7 @@ describe("Nairi admin console shell", () => {
               id: postId,
               title: input.title,
               slug: input.slug,
+              summary: input.summary,
               status: "draft",
               contentFormat: input.contentFormat,
               content: input.content,

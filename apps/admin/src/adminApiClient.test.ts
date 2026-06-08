@@ -19,6 +19,7 @@ describe("createAdminApiClient", () => {
               postId: "post-1",
               title: "First draft",
               slug: "first-draft",
+              summary: "First draft summary.",
               status: "draft",
               updatedAt: "2026-06-08T00:00:00Z"
             }
@@ -40,6 +41,7 @@ describe("createAdminApiClient", () => {
         id: "post-1",
         title: "First draft",
         slug: "first-draft",
+        summary: "First draft summary.",
         status: "draft",
         updatedAt: "2026-06-08T00:00:00Z"
       }
@@ -103,6 +105,7 @@ describe("createAdminApiClient", () => {
       expect(JSON.parse(String(init?.body))).toEqual({
         title: "Updated draft",
         slug: "updated-draft",
+        summary: "Updated draft summary.",
         contentFormat: "markdown",
         content: "Updated draft body.",
         expectedRevisionId: "revision-post-1-1"
@@ -128,6 +131,7 @@ describe("createAdminApiClient", () => {
       client.updatePost("post/1", {
         title: "Updated draft",
         slug: "updated-draft",
+        summary: "Updated draft summary.",
         contentFormat: "markdown",
         content: "Updated draft body.",
         expectedRevisionId: "revision-post-1-1"
@@ -136,6 +140,7 @@ describe("createAdminApiClient", () => {
       id: "post/1",
       title: "Updated draft",
       slug: "updated-draft",
+      summary: "Updated draft summary.",
       status: "draft",
       contentFormat: "markdown",
       content: "Updated draft body.",
@@ -156,6 +161,7 @@ describe("createAdminApiClient", () => {
       client.updatePost("post-1", {
         title: "Updated draft",
         slug: "updated-draft",
+        summary: "Updated draft summary.",
         contentFormat: "markdown",
         content: "Updated draft body.",
         expectedRevisionId: "revision-post-1-1"
@@ -176,6 +182,7 @@ describe("createAdminApiClient", () => {
       client.updatePost("post-1", {
         title: "Updated draft",
         slug: "updated-draft",
+        summary: "Updated draft summary.",
         contentFormat: "markdown",
         content: "Updated draft body.",
         expectedRevisionId: "revision-post-1-1"

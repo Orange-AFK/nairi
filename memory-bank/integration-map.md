@@ -56,6 +56,8 @@ All clients use the same publishing capability: `POST /api/v1/posts/{post_id}/pu
 
 All clients use the same publish-review request capability: `POST /api/v1/posts/{post_id}/publish-requests`.
 
+All clients use the same publish-review resolve capability: `POST /api/v1/publish-requests/{request_id}/resolve`.
+
 Parallel publish endpoints are forbidden unless a future versioned contract explicitly replaces this capability.
 
 ## Permission Boundary

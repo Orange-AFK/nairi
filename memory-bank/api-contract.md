@@ -153,6 +153,22 @@
 8. Errors: `404` with code `not_found` when `post_id` is unknown or does not identify a draft.
 9. Errors: `409` with code `conflict` when `revisionId` does not match the current draft revision. The conflict response must not create a `publish_requests` row or audit event, and must not mutate the post.
 10. Audit event: `post.publish_requested` with `revisionId` and `requestId` metadata.
+11. Errors: `409` with code `conflict` when the deterministic request already exists but is no longer pending; the response must not create a new audit event or reset review state.
+
+### Resolve Publish Review Request
+
+1. Method: `POST`
+2. Path: `/api/v1/publish-requests/{request_id}/resolve`
+3. Scope: `admin:all`
+4. Request body fields: `status`
+5. Allowed status values: `approved`, `rejected`
+6. Response fields: `requestId`, `postId`, `revisionId`, `status`, `requestedAt`, `resolvedAt`
+7. Current review-state boundary: resolves an existing pending `publish_requests` row by setting `status` and deterministic request-time `resolvedAt`; approval or rejection only records owner/admin review state.
+8. Side-effect boundary: resolution records `admin.publish_request.resolve` but does not change post status, does not call `POST /api/v1/posts/{post_id}/publish`, does not create `publish_jobs`, and does not trigger public invalidation dispatch.
+9. Errors: `400` with code `invalid_request` when `status` is not `approved` or `rejected`; validation happens before request/audit mutation.
+10. Errors: `404` with code `not_found` when `request_id` is unknown.
+11. Errors: `409` with code `conflict` when the publish request is already resolved; repeat resolution must not overwrite the first decision or create another resolve audit event.
+12. Audit event: `admin.publish_request.resolve` with `postId`, `revisionId`, and `status` metadata.
 
 ## MDX Component API
 

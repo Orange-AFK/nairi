@@ -1,6 +1,6 @@
 import html
 import re
-from typing import Literal
+from typing import Literal, cast
 
 from fastapi import Depends, FastAPI
 from pydantic import BaseModel, Field
@@ -16,6 +16,9 @@ from nairi_api.posts import (
     PostRevisionConflictError,
     PostStore,
     PublishedPost,
+    PublishReviewRequestAlreadyResolvedError,
+    PublishReviewRequestConflictError,
+    PublishReviewRequestNotFoundError,
     PublishReviewRequest,
     StoredPostDraft,
     UpdatedPostDraft,
@@ -68,6 +71,19 @@ class CreatePublishReviewRequestResponse(BaseModel):
     revision_id: str = Field(alias="revisionId")
     status: Literal["pending"]
     requested_at: str = Field(alias="requestedAt")
+
+
+class ResolvePublishReviewRequest(BaseModel):
+    status: str
+
+
+class ResolvePublishReviewRequestResponse(BaseModel):
+    request_id: str = Field(alias="requestId")
+    post_id: str = Field(alias="postId")
+    revision_id: str = Field(alias="revisionId")
+    status: Literal["approved", "rejected"]
+    requested_at: str = Field(alias="requestedAt")
+    resolved_at: str = Field(alias="resolvedAt")
 
 
 class PublicInvalidationExecutionResponse(BaseModel):
@@ -468,12 +484,54 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "Post revision conflict",
                 {"currentRevisionId": error.current_revision_id},
             ) from error
+        except PublishReviewRequestConflictError as error:
+            raise ApiError(
+                409,
+                "conflict",
+                "Publish request already resolved",
+                {"requestId": error.request_id},
+            ) from error
         return CreatePublishReviewRequestResponse(
             requestId=publish_request.request_id,
             postId=publish_request.post_id,
             revisionId=publish_request.revision_id,
             status=publish_request.status,
             requestedAt=publish_request.requested_at,
+        )
+
+    @app.post("/api/v1/publish-requests/{request_id}/resolve")
+    def resolve_publish_review_request(
+        request_id: str,
+        request: ResolvePublishReviewRequest,
+        actor: AuthenticatedActor = Depends(require_scope("admin:all")),
+    ) -> ResolvePublishReviewRequestResponse:
+        if request.status not in {"approved", "rejected"}:
+            raise ApiError(
+                400,
+                "invalid_request",
+                "Invalid publish request resolution status",
+                {"status": "Status must be approved or rejected"},
+            )
+        resolved_status = cast(Literal["approved", "rejected"], request.status)
+        try:
+            publish_request: PublishReviewRequest = app.state.post_store.resolve_publish_review_request(
+                request_id,
+                resolved_status,
+                actor.token,
+            )
+        except PublishReviewRequestNotFoundError as error:
+            raise ApiError(404, "not_found", "Publish request not found", {"requestId": error.request_id}) from error
+        except PublishReviewRequestAlreadyResolvedError as error:
+            raise ApiError(409, "conflict", "Publish request already resolved", {"requestId": error.request_id}) from error
+        if publish_request.resolved_at is None:
+            raise RuntimeError("resolved publish request missing resolved_at")
+        return ResolvePublishReviewRequestResponse(
+            requestId=publish_request.request_id,
+            postId=publish_request.post_id,
+            revisionId=publish_request.revision_id,
+            status=cast(Literal["approved", "rejected"], publish_request.status),
+            requestedAt=publish_request.requested_at,
+            resolvedAt=publish_request.resolved_at,
         )
 
     @app.post("/api/v1/posts/{post_id}/publish")

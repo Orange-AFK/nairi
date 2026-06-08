@@ -969,3 +969,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: added `scripts/checks/run_all_checks.py` so local and CI structural checks run through one wrapper that injects `scripts/guards` into `PYTHONPATH`, then updated Guards CI and guard documentation to use it.
 3. Boundary: check-runner/CI/docs only; no product behavior, API contract, deployment behavior, live side effect, or guard semantic requirement change.
 4. Verification: reproduced direct check `ModuleNotFoundError: No module named 'guard_common'`, then verified `.venv/bin/python scripts/checks/run_all_checks.py` from the repo and `/tmp` passes all 14 structural checks; full guard, diff, and secret verification remain pending before PR.
+
+## Post-Remediation Lightweight Audit
+
+1. Status: completed for project-health control after the 2026-06-08 audit-remediation queue.
+2. Scope: appended post-remediation audit results to `memory-bank/project-audit-2026-06-08.md`, updated `project-audit.md`, advanced `project-state.md` to Admin Router Adoption Boundary, and aligned `roadmap.md` next-candidate wording.
+3. Boundary: audit/docs only; no product behavior, API contract, admin UI, public frontend, deployment, live side effect, or guard semantic change.
+4. Verification: docs guard, i18n doc guard, contract guard, API schema guard, secret guard, `scripts/checks/run_all_checks.py`, `git diff --check`, stale-remediation scan, runtime-artifact scan, and pending secret-shaped scan.

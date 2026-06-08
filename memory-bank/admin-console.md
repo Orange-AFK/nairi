@@ -197,3 +197,9 @@ The admin console must use documented API endpoints only. It must not perform di
 1. Non-draft selected details now render the eyebrow `API-backed published detail` instead of reusing `API-backed draft detail`.
 2. Draft detail and draft preview labels remain unchanged, and published read-only behavior remains unchanged.
 3. Boundary: this slice changes only local admin detail label semantics; it does not add routing, refetching, published-list navigation, archive/history UI, or backend/API contract changes.
+
+## Admin List Status Label Boundary
+
+1. The admin content list label remains `Drafts` when every loaded summary is a draft.
+2. If a mixed-status list is injected, the label changes to `Content items` so published entries are not presented under a draft-only heading.
+3. Boundary: this is copy/semantics only; no router, live refetch, published-list navigation, archive/history UI, filtering, or backend/API contract changes are added.

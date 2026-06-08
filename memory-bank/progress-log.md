@@ -906,3 +906,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: non-draft admin detail readback now uses the stable eyebrow `API-backed published detail` while draft details keep `API-backed draft detail`.
 3. Tests: extended the direct non-draft detail regression first, observed RED because the UI still rendered `API-backed draft detail`, then added the smallest status-aware label branch.
 4. Boundary: no router, live refetch, published list/history UI, or backend/API contract changes were added.
+
+## Admin List Status Label Boundary
+
+1. Status: completed for local implementation.
+2. Scope: mixed-status admin lists now show `Content items`; all-draft lists continue showing `Drafts`.
+3. Tests: added a RED React test for a mixed draft/published injected list, then implemented the smallest derived label branch.
+4. Boundary: no data-source, router, refetch, published navigation, archive/history UI, filtering, or backend/API contract changes.

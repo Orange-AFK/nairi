@@ -36,6 +36,7 @@ required_app = [
     "AdminPostDetail",
     "AdminPostUpdateInput",
     "updatePost",
+    "publishPost",
     "CMS Admin Console",
     "Nairi Admin",
     'aria-label="Admin modules"',
@@ -98,6 +99,12 @@ required_client = [
     'method: "PATCH"',
     "slug: input.slug",
     "expectedRevisionId: input.expectedRevisionId",
+    "/api/v1/posts/${encodeURIComponent(postId)}/publish",
+    'method: "POST"',
+    "revisionId: input.revisionId",
+    "publishMode: input.publishMode",
+    "scheduledAt: input.scheduledAt",
+    "publicInvalidation: payload.publicInvalidation",
 ]
 required_client_test = [
     "lists draft posts through the authenticated management API with an injected token provider",
@@ -109,6 +116,9 @@ required_client_test = [
     "updates a draft through the authenticated management API with optimistic detail mapping",
     "fails closed before PATCH when update credentials are missing",
     "reports a safe generic error when the management API rejects an update",
+    "publishes a draft through the authenticated management API with a revision contract",
+    "fails closed before publish when credentials are missing",
+    "reports a safe generic error when the management API rejects publish",
 ]
 required_token_provider = [
     "AdminTokenProvider",

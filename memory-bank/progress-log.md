@@ -871,3 +871,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: added a confirmation panel after local publish-review staging, with revision-specific copy and a local confirmation status.
 3. Boundary: confirmation intent does not call `updatePost`, does not expose a live publish API client method, does not mutate post status, and does not call `POST /api/v1/posts/{post_id}/publish`.
 4. Verification: RED RTL test first failed on the missing confirmation panel/action, then focused admin tests/typecheck passed.
+
+## Admin Publish Runtime Client Boundary
+
+1. Status: completed for the runtime admin publish API client contract.
+2. Scope: added `AdminPostPublishInput`, `AdminPostPublishResult`, and `apiClient.publishPost(postId, input)` with authenticated POST wiring to `/api/v1/posts/{post_id}/publish`.
+3. Boundary: the client contract is available for future explicit UI wiring only; the current App publish review/confirmation controls remain local and do not call the live publish endpoint.
+4. Verification: RED API-client tests first failed on missing `publishPost`, then focused admin client tests/typecheck passed.

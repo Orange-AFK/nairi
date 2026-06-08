@@ -32,10 +32,43 @@ export type AdminPostUpdateInput = {
   expectedRevisionId: string;
 };
 
+export type AdminPostPublishInput = {
+  revisionId: string;
+  publishMode: "immediate";
+  scheduledAt: string | null;
+};
+
+export type AdminPublicInvalidationResult = {
+  mode: "recorded";
+  surfaces: string[];
+  execution: {
+    status: string;
+    executor: string;
+    executedAt: string | null;
+    errorCode: string | null;
+    errorMessage: string | null;
+  };
+  dispatch: {
+    status: string;
+    reason: string;
+    attempted: boolean;
+    attemptedAt: string | null;
+  };
+};
+
+export type AdminPostPublishResult = {
+  id: string;
+  status: string;
+  publishedAt: string;
+  jobId: string;
+  publicInvalidation: AdminPublicInvalidationResult;
+};
+
 export type AdminApiClient = {
   listPosts: () => Promise<AdminPostSummary[]>;
   getPost: (postId: string) => Promise<AdminPostDetail>;
   updatePost: (postId: string, input: AdminPostUpdateInput) => Promise<AdminPostDetail>;
+  publishPost: (postId: string, input: AdminPostPublishInput) => Promise<AdminPostPublishResult>;
 };
 
 type AdminModule = "content" | "media" | "settings";

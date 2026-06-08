@@ -166,3 +166,9 @@ The admin console must use documented API endpoints only. It must not perform di
 1. After a local `Request publish review`, the draft detail form now exposes a `Publish confirmation contract` panel for the current `revisionId`.
 2. `Confirm publication intent` records a local confirmation status for that revision without calling `updatePost`, without introducing a runtime publish API client method, and without changing the post status.
 3. Boundary: this is a confirmation-intent contract only; no `POST /api/v1/posts/{post_id}/publish` call, publish mutation, publish job creation, invalidation dispatch, router expansion, login UI, token persistence, direct fetch, or direct database access is added.
+
+## Admin Publish Runtime Client Boundary
+
+1. Runtime `createAdminApiClient.publishPost(postId, input)` now calls authenticated `POST /api/v1/posts/{post_id}/publish` with the encoded post id.
+2. The publish client sends `revisionId`, `publishMode`, and `scheduledAt`, maps the management response to a publish result with `jobId`, and fails closed before fetch when credentials are missing.
+3. Boundary: this only adds the injected runtime API client contract; the admin App UI still does not call `publishPost`, does not expose a live `Publish` button, and does not add router/login/token persistence, direct App fetch, direct database access, job runner UI, or invalidation controls.

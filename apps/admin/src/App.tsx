@@ -73,6 +73,11 @@ export type AdminApiClient = {
 
 type AdminModule = "content" | "media" | "settings";
 
+type AdminRoute = {
+  module: AdminModule;
+  postId: string | null;
+};
+
 type AppProps = {
   apiClient: AdminApiClient;
 };
@@ -83,12 +88,37 @@ const adminModules: Array<{ id: AdminModule; label: string }> = [
   { id: "settings", label: "Settings" }
 ];
 
+function parseAdminRoute(hash = typeof window === "undefined" ? "" : window.location.hash): AdminRoute {
+  const [moduleSegment, postIdSegment] = hash.replace(/^#/, "").split("/");
+  const module = adminModules.some((adminModule) => adminModule.id === moduleSegment)
+    ? (moduleSegment as AdminModule)
+    : "content";
+  let postId: string | null = null;
+
+  if (module === "content" && postIdSegment) {
+    try {
+      postId = decodeURIComponent(postIdSegment);
+    } catch {
+      postId = null;
+    }
+  }
+
+  return { module, postId };
+}
+
+function adminRouteHash(route: AdminRoute): string {
+  if (route.module === "content" && route.postId) {
+    return `#content/${encodeURIComponent(route.postId)}`;
+  }
+  return `#${route.module}`;
+}
+
 function parseDraftTags(value: string): string[] {
   return [...new Set(value.split(",").map((tag) => tag.trim()).filter(Boolean))];
 }
 
 export function App({ apiClient }: AppProps) {
-  const [activeModule, setActiveModule] = useState<AdminModule>("content");
+  const [adminRoute, setAdminRoute] = useState<AdminRoute>(() => parseAdminRoute());
   const [posts, setPosts] = useState<AdminPostSummary[]>([]);
   const [selectedPost, setSelectedPost] = useState<AdminPostSummary | null>(null);
   const [selectedPostDetail, setSelectedPostDetail] = useState<AdminPostDetail | null>(null);
@@ -107,6 +137,27 @@ export function App({ apiClient }: AppProps) {
   const detailRequestIdRef = useRef(0);
   const saveRequestIdRef = useRef(0);
   const publishRequestIdRef = useRef(0);
+  const activeModule = adminRoute.module;
+
+  function setRoute(route: AdminRoute) {
+    setAdminRoute(route);
+    if (window.location.hash !== adminRouteHash(route)) {
+      window.history.pushState(null, "", adminRouteHash(route));
+    }
+  }
+
+  useEffect(() => {
+    function syncRouteFromHash() {
+      setAdminRoute(parseAdminRoute());
+    }
+
+    window.addEventListener("hashchange", syncRouteFromHash);
+    window.addEventListener("popstate", syncRouteFromHash);
+    return () => {
+      window.removeEventListener("hashchange", syncRouteFromHash);
+      window.removeEventListener("popstate", syncRouteFromHash);
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -134,7 +185,7 @@ export function App({ apiClient }: AppProps) {
     };
   }, [apiClient]);
 
-  async function selectPost(post: AdminPostSummary) {
+  async function selectPost(post: AdminPostSummary, updateRoute = true) {
     const detailRequestId = detailRequestIdRef.current + 1;
     detailRequestIdRef.current = detailRequestId;
     saveRequestIdRef.current += 1;
@@ -150,6 +201,9 @@ export function App({ apiClient }: AppProps) {
     setPublishActionError(null);
     setIsPublishingDraft(false);
     setIsDetailLoading(true);
+    if (updateRoute) {
+      setRoute({ module: "content", postId: post.id });
+    }
 
     try {
       const detail = await apiClient.getPost(post.id);
@@ -306,6 +360,17 @@ export function App({ apiClient }: AppProps) {
   const postListLabel = listContainsOnlyDrafts ? "Drafts" : "Content items";
   const detailLoadingCopy = selectedPost?.status === "draft" ? "Loading draft detail…" : "Loading item detail…";
 
+  useEffect(() => {
+    if (adminRoute.module !== "content" || !adminRoute.postId || posts.length === 0) {
+      return;
+    }
+
+    const routedPost = posts.find((post) => post.id === adminRoute.postId);
+    if (routedPost && selectedPost?.id !== routedPost.id) {
+      void selectPost(routedPost, false);
+    }
+  }, [adminRoute, posts, selectedPost?.id]);
+
   return (
     <main className="admin-shell">
       <header className="admin-header">
@@ -322,7 +387,7 @@ export function App({ apiClient }: AppProps) {
             aria-current={activeModule === adminModule.id ? "page" : undefined}
             onClick={(event) => {
               event.preventDefault();
-              setActiveModule(adminModule.id);
+              setRoute({ module: adminModule.id, postId: null });
             }}
           >
             {adminModule.label}

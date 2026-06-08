@@ -976,3 +976,11 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: appended post-remediation audit results to `memory-bank/project-audit-2026-06-08.md`, updated `project-audit.md`, advanced `project-state.md` to Admin Router Adoption Boundary, and aligned `roadmap.md` next-candidate wording.
 3. Boundary: audit/docs only; no product behavior, API contract, admin UI, public frontend, deployment, live side effect, or guard semantic change.
 4. Verification: docs guard, i18n doc guard, contract guard, API schema guard, secret guard, `scripts/checks/run_all_checks.py`, `git diff --check`, stale-remediation scan, runtime-artifact scan, and pending secret-shaped scan.
+
+## Admin Router Adoption Boundary
+
+1. Status: completed locally; PR verification pending.
+2. Scope: added hash-route parsing and updates for `#content`, `#media`, `#settings`, and selected content detail routes shaped as `#content/{postId}`.
+3. Tests: added a React Testing Library regression that starts at `#content/post-2`, verifies routed detail readback through the injected `getPost(postId)` boundary, and verifies module navigation updates the hash to `#media`.
+4. Boundary: client-side hash routing only; no routing library, token storage, backend/API changes, direct fetch, direct database access, scheduler behavior, migration execution, deployment, published-list/history module, or media/settings business logic.
+5. Verification: focused RED/GREEN route tests, full admin tests, admin typecheck/build, frontend admin structural check, full local check runner, docs/i18n/contract/API schema/secret guards, diff check, secret-shaped scan, runtime-artifact scan, and independent re-review passed locally; PR CI remains pending.

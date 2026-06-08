@@ -1,6 +1,6 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { vi } from "vitest";
+import { afterEach, vi } from "vitest";
 
 import {
   App,
@@ -10,6 +10,10 @@ import {
   type AdminPostPublishResult,
   type AdminPostUpdateInput
 } from "./App";
+
+afterEach(() => {
+  window.history.pushState(null, "", "#content");
+});
 
 function adminApiClient(overrides: Partial<AdminApiClient> = {}): AdminApiClient {
   return {
@@ -106,6 +110,85 @@ describe("Nairi admin console shell", () => {
     expect(screen.getByRole("link", { name: "Settings" })).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("heading", { name: "System settings" })).toBeInTheDocument();
     expect(screen.getByText("Settings workflows remain reserved for a later boundary.")).toBeInTheDocument();
+  });
+
+  it("adopts hash routes for admin modules and selected content detail", async () => {
+    const user = userEvent.setup();
+    const getPost = vi.fn((postId: string) => adminApiClient().getPost(postId));
+    window.history.pushState(null, "", "#content/post-2");
+
+    render(
+      <App
+        apiClient={adminApiClient({
+          async listPosts() {
+            return [
+              {
+                id: "post-1",
+                title: "First draft",
+                slug: "first-draft",
+                status: "draft",
+                updatedAt: "2026-06-08T00:00:00Z"
+              },
+              {
+                id: "post-2",
+                title: "Second draft",
+                slug: "second-draft",
+                status: "draft",
+                updatedAt: "2026-06-08T00:01:00Z"
+              }
+            ];
+          },
+          async getPost(postId: string) {
+            return {
+              ...(await getPost(postId)),
+              id: postId,
+              title: postId === "post-1" ? "First draft" : "Second draft",
+              slug: postId === "post-1" ? "first-draft" : "second-draft",
+              revisionId: `revision-${postId}-1`
+            };
+          }
+        })}
+      />
+    );
+
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /Second draft/ })).toHaveAttribute("aria-pressed", "true")
+    );
+    expect(await screen.findByText("revision-post-2-1")).toBeInTheDocument();
+    expect(getPost).toHaveBeenCalledWith("post-2");
+
+    await user.click(screen.getByRole("link", { name: "Media" }));
+
+    expect(window.location.hash).toBe("#media");
+    expect(screen.getByRole("link", { name: "Media" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("heading", { name: "Media library" })).toBeInTheDocument();
+  });
+
+  it("syncs admin hash routes when browser history navigation changes location", async () => {
+    const user = userEvent.setup();
+    render(<App apiClient={adminApiClient()} />);
+
+    expect(await screen.findByRole("heading", { name: "Content workspace" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("link", { name: "Media" }));
+    expect(screen.getByRole("heading", { name: "Media library" })).toBeInTheDocument();
+
+    await act(async () => {
+      window.history.pushState(null, "", "#settings");
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    });
+
+    expect(screen.getByRole("link", { name: "Settings" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("heading", { name: "System settings" })).toBeInTheDocument();
+  });
+
+  it("falls back safely when the admin hash route contains malformed encoding", async () => {
+    window.history.pushState(null, "", "#content/%E0%A4%A");
+
+    render(<App apiClient={adminApiClient()} />);
+
+    expect(await screen.findByRole("heading", { name: "Content workspace" })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /First draft/ })).toHaveAttribute("aria-pressed", "true");
   });
 
   it("loads draft content through an injected API client", async () => {

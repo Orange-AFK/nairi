@@ -227,3 +227,10 @@ The admin console must use documented API endpoints only. It must not perform di
 1. Staged publish-review status remains scoped to the currently selected draft and is cleared when another draft is selected.
 2. The publish confirmation panel also clears with selection changes so an older staged revision is not shown for the newly selected draft.
 3. Boundary: regression coverage and guard/docs only; no backend publish-review persistence, publish API changes, router, live refetch, published-list navigation, archive/history UI, or filtering changes.
+
+## Admin Router Adoption Boundary
+
+1. The admin module shell now adopts explicit hash routes for module selection: `#content`, `#media`, and `#settings`.
+2. The content module supports selected-detail hash routes shaped as `#content/{postId}` and loads the matching injected summary through the existing `apiClient.getPost(postId)` detail boundary after list readback.
+3. Clicking module navigation updates the hash route while preserving the existing `Admin modules` accessibility contract and placeholder-only `Media`/`Settings` modules.
+4. Boundary: client-side hash routing only; no routing library, token storage, backend/API changes, direct component fetch, direct database writes, scheduler behavior, live migration execution, deployment changes, published-history/list module, or media/settings business logic is added.

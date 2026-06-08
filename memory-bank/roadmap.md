@@ -117,11 +117,11 @@
 
 ### CMS Admin Console
 
-1. Status: foundation shell completed; feature modules deferred.
-2. Completed: `apps/admin` Vite React shell, injected API-client component tests, frontend admin structural guard, and Guards CI admin test/typecheck/build coverage.
+1. Status: runtime API client boundary completed through the admin publish review status scope boundary.
+2. Completed: `apps/admin` Vite React shell, injected API-client component tests, runtime `createAdminApiClient`, list/detail/update/publish API client wiring, draft edit and publish-review UI flow, post-publish list/read-only behavior, mixed-status copy, frontend admin structural guard, and Guards CI admin test/typecheck/build coverage.
 3. Goal: implement human-facing content review, editing, audit, media, settings, and recovery controls through authenticated API contracts.
 4. Constraint: admin must not write directly to the database or bypass API scopes/state transitions.
-5. Next candidate: CMS Admin Post List API Client Boundary.
+5. Current detailed admin status is tracked in `Admin Runtime API Client Boundary`; next admin candidates remain explicit router adoption, richer edit metadata fields, publish-request persistence when selected, or a separate published-history/list module if product wants it.
 
 ## Agent and MCP
 

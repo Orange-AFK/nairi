@@ -7,8 +7,8 @@
 1. Nairi is in early alpha implementation.
 2. The implementation still follows the accepted API-first, agent-first CMS direction.
 3. Core public and management content flows exist as scaffold implementations with verified route tests and guards.
-4. The current development focus is the Admin Publish Review Status Scope Boundary after the Admin Draft Workflow Copy Boundary.
-5. CMS admin console foundation has merged into the current branch scope through `apps/admin`, a Vite React shell, injected API-client tests, a runtime `createAdminApiClient` draft-list boundary, a frontend admin structural guard, and Guards CI admin test/typecheck/build coverage; it follows the Migration Operator Handoff Docs Boundary for typed migration policy failures and preserves manual intervention for migration repair workflows.
+4. The current development focus is the Deployment Compose Stub Clarification after the Project State and Roadmap Freshness Cleanup.
+5. CMS admin console work has advanced beyond the foundation shell into the runtime API client boundary through draft list/detail, draft update, publish-review staging, publish confirmation, injected `publishPost` wiring, post-publish list/read-only behavior, mixed-status copy, and publish-review status scoping coverage; it follows the Migration Operator Handoff Docs Boundary for typed migration policy failures, remains bounded to authenticated API contracts, and preserves manual intervention for migration repair workflows.
 
 ### Current Authority Snapshot
 
@@ -16,7 +16,8 @@
 2. `roadmap.md` is the functional roadmap source of truth.
 3. `decisions.md` is the durable architecture decision source of truth.
 4. `progress-log.md` is append-only historical evidence.
-5. `project-review.md` is a historical review artifact for this remediation and is not maintained during normal feature work.
+5. `project-audit.md` defines the active project-health audit cadence and remediation rules.
+6. `project-review.md` and dated audit reports are historical review artifacts and are not maintained during normal feature work.
 
 ## Implemented Functional Areas
 
@@ -78,7 +79,7 @@
 
 1. Settings accept `public_invalidation_dispatcher=cloudflare`.
 2. Settings accept optional `public_invalidation_cloudflare_zone_id` and secret `public_invalidation_cloudflare_api_token` values.
-3. The Cloudflare adapter distinguishes missing settings from configured dry-run bookkeeping on the feature branch.
+3. The Cloudflare adapter distinguishes missing settings from configured dry-run bookkeeping on `main`.
 4. The Cloudflare adapter can build an inert `CloudflarePurgeRequestPlan` with method, path, and deduplicated ordered files body.
 5. Request plans exclude token, `Authorization`, and `Bearer` data and are not executed on `main`.
 6. Cloudflare dry-run dispatch is active: complete settings build an inert request plan and record `cloudflare_adapter_dry_run` without external I/O.
@@ -98,9 +99,9 @@
 
 ### Admin Console
 
-1. CMS admin console foundation exists under `apps/admin` as a minimal Vite React shell.
+1. CMS admin console foundation exists under `apps/admin` as a minimal Vite React shell with runtime API client wiring for list, detail, update, and publish actions.
 2. Admin must use authenticated API contracts and must not write directly to the database.
-3. Current shell uses an injected API client in tests and has no live writes, token storage, router, publish action, scheduler, or production mutation.
+3. Current shell uses an injected API client in tests and has a confirmed publish action through the injected `publishPost` contract; it still has no token storage, router, scheduler, direct database writes, production mutation outside documented APIs, or live database migration execution.
 
 ### Agent and MCP
 
@@ -119,13 +120,13 @@
 
 ## Next Named Work
 
-### CMS Admin Post List API Client Boundary
+### Deployment Compose Stub Clarification
 
-1. Status: candidate next work.
-2. Scope: add the first runtime admin API client boundary for listing posts from documented authenticated management APIs while preserving injected component tests.
-3. Boundary: no direct database access, no token persistence, no live publish action, no scheduler, no repair action, no production mutation, and no live database migration execution.
-4. Verification: TDD/guard-first, admin tests, admin typecheck/build, full API tests, guards, scans, PR CI, and main CI.
-5. Alternative next work: Cloudflare Live Execution Design Boundary or Migration Repair Executable Action Design Boundary.
+1. Status: candidate next remediation.
+2. Scope: clarify that the Compose deployment guide is a deferred contract stub and that no Dockerfile or Compose runtime is currently shipped.
+3. Boundary: docs-only; no Dockerfile, Compose runtime, deployment behavior, smoke test, image publishing, or production configuration change.
+4. Verification: docs guard, i18n doc guard, contract guard, secret guard, targeted grep for Compose overclaiming, PR CI, and main CI.
+5. Alternative next work: Local Check Runner Ergonomics, Executable Repair Tooling Design Boundary candidate next work, explicit router adoption, richer edit metadata fields, publish-request persistence when selected, or a separate published-history/list module if product wants it.
 
 ## Blockers
 

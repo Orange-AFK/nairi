@@ -145,6 +145,6 @@
 
 ## Admin Runtime API Client Boundary
 
-1. Status: completed through admin edit tags field boundary.
-2. Completed: runtime `createAdminApiClient`, fail-closed `createAdminTokenProvider`, `Admin modules` navigation with `Content`, `Media`, and `Settings` shells, `Content` module draft detail readback via `getPost(postId)`, selected draft affordance, empty draft-list copy, injected draft edit form contract via `updatePost(postId, input)`, runtime `PATCH /api/v1/posts/{post_id}` client wiring, editable draft slug payloads, editable draft summary payloads, and editable draft tags payloads.
-3. Next candidate: category/series editing, explicit router adoption, richer edit metadata fields, or publish-request review boundary; still without create/publish mutation unless selected.
+1. Status: completed through admin edit category ID field boundary.
+2. Completed: runtime `createAdminApiClient`, fail-closed `createAdminTokenProvider`, `Admin modules` navigation with `Content`, `Media`, and `Settings` shells, `Content` module draft detail readback via `getPost(postId)`, selected draft affordance, empty draft-list copy, injected draft edit form contract via `updatePost(postId, input)`, runtime `PATCH /api/v1/posts/{post_id}` client wiring, editable draft slug payloads, editable draft summary payloads, editable draft tags payloads, and editable draft category ID payloads.
+3. Next candidate: series editing, explicit router adoption, richer edit metadata fields, or publish-request review boundary; still without create/publish mutation unless selected.

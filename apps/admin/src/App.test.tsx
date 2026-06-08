@@ -19,6 +19,28 @@ function adminApiClient(): AdminApiClient {
 }
 
 describe("Nairi admin console shell", () => {
+  it("switches between reserved admin modules without leaving the injected API boundary", async () => {
+    const user = userEvent.setup();
+    render(<App apiClient={adminApiClient()} />);
+
+    const navigation = screen.getByRole("navigation", { name: "Admin modules" });
+    const contentModule = screen.getByRole("link", { name: "Content" });
+
+    expect(navigation).toBeInTheDocument();
+    expect(contentModule).toHaveAttribute("aria-current", "page");
+    expect(await screen.findByRole("heading", { name: "Content workspace" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("link", { name: "Media" }));
+    expect(screen.getByRole("link", { name: "Media" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("heading", { name: "Media library" })).toBeInTheDocument();
+    expect(screen.getByText("Media workflows remain reserved for a later boundary.")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("link", { name: "Settings" }));
+    expect(screen.getByRole("link", { name: "Settings" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("heading", { name: "System settings" })).toBeInTheDocument();
+    expect(screen.getByText("Settings workflows remain reserved for a later boundary.")).toBeInTheDocument();
+  });
+
   it("loads draft content through an injected API client", async () => {
     render(<App apiClient={adminApiClient()} />);
 

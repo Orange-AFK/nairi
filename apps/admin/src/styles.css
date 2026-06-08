@@ -19,8 +19,10 @@ button {
 }
 
 .admin-header,
+.module-nav,
 .post-list,
-.post-preview {
+.post-preview,
+.module-panel {
   background: #fffaf0;
   border: 1px solid #dfd6c4;
   border-radius: 24px;
@@ -30,6 +32,25 @@ button {
 .admin-header {
   margin-bottom: 24px;
   padding: 32px;
+}
+
+.module-nav {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 12px;
+}
+
+.module-nav a {
+  border-radius: 999px;
+  color: inherit;
+  padding: 10px 16px;
+  text-decoration: none;
+}
+
+.module-nav a[aria-current="page"] {
+  background: #172033;
+  color: #fffaf0;
 }
 
 .admin-header h1,
@@ -52,8 +73,14 @@ button {
 }
 
 .post-list,
-.post-preview {
+.post-preview,
+.module-panel {
   padding: 24px;
+}
+
+.section-label {
+  color: #667085;
+  font-weight: 700;
 }
 
 .post-list button {

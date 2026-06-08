@@ -34,10 +34,16 @@ required_app = [
     "listPosts",
     "CMS Admin Console",
     "Nairi Admin",
+    'aria-label="Admin modules"',
+    'aria-current={activeModule === adminModule.id ? "page" : undefined}',
+    "Content workspace",
+    "Media library",
+    "System settings",
     "API-backed draft preview",
 ]
 required_test = [
     "adminApiClient",
+    "switches between reserved admin modules without leaving the injected API boundary",
     "loads draft content through an injected API client",
     "selects a post without bypassing the injected API boundary",
     "userEvent.setup",

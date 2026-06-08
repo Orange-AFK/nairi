@@ -90,3 +90,10 @@ The admin console must use documented API endpoints only. It must not perform di
 3. The provider does not read `VITE_*` token env names and does not persist bearer tokens in `localStorage` or `sessionStorage`.
 4. The Vite entrypoint wires `getAuthToken` into `createAdminApiClient` while still only reading non-secret `VITE_API_BASE_URL`.
 5. Login UI, token persistence, session restoration, refresh/logout, and live browser auth smoke remain deferred.
+
+## Admin Module Shell Boundary
+
+1. The admin app now exposes a minimal `Admin modules` navigation shell with `Content`, `Media`, and `Settings` entries.
+2. `Content` remains the only API-backed working module and preserves the injected draft-list/preview boundary.
+3. `Media` and `Settings` are placeholder panels only; media workflows, settings writes, routing libraries, create/edit/publish mutations, audit, and token management remain deferred.
+4. Module switching is local React state and does not bypass documented API endpoints or direct database access rules.

@@ -46,6 +46,7 @@ required_app = [
     "System settings",
     "API-backed draft preview",
     "API-backed draft detail",
+    "API-backed published detail",
     "Draft detail could not be loaded.",
     "Draft title",
     "Draft slug",

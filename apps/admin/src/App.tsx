@@ -352,7 +352,13 @@ export function App({ apiClient }: AppProps) {
           <article className="post-preview">
             {previewPost ? (
               <>
-                <p className="eyebrow">{selectedPostDetail ? "API-backed draft detail" : "API-backed draft preview"}</p>
+                <p className="eyebrow">
+                  {selectedPostDetail
+                    ? selectedPostDetail.status === "draft"
+                      ? "API-backed draft detail"
+                      : "API-backed published detail"
+                    : "API-backed draft preview"}
+                </p>
                 <h2>{previewPost.title}</h2>
                 {isDetailLoading ? <p>Loading draft detail…</p> : null}
                 {detailError ? <p role="status">{detailError}</p> : null}

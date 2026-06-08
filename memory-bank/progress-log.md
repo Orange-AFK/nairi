@@ -899,3 +899,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: publish success keeps detail readback and publish status while replacing draft edit/review controls with read-only published-detail copy.
 3. Tests: extended the publish success component test first, observed RED because `Save draft changes` still rendered after publish, then gated the draft form behind `selectedPostDetail.status === "draft"` and moved publish status/error outside the draft-only form; a direct non-draft detail regression test proves read-only behavior is status-driven outside the publish-success path.
 4. Boundary: no published-list navigation, router adoption, live refetch, archive/history UI, or backend/API contract changes were added.
+
+## Admin Published Detail Label Boundary
+
+1. Status: completed for local implementation.
+2. Scope: non-draft admin detail readback now uses the stable eyebrow `API-backed published detail` while draft details keep `API-backed draft detail`.
+3. Tests: extended the direct non-draft detail regression first, observed RED because the UI still rendered `API-backed draft detail`, then added the smallest status-aware label branch.
+4. Boundary: no router, live refetch, published list/history UI, or backend/API contract changes were added.

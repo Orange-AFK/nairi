@@ -187,6 +187,8 @@ describe("Nairi admin console shell", () => {
 
     expect(await screen.findByRole("heading", { name: "Published field note" })).toBeInTheDocument();
     expect(screen.getByText("published")).toBeInTheDocument();
+    expect(screen.getByText("API-backed published detail")).toBeInTheDocument();
+    expect(screen.queryByText("API-backed draft detail")).not.toBeInTheDocument();
     expect(screen.getByText("revision-post-1-published")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Save draft changes" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Request publish review" })).not.toBeInTheDocument();
@@ -361,6 +363,7 @@ describe("Nairi admin console shell", () => {
     expect(screen.getByText("No draft posts are ready for review.")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "First draft" })).toBeInTheDocument();
     expect(screen.getByText("published")).toBeInTheDocument();
+    expect(screen.getByText("API-backed published detail")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Publish confirmed draft" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Save draft changes" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Request publish review" })).not.toBeInTheDocument();

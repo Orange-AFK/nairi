@@ -134,6 +134,8 @@ A sample evidence bundle uses this JSON shape。Paths are examples；do not incl
 7. `count_mismatch`: `preMigrationCounts` and `postMigrationCounts` are inconsistent for this boundary。
 8. `missing_escalation_note`: escalation note does not state which actions were intentionally not taken。
 9. `secret_like_evidence`: evidence appears to contain secret-like text and must be redacted before analysis。
+10. `unreadable_evidence_bundle`: evidence file cannot be read or parsed by the CLI。
+11. `invalid_evidence_bundle`: evidence file is valid JSON but is not a JSON object。
 
 A `migration_name_mismatch` with usable `schema_migrations` evidence returns `needs_manual_intervention`, not repair approval。
 

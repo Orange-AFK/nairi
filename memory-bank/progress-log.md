@@ -725,6 +725,18 @@
 8. Decision impact: no new ADR; this keeps operator docs aligned with the dry-run analyzer contract.
 9. Next recommended named task: Migration Repair Refusal Matrix Test Expansion Boundary, CMS Admin Console Foundation Boundary, or Cloudflare Live Execution Design Boundary.
 
+### Migration Repair Refusal Matrix Test Expansion Boundary
+
+1. Status: completed.
+2. Scope: added focused analyzer and CLI tests for `nairi-post-store-repair-dry-run` refusal policy codes and kept the operator evidence docs aligned with additional CLI fail-closed cases.
+3. Changed files: `services/api/tests/test_migration_repair_dry_run.py`, `docs/migration-operator-handoff.md`, `docs/migration-operator-handoff-cn.md`, `memory-bank/guard-ci.md`, `memory-bank/project-state.md`, `memory-bank/roadmap.md`, and `memory-bank/progress-log.md`.
+4. Verification performed: added focused tests for missing artifact, path aliasing, invalid rehearsal JSON, missing rehearsal JSON fields, count mismatch, missing escalation note, secret-like evidence, unreadable evidence file, and non-object evidence JSON; existing missing field, missing `schema_migrations`, `migration_name_mismatch`, success, mutation, and CLI status tests remained in place.
+5. Result: the dry-run analyzer refusal matrix is now locked by tests for every documented operator-facing refusal code plus CLI fail-closed evidence parsing cases.
+6. Boundary: tests/docs only; no analyzer behavior change, repair tooling action, metadata repair, database mutation, API route, scheduler, production database access, SQLAlchemy, Alembic, PostgreSQL, deployment integration, or live database migration execution was added.
+7. Risks or blockers: executable repair actions, Alembic integration, SQLAlchemy models, PostgreSQL support, deployment integration, admin UI work, and live migration execution remain deferred.
+8. Decision impact: no new ADR; this strengthens test coverage for the existing dry-run analyzer contract.
+9. Next recommended named task: CMS Admin Console Foundation Boundary, Cloudflare Live Execution Design Boundary, or Migration Repair Executable Action Design Boundary.
+
 ## Progress Rule
 
 `progress-log.md` is append-only historical evidence. It is not the current roadmap and it is not the only authority for durable architecture decisions.

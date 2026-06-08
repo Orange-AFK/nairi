@@ -223,6 +223,15 @@ Nairi uses automated guards to enforce documentation boundaries, bilingual synch
 1. Path: `scripts/guards/guard_common.py`
 2. Purpose: shared path, Git, markdown, and reporting helpers for guard scripts.
 
+## Local Structural Check Runner
+
+### Script
+
+1. Path: `scripts/checks/run_all_checks.py`
+2. Purpose: runs every `scripts/checks/*_check.py` script with `scripts/guards` on `PYTHONPATH` so local wildcard check runs do not fail on `guard_common` imports.
+3. Local command: `.venv/bin/python scripts/checks/run_all_checks.py`.
+4. The runner stops at the first failing structural check and returns that check's exit code.
+
 ## CI Design
 
 ### Admin App Coverage
@@ -241,23 +250,12 @@ Nairi uses automated guards to enforce documentation boundaries, bilingual synch
 7. Runs contract guard.
 8. Runs API schema guard.
 9. Runs secret guard.
-10. Runs `scripts/checks/migration_repair_workflow_check.py`.
-11. Runs `scripts/checks/migration_operator_handoff_check.py`.
-12. Runs `scripts/checks/executable_repair_tooling_design_check.py`.
-13. Runs `scripts/checks/migration_repair_evidence_polish_check.py`.
-14. Runs `scripts/checks/frontend_public_detail_check.py`.
-15. Runs `scripts/checks/frontend_public_list_check.py`.
-16. Runs `scripts/checks/frontend_public_style_check.py`.
-17. Runs `scripts/checks/frontend_public_metadata_check.py`.
-18. Runs `scripts/checks/frontend_public_canonical_check.py`.
-19. Runs `scripts/checks/frontend_public_render_check.py`.
-20. Runs `scripts/checks/frontend_public_cache_check.py`.
-21. Runs `scripts/checks/frontend_public_sitemap_check.py`.
-22. Runs `scripts/checks/frontend_public_rss_check.py`.
-23. Runs `npm ci`, `npm run typecheck`, and `npm run build` under `apps/public-site`.
-24. Does not publish container images yet.
-25. Uses concurrency cancellation so superseded Guards runs on the same ref are cancelled.
-26. Forces JavaScript actions to run on Node.js 24.
+10. Runs `scripts/checks/run_all_checks.py` to execute all structural checks with local `guard_common` import support.
+11. Runs `npm ci`, `npm run typecheck`, and `npm run build` under `apps/public-site`.
+12. Runs `npm ci`, `npm test -- --no-file-parallelism`, `npm run typecheck`, and `npm run build` under `apps/admin`.
+13. Does not publish container images yet.
+14. Uses concurrency cancellation so superseded Guards runs on the same ref are cancelled.
+15. Forces JavaScript actions to run on Node.js 24.
 
 ## Completion Rule
 

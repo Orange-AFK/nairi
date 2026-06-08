@@ -43,47 +43,8 @@ jobs:
       - name: Run secret guard
         run: python3 scripts/guards/secret_guard.py
 
-      - name: Run migration repair workflow check
-        run: PYTHONPATH=scripts/guards python3 scripts/checks/migration_repair_workflow_check.py
-
-      - name: Run migration operator handoff check
-        run: PYTHONPATH=scripts/guards python3 scripts/checks/migration_operator_handoff_check.py
-
-      - name: Run executable repair tooling design check
-        run: PYTHONPATH=scripts/guards python3 scripts/checks/executable_repair_tooling_design_check.py
-
-      - name: Run migration repair evidence polish check
-        run: PYTHONPATH=scripts/guards python3 scripts/checks/migration_repair_evidence_polish_check.py
-
-      - name: Run frontend public detail check
-        run: python3 scripts/checks/frontend_public_detail_check.py
-
-      - name: Run frontend public list check
-        run: python3 scripts/checks/frontend_public_list_check.py
-
-      - name: Run frontend public style check
-        run: python3 scripts/checks/frontend_public_style_check.py
-
-      - name: Run frontend public metadata check
-        run: python3 scripts/checks/frontend_public_metadata_check.py
-
-      - name: Run frontend public canonical check
-        run: python3 scripts/checks/frontend_public_canonical_check.py
-
-      - name: Run frontend public render check
-        run: python3 scripts/checks/frontend_public_render_check.py
-
-      - name: Run frontend public cache check
-        run: python3 scripts/checks/frontend_public_cache_check.py
-
-      - name: Run frontend public sitemap check
-        run: python3 scripts/checks/frontend_public_sitemap_check.py
-
-      - name: Run frontend public RSS check
-        run: python3 scripts/checks/frontend_public_rss_check.py
-
-      - name: Run frontend admin foundation check
-        run: python3 scripts/checks/frontend_admin_foundation_check.py
+      - name: Run structural checks
+        run: python3 scripts/checks/run_all_checks.py
 
       - name: Set up Node.js
         uses: actions/setup-node@v6

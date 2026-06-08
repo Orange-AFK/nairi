@@ -7,7 +7,7 @@
 1. Nairi is in early alpha implementation.
 2. The implementation still follows the accepted API-first, agent-first CMS direction.
 3. Core public and management content flows exist as scaffold implementations with verified route tests and guards.
-4. The current development focus is Local Check Runner Ergonomics after the Deployment Compose Stub Clarification.
+4. The current development focus is the next lightweight audit trigger after completing the 2026-06-08 audit-remediation queue.
 5. CMS admin console work has advanced beyond the foundation shell into the runtime API client boundary through draft list/detail, draft update, publish-review staging, publish confirmation, injected `publishPost` wiring, post-publish list/read-only behavior, mixed-status copy, and publish-review status scoping coverage; it follows the Migration Operator Handoff Docs Boundary for typed migration policy failures, remains bounded to authenticated API contracts, and preserves manual intervention for migration repair workflows.
 
 ### Current Authority Snapshot
@@ -120,13 +120,13 @@
 
 ## Next Named Work
 
-### Local Check Runner Ergonomics
+### Lightweight Audit Trigger
 
-1. Status: candidate next remediation.
-2. Scope: document or standardize local structural-check invocation so developers do not hit `guard_common` import failures when running `scripts/checks/*_check.py`.
-3. Boundary: docs or small local tooling only; no product behavior, API contract, deployment behavior, live side effect, or CI semantic change unless explicitly needed.
-4. Verification: docs guard, i18n doc guard, contract guard, secret guard, targeted check-runner command from a clean shell, PR CI, and main CI.
-5. Alternative next work: Executable Repair Tooling Design Boundary candidate next work, explicit router adoption, richer edit metadata fields, publish-request persistence when selected, or a separate published-history/list module if product wants it.
+1. Status: candidate next project-health control point.
+2. Scope: run the lightweight audit required after the active audit-remediation queue is completed, then either record that feature work can resume or classify any new findings.
+3. Boundary: audit/reporting only unless the audit finds a blocker or drift risk that must be remediated before feature work resumes.
+4. Verification: audit report or audit-state update, docs guard, i18n doc guard, contract guard, secret guard, PR CI, and main CI for any committed audit documentation changes.
+5. Alternative next work after the lightweight audit clears: Executable Repair Tooling Design Boundary candidate next work, explicit router adoption, richer edit metadata fields, publish-request persistence when selected, or a separate published-history/list module if product wants it.
 
 ## Blockers
 

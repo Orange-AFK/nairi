@@ -962,3 +962,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: clarified `docs/deployment-compose.md`, `docs/deployment-compose-cn.md`, and `memory-bank/deployment.md` so Compose deployment is labelled as a deferred contract stub and the absence of Dockerfiles, Compose runtime, container images, and deployment smoke tests is explicit.
 3. Boundary: docs-only; no Dockerfile, Compose file, deployment behavior, smoke test, image publishing, product behavior, API contract, admin UI, public frontend, live side effect, or guard semantic change.
 4. Verification: docs guard, i18n doc guard, contract guard, secret guard, `git diff --check`, Compose overclaim scan, and pending secret-shaped scan.
+
+## Local Check Runner Ergonomics
+
+1. Status: completed for audit-remediation guard/tooling ergonomics.
+2. Scope: added `scripts/checks/run_all_checks.py` so local and CI structural checks run through one wrapper that injects `scripts/guards` into `PYTHONPATH`, then updated Guards CI and guard documentation to use it.
+3. Boundary: check-runner/CI/docs only; no product behavior, API contract, deployment behavior, live side effect, or guard semantic requirement change.
+4. Verification: reproduced direct check `ModuleNotFoundError: No module named 'guard_common'`, then verified `.venv/bin/python scripts/checks/run_all_checks.py` from the repo and `/tmp` passes all 14 structural checks; full guard, diff, and secret verification remain pending before PR.

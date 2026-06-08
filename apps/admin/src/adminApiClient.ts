@@ -11,6 +11,7 @@ type CreateAdminApiClientOptions = {
 type ManagementPostSummary = {
   postId: string;
   title: string;
+  slug: string;
   status: string;
   updatedAt?: string;
   publishedAt?: string;
@@ -20,6 +21,13 @@ type ManagementPostDetail = ManagementPostSummary & {
   contentFormat: "markdown" | "mdx";
   content: string;
   revisionId: string;
+};
+
+type ManagementPostUpdateResponse = {
+  postId: string;
+  status: string;
+  revisionId: string;
+  updatedAt: string;
 };
 
 type ListPostsResponse = {
@@ -57,6 +65,7 @@ function mapPostSummary(post: ManagementPostSummary): AdminPostSummary {
   return {
     id: post.postId,
     title: post.title,
+    slug: post.slug,
     status: post.status,
     updatedAt: post.updatedAt ?? post.publishedAt ?? ""
   };
@@ -92,15 +101,23 @@ async function fetchManagementJson<T>({
   apiBaseUrl,
   getAuthToken,
   fetchImpl,
-  path
-}: RuntimeAdminApiClientOptions & { path: string }): Promise<T> {
-  const response = await fetchImpl(buildManagementUrl(apiBaseUrl, path), {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-      Authorization: `Bearer ${requireAuthToken(getAuthToken)}`
-    }
-  });
+  path,
+  method = "GET",
+  body
+}: RuntimeAdminApiClientOptions & { path: string; method?: "GET" | "PATCH"; body?: unknown }): Promise<T> {
+  const url = buildManagementUrl(apiBaseUrl, path);
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    Authorization: `Bearer ${requireAuthToken(getAuthToken)}`
+  };
+  const init: RequestInit = { method, headers };
+
+  if (body !== undefined) {
+    headers["Content-Type"] = "application/json";
+    init.body = JSON.stringify(body);
+  }
+
+  const response = await fetchImpl(url, init);
 
   if (!response.ok) {
     throw new Error("Admin API request failed.");
@@ -131,8 +148,29 @@ export function createAdminApiClient({
       });
       return mapPostDetail(payload);
     },
-    async updatePost(_postId: string, _input: AdminPostUpdateInput) {
-      throw new Error("Admin draft update is not wired to the runtime API client yet.");
+    async updatePost(postId: string, input: AdminPostUpdateInput) {
+      const payload = await fetchManagementJson<ManagementPostUpdateResponse>({
+        ...clientOptions,
+        path: `/api/v1/posts/${encodeURIComponent(postId)}`,
+        method: "PATCH",
+        body: {
+          title: input.title,
+          slug: input.slug,
+          contentFormat: input.contentFormat,
+          content: input.content,
+          expectedRevisionId: input.expectedRevisionId
+        }
+      });
+      return {
+        id: payload.postId,
+        title: input.title,
+        slug: input.slug,
+        status: payload.status,
+        contentFormat: input.contentFormat,
+        content: input.content,
+        revisionId: payload.revisionId,
+        updatedAt: payload.updatedAt
+      };
     }
   };
 }

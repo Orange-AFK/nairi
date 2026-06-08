@@ -118,3 +118,9 @@ The admin console must use documented API endpoints only. It must not perform di
 2. The form submits through injected `apiClient.updatePost(postId, input)` using `title`, `contentFormat`, `content`, and `expectedRevisionId` from the current detail revision.
 3. Successful injected updates refresh the displayed draft detail and list summary; failed updates show the safe fallback `Draft changes could not be saved.`, and stale edit responses are ignored after a newer selection
 4. Boundary: this is an injected UI contract only; runtime `createAdminApiClient` intentionally does not wire `PATCH /api/v1/posts/{post_id}` yet. No publish button, create flow, router expansion, direct fetch, token persistence, media/settings logic, or direct database access is added.
+
+## Admin Runtime PATCH Client Boundary
+
+1. Runtime `createAdminApiClient.updatePost(postId, input)` now calls authenticated `PATCH /api/v1/posts/{post_id}` with the encoded post id.
+2. The request body sends `title`, `slug`, `contentFormat`, `content`, and `expectedRevisionId`; failed credentials, invalid base URLs, and non-2xx update responses remain fail-closed.
+3. The admin UI still uses the injected API client boundary and preserves stale save-response protection; no publish/create/router/login/token-persistence flow is added.

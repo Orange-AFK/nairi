@@ -145,6 +145,6 @@
 
 ## Admin Runtime API Client Boundary
 
-1. Status: completed through admin first edit form boundary.
-2. Completed: runtime `createAdminApiClient`, fail-closed `createAdminTokenProvider`, `Admin modules` navigation with `Content`, `Media`, and `Settings` shells, `Content` module draft detail readback via `getPost(postId)`, selected draft affordance, empty draft-list copy, and injected draft edit form contract via `updatePost(postId, input)`.
-3. Next candidate: runtime `PATCH /api/v1/posts/{post_id}` client wiring, explicit router adoption, or publish-request review boundary; still without create/publish mutation unless selected.
+1. Status: completed through admin runtime PATCH client boundary.
+2. Completed: runtime `createAdminApiClient`, fail-closed `createAdminTokenProvider`, `Admin modules` navigation with `Content`, `Media`, and `Settings` shells, `Content` module draft detail readback via `getPost(postId)`, selected draft affordance, empty draft-list copy, injected draft edit form contract via `updatePost(postId, input)`, and runtime `PATCH /api/v1/posts/{post_id}` client wiring.
+3. Next candidate: explicit router adoption, richer edit metadata fields, or publish-request review boundary; still without create/publish mutation unless selected.

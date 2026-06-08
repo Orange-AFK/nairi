@@ -984,3 +984,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 3. Tests: added a React Testing Library regression that starts at `#content/post-2`, verifies routed detail readback through the injected `getPost(postId)` boundary, and verifies module navigation updates the hash to `#media`.
 4. Boundary: client-side hash routing only; no routing library, token storage, backend/API changes, direct fetch, direct database access, scheduler behavior, migration execution, deployment, published-list/history module, or media/settings business logic.
 5. Verification: focused RED/GREEN route tests, full admin tests, admin typecheck/build, frontend admin structural check, full local check runner, docs/i18n/contract/API schema/secret guards, diff check, secret-shaped scan, runtime-artifact scan, and independent re-review passed locally; PR CI remains pending.
+
+## Admin Router Adoption Merge Closeout
+
+1. Status: completed for post-merge source-of-truth alignment.
+2. Scope: updated `project-state.md`, `roadmap.md`, and local ignored Chinese companions so current focus advances from Admin Router Adoption Boundary to Admin Edit Metadata JSON Field Boundary after PR #100 merged.
+3. Boundary: docs-only closeout; no product behavior, API contract, admin UI, public frontend, deployment, live side effect, or guard semantic change.
+4. Verification: docs guard, i18n doc guard, contract guard, API schema guard, secret guard, full local check runner, diff check, runtime-artifact scan, and secret-shaped scan.

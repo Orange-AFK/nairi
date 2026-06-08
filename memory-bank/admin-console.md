@@ -179,3 +179,9 @@ The admin console must use documented API endpoints only. It must not perform di
 2. The action calls the injected `apiClient.publishPost(postId, { revisionId, publishMode: "immediate", scheduledAt: null })`, validates the response post id, updates the selected/list status to the published response, and renders a safe success status with `publishedAt`.
 3. Publish failures or mismatched publish response ids render `Draft could not be published.` without exposing backend details; stale in-flight publish responses are ignored after draft selection changes.
 4. Boundary: this is the first explicit App publish action wiring; it still adds no router expansion, login UI, token persistence, direct component fetch, direct database access, scheduling UI, job runner UI, or invalidation controls.
+
+## Admin Post-Publish List Behavior Boundary
+
+1. After a confirmed admin publish succeeds, the published post remains visible in the detail pane for readback but is removed from the draft review list.
+2. If that published item was the only draft in the injected list, the list renders `No draft posts are ready for review.` while keeping the success status visible in the detail pane; if other drafts remain, only the published draft is removed.
+3. Boundary: this slice only clarifies list behavior after the existing injected publish action; it does not add published-list navigation, refetching, filters, router state, live fetch wiring, or archive/history UI.

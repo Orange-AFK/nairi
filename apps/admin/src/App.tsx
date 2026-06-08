@@ -284,7 +284,7 @@ export function App({ apiClient }: AppProps) {
           status: publishedPost.status,
           updatedAt: publishedPost.publishedAt
         });
-        setPosts((currentPosts) => currentPosts.map((post) => (post.id === publishedPost.id ? updatedSummary : post)));
+        setPosts((currentPosts) => currentPosts.filter((post) => post.id !== publishedPost.id));
         setPublishActionStatus(`Draft published at ${publishedPost.publishedAt}.`);
         setPublishActionError(null);
         setPublishReviewStatus(null);

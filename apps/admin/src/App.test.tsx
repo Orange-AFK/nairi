@@ -324,7 +324,91 @@ describe("Nairi admin console shell", () => {
     expect(await screen.findByRole("status", { name: "Publish action status" })).toHaveTextContent(
       "Draft published at 2026-06-08T00:10:00Z."
     );
-    expect(screen.getAllByText("published").length).toBeGreaterThan(0);
+    expect(screen.queryByRole("button", { name: /First draft/ })).not.toBeInTheDocument();
+    expect(screen.getByText("No draft posts are ready for review.")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "First draft" })).toBeInTheDocument();
+    expect(screen.getByText("published")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Publish confirmed draft" })).not.toBeInTheDocument();
+  });
+
+  it("removes only the published draft from a multi-draft review list", async () => {
+    const user = userEvent.setup();
+    const publishPost = vi.fn(
+      async (postId: string, _input: AdminPostPublishInput): Promise<AdminPostPublishResult> => ({
+        id: postId,
+        status: "published",
+        publishedAt: "2026-06-08T00:10:00Z",
+        jobId: "publish-job-post-1",
+        publicInvalidation: {
+          mode: "recorded",
+          surfaces: ["/posts", "/posts/first-draft", "/rss.xml", "/sitemap.xml"],
+          execution: {
+            status: "recorded",
+            executor: "none",
+            executedAt: "2026-06-08T00:10:00Z",
+            errorCode: null,
+            errorMessage: null
+          },
+          dispatch: {
+            status: "dispatch_skipped",
+            reason: "no_dispatcher_configured",
+            attempted: false,
+            attemptedAt: null
+          }
+        }
+      })
+    );
+    render(
+      <App
+        apiClient={adminApiClient({
+          async listPosts() {
+            return [
+              {
+                id: "post-1",
+                title: "First draft",
+                slug: "first-draft",
+                status: "draft",
+                updatedAt: "2026-06-08T00:00:00Z"
+              },
+              {
+                id: "post-2",
+                title: "Second draft",
+                slug: "second-draft",
+                status: "draft",
+                updatedAt: "2026-06-08T00:01:00Z"
+              }
+            ];
+          },
+          async getPost(postId: string) {
+            return {
+              id: postId,
+              title: postId === "post-1" ? "First draft" : "Second draft",
+              slug: postId === "post-1" ? "first-draft" : "second-draft",
+              status: "draft",
+              contentFormat: "markdown",
+              content: postId === "post-1" ? "First draft body." : "Second draft body.",
+              revisionId: `revision-${postId}-1`,
+              updatedAt: "2026-06-08T00:00:00Z"
+            };
+          },
+          publishPost
+        })}
+      />
+    );
+
+    await user.click(await screen.findByRole("button", { name: /First draft/ }));
+    await screen.findByText("revision-post-1-1");
+    await user.click(screen.getByRole("button", { name: "Request publish review" }));
+    await user.click(screen.getByRole("button", { name: "Confirm publication intent" }));
+    await user.click(screen.getByRole("button", { name: "Publish confirmed draft" }));
+
+    expect(await screen.findByRole("status", { name: "Publish action status" })).toHaveTextContent(
+      "Draft published at 2026-06-08T00:10:00Z."
+    );
+    expect(screen.queryByRole("button", { name: /First draft/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Second draft/ })).toBeInTheDocument();
+    expect(screen.queryByText("No draft posts are ready for review.")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "First draft" })).toBeInTheDocument();
   });
 
   it("renders a safe publish action error when injected publish fails", async () => {

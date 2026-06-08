@@ -885,3 +885,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: connected the existing confirmation flow to the injected `publishPost` contract through a `Publish confirmed draft` button that appears only after confirmation.
 3. Tests: RED component tests first failed because the publish action button was absent; independent review then prompted stale-response and mismatched-id regression tests, which failed before request-id/id-match hardening and passed after the fix.
 4. Boundary: publish action uses the injected client only; no direct fetch, auth/token persistence, router expansion, scheduling UI, job runner UI, or invalidation UI was added.
+
+## Admin Post-Publish List Behavior Boundary
+
+1. Status: completed for local implementation.
+2. Scope: publish success now filters the published post out of the draft review list while keeping the detail pane readback and success status.
+3. Tests: extended the publish success component test first, observed RED because the published post still remained in the draft list, then changed the post-list state update from status mapping to removal; a follow-up multi-draft regression test proves other draft buttons remain.
+4. Boundary: no new router, live refetch, published list, filters, archive/history UI, or backend/API contract changes were added.

@@ -4,7 +4,7 @@
 
 ### Purpose
 
-This guide will document how human administrators use the CMS console.
+This guide documents how human administrators use the CMS console as it becomes available. The current implementation is a minimal foundation shell under `apps/admin`.
 
 ## Planned Areas
 
@@ -27,3 +27,10 @@ This guide will document how human administrators use the CMS console.
 ## API Rule
 
 The admin console uses documented APIs only. It does not bypass API permissions or write directly to the database.
+
+## Current Foundation
+
+1. The current admin shell is a Vite React app under `apps/admin`.
+2. It renders the `Nairi Admin` workspace and loads draft summaries through an injected API client boundary.
+3. It does not perform live writes, direct database access, token management, publication, scheduling, repair actions, or production mutation.
+4. Future admin modules must continue to use documented API contracts only.

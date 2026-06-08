@@ -65,3 +65,13 @@ The CMS admin console is the human-facing control plane for content, media, MDX 
 ### Admin API Access
 
 The admin console must use documented API endpoints only. It must not perform direct database writes or bypass permission checks.
+
+## Admin Foundation Implementation
+
+### Current Shell
+
+1. App path: `apps/admin`.
+2. Stack: Vite, React, TypeScript, Vitest, React Testing Library.
+3. Current behavior: a minimal API-injected shell renders `Nairi Admin`, loads draft summaries through an injected `AdminApiClient`, and shows an API-backed draft preview.
+4. Boundary: no live fetch, no direct database access, no production mutation, no token storage, no router, no settings, no media, no publish action, and no scheduler.
+5. CI: `scripts/checks/frontend_admin_foundation_check.py`, admin tests, admin typecheck, and admin build run in Guards.

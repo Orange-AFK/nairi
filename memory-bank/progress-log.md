@@ -737,6 +737,18 @@
 8. Decision impact: no new ADR; this strengthens test coverage for the existing dry-run analyzer contract.
 9. Next recommended named task: CMS Admin Console Foundation Boundary, Cloudflare Live Execution Design Boundary, or Migration Repair Executable Action Design Boundary.
 
+### CMS Admin Console Foundation Boundary
+
+1. Status: completed.
+2. Scope: added the first minimal `apps/admin` Vite React shell with injected API-client component tests, package build/test/typecheck scripts, a frontend admin structural guard, CI wiring, and admin documentation updates.
+3. Changed files: `.github/workflows/guards.yml`, `apps/admin/*`, `scripts/checks/frontend_admin_foundation_check.py`, `docs/admin-guide.md`, `docs/admin-guide-cn.md`, `memory-bank/admin-console.md`, `memory-bank/guard-ci.md`, `memory-bank/project-state.md`, `memory-bank/roadmap.md`, and `memory-bank/progress-log.md`.
+4. Verification performed: wrote the admin shell tests first and observed RED on the missing `./App` module, then implemented the smallest shell and verified admin tests, typecheck, and build.
+5. Result: the admin console now has a minimal tested foundation that renders `Nairi Admin`, loads draft summaries through an injected API client, and shows an API-backed draft preview, and renders a safe loading failure message.
+6. Boundary: no direct database access, no live fetch in the shell component, no token persistence, no router, no settings, no media, no publish action, no scheduler, no repair action, no production mutation, and no live database migration execution was added.
+7. Risks or blockers: runtime admin API client, auth/token UX, routing, content editing, publication controls, media, settings, deployment hardening, and live external side effects remain deferred.
+8. Decision impact: no new ADR; this implements the existing React/Vite admin stack decision.
+9. Next recommended named task: CMS Admin Post List API Client Boundary, Cloudflare Live Execution Design Boundary, or Migration Repair Executable Action Design Boundary.
+
 ## Progress Rule
 
 `progress-log.md` is append-only historical evidence. It is not the current roadmap and it is not the only authority for durable architecture decisions.

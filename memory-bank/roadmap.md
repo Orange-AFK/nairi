@@ -117,9 +117,11 @@
 
 ### CMS Admin Console
 
-1. Status: deferred.
-2. Goal: implement human-facing content review, editing, audit, media, settings, and recovery controls through authenticated API contracts.
-3. Constraint: admin must not write directly to the database or bypass API scopes/state transitions.
+1. Status: foundation shell completed; feature modules deferred.
+2. Completed: `apps/admin` Vite React shell, injected API-client component tests, frontend admin structural guard, and Guards CI admin test/typecheck/build coverage.
+3. Goal: implement human-facing content review, editing, audit, media, settings, and recovery controls through authenticated API contracts.
+4. Constraint: admin must not write directly to the database or bypass API scopes/state transitions.
+5. Next candidate: CMS Admin Post List API Client Boundary.
 
 ## Agent and MCP
 

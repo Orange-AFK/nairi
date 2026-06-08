@@ -89,7 +89,7 @@
 
 1. Status: completed through Cloudflare dry-run dispatch boundary.
 2. Completed: public invalidation surfaces, durable recorded execution, dispatch result fields, dispatcher config, dispatcher interface, route integration, dispatch persistence, dispatcher error policy, contract adapter, Cloudflare config adapter, Cloudflare settings, inert Cloudflare request-plan construction, and configured Cloudflare dry-run dispatch bookkeeping.
-3. Active next candidate: Cloudflare Live Execution Design Boundary if live provider behavior is prioritized; otherwise executable repair tooling design or CMS Admin Console Foundation.
+3. Active next candidate: Cloudflare Live Execution Design Boundary if live provider behavior is prioritized; otherwise local repair tooling dry-run implementation or CMS Admin Console Foundation.
 4. Deferred: live HTTP client, authorization header sending, Cloudflare API response/error mapping, CDN purge, retry policy, external execution switch, and real job runner execution.
 
 ## Cloudflare Provider Adapter
@@ -109,9 +109,9 @@
 
 ### SQLAlchemy and Alembic Migration Layer
 
-1. Status: completed for SQLite baseline metadata, minimal ordered runner, local migration rehearsal helper, stable metadata-mismatch policy errors, standalone local rehearsal CLI, documented repair workflow guidance, and operator-facing runbook handoff.
-2. Completed: `schema_migrations` metadata table, one-time `post_store_baseline` recording, reopen idempotency, pre-migration SQLite adoption without data loss, ordered pending migration application, idempotent skip of applied migrations, rollback on failed pending migrations, baseline schema reconciliation when metadata already exists, SQLite backup-API copy, path-alias rejection, exclusive destination creation, no-overwrite artifact safety, backup creation, rehearsal-copy migration, count verification, `PostStore` readback verification, typed `migration_name_mismatch` fail-fast errors, `nairi-post-store-migration-rehearsal` JSON summary entrypoint, operator/developer stop guidance for migration policy conflicts, and `docs/migration-operator-handoff.md` operator-facing runbook.
-3. Deferred: executable repair tooling, Alembic integration, SQLAlchemy model layer, PostgreSQL support, deployment integration, and live database migration execution.
+1. Status: completed for SQLite baseline metadata, minimal ordered runner, local migration rehearsal helper, stable metadata-mismatch policy errors, standalone local rehearsal CLI, documented repair workflow guidance, and operator-facing runbook handoff, and executable repair tooling design contract.
+2. Completed: `schema_migrations` metadata table, one-time `post_store_baseline` recording, reopen idempotency, pre-migration SQLite adoption without data loss, ordered pending migration application, idempotent skip of applied migrations, rollback on failed pending migrations, baseline schema reconciliation when metadata already exists, SQLite backup-API copy, path-alias rejection, exclusive destination creation, no-overwrite artifact safety, backup creation, rehearsal-copy migration, count verification, `PostStore` readback verification, typed `migration_name_mismatch` fail-fast errors, `nairi-post-store-migration-rehearsal` JSON summary entrypoint, operator/developer stop guidance for migration policy conflicts, and `docs/migration-operator-handoff.md` operator-facing runbook, and `memory-bank/executable-repair-tooling.md` design-only contract.
+3. Deferred: local repair tooling implementation, Alembic integration, SQLAlchemy model layer, PostgreSQL support, deployment integration, and live database migration execution.
 
 ## Admin Console
 

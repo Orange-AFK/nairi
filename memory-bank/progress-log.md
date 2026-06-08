@@ -689,6 +689,18 @@
 8. Decision impact: no new ADR; this operationalizes the accepted migration repair workflow and guard/CI decisions.
 9. Next recommended named task: Executable Repair Tooling Design Boundary, CMS Admin Console Foundation Boundary, or Cloudflare Live Execution Design Boundary.
 
+### Executable Repair Tooling Design Boundary
+
+1. Status: completed.
+2. Scope: added the design-only contract for future local executable repair tooling and an executable guard that requires the contract and source-of-truth anchors.
+3. Changed files: `memory-bank/executable-repair-tooling.md`, `scripts/checks/executable_repair_tooling_design_check.py`, `.github/workflows/guards.yml`, `memory-bank/guard-ci.md`, `memory-bank/project-state.md`, `memory-bank/roadmap.md`, and `memory-bank/progress-log.md`.
+4. Verification performed: added `executable_repair_tooling_design_check.py` first and observed RED on the missing design document plus missing input/output/preflight/refusal/no-live/no-auto-repair anchors; then added the design contract, CI step, and source-of-truth updates.
+5. Result: future repair tooling now has a design-only contract requiring an evidence bundle from `docs/migration-operator-handoff.md`, input contract, output contract, preflight checks, dry-run only behavior, manual intervention, `migration_name_mismatch` refusal, `schema_migrations` evidence, and `PostStoreMigrationError` policy awareness.
+6. Boundary: no repair tooling implementation, API contract, route behavior, SQLAlchemy/Alembic layer, PostgreSQL support, deployment integration, scheduling, automatic metadata repair, production database access, or live database migration execution was added.
+7. Risks or blockers: local dry-run tooling implementation, backup retention policy, SQLAlchemy models, Alembic integration, PostgreSQL support, deployment integration, and live database execution remain deferred.
+8. Decision impact: no new ADR; this refines the accepted migration repair workflow into a future implementation contract.
+9. Next recommended named task: Local Repair Tooling Dry-Run Implementation Boundary, CMS Admin Console Foundation Boundary, or Cloudflare Live Execution Design Boundary.
+
 ## Progress Rule
 
 `progress-log.md` is append-only historical evidence. It is not the current roadmap and it is not the only authority for durable architecture decisions.

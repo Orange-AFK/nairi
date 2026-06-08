@@ -57,6 +57,7 @@ required_app = [
     "Draft series ID",
     "Draft tags",
     "Draft content",
+    "Draft controls only affect the selected draft.",
     "Save draft changes",
     "Request publish review",
     "Publish confirmation contract",

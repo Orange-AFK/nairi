@@ -857,3 +857,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: added a `Draft series ID` input to the admin edit form, propagated `seriesId` through admin summary/detail/update types, and verified runtime PATCH bodies include normalized series IDs.
 3. Boundary: no series selector, taxonomy/series management UI, create/publish mutation, router expansion, login UI, token persistence, direct App fetch, or direct database access.
 4. Verification: RED RTL test for missing series field / stale payload, focused admin tests/typecheck, and admin foundation guard.
+
+## Admin Publish Request Review Boundary
+
+1. Status: completed for the first non-executing admin publish review request affordance.
+2. Scope: added a `Request publish review` button to the loaded draft detail form and a local status message tied to the current `revisionId`.
+3. Boundary: the button does not call `updatePost`, does not expose a live publish API client method, does not mutate post status, and does not call `POST /api/v1/posts/{post_id}/publish`.
+4. Verification: RED RTL test for the missing review-request button, focused admin tests/typecheck, and admin foundation guard.

@@ -66,6 +66,7 @@ export function App({ apiClient }: AppProps) {
   const [detailError, setDetailError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [publishReviewStatus, setPublishReviewStatus] = useState<string | null>(null);
   const detailRequestIdRef = useRef(0);
   const saveRequestIdRef = useRef(0);
 
@@ -104,6 +105,7 @@ export function App({ apiClient }: AppProps) {
     setDetailError(null);
     setSaveStatus(null);
     setSaveError(null);
+    setPublishReviewStatus(null);
     setIsDetailLoading(true);
 
     try {
@@ -177,6 +179,7 @@ export function App({ apiClient }: AppProps) {
           )
         );
         setSaveStatus("Draft changes saved.");
+        setPublishReviewStatus(null);
       }
     } catch {
       if (saveRequestIdRef.current === saveRequestId) {
@@ -299,8 +302,24 @@ export function App({ apiClient }: AppProps) {
                     <button type="submit" disabled={isSavingDraft}>
                       {isSavingDraft ? "Saving draft changes…" : "Save draft changes"}
                     </button>
+                    <button
+                      type="button"
+                      disabled={isSavingDraft}
+                      onClick={() => {
+                        setPublishReviewStatus(
+                          `Publish review request staged for revision ${selectedPostDetail.revisionId}.`
+                        );
+                      }}
+                    >
+                      Request publish review
+                    </button>
                     {saveStatus ? <p role="status">{saveStatus}</p> : null}
                     {saveError ? <p role="status">{saveError}</p> : null}
+                    {publishReviewStatus ? (
+                      <p role="status" aria-label="Publish review request status">
+                        {publishReviewStatus}
+                      </p>
+                    ) : null}
                   </form>
                 ) : null}
               </>

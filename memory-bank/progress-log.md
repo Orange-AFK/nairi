@@ -815,3 +815,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: added `AdminPostUpdateInput`, `apiClient.updatePost(postId, input)`, editable draft title/content fields, save success/error states, and list/detail refresh after an injected update.
 3. Boundary: runtime API PATCH wiring remains deferred; no create/publish mutation, router expansion, token persistence, media/settings logic, direct fetch, or direct database access.
 4. Verification: RED RTL tests for update payload and safe update failure, stale edit response regression, focused admin tests/typecheck, and admin foundation guard.
+
+## Admin Runtime PATCH Client Boundary
+
+1. Status: completed for runtime admin PATCH client wiring.
+2. Scope: added runtime `PATCH /api/v1/posts/{post_id}` support to `createAdminApiClient.updatePost`, including encoded ids, JSON body, bearer auth, safe failure, optimistic detail mapping, and slug propagation through admin summary/detail/update types.
+3. Boundary: no publish/create mutation, router expansion, login UI, token persistence, direct App fetch, or direct database access.
+4. Verification: RED admin API client tests for PATCH path/body/auth/failure before implementation, focused admin tests/typecheck, and admin foundation guard.

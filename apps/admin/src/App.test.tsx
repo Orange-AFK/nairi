@@ -11,6 +11,7 @@ function adminApiClient(overrides: Partial<AdminApiClient> = {}): AdminApiClient
         {
           id: "post-1",
           title: "First draft",
+          slug: "first-draft",
           status: "draft",
           updatedAt: "2026-06-08T00:00:00Z"
         }
@@ -20,6 +21,7 @@ function adminApiClient(overrides: Partial<AdminApiClient> = {}): AdminApiClient
       return {
         id: postId,
         title: "First draft",
+        slug: "first-draft",
         status: "draft",
         contentFormat: "markdown",
         content: "# First draft\n\nDraft body from the management API.",
@@ -31,6 +33,7 @@ function adminApiClient(overrides: Partial<AdminApiClient> = {}): AdminApiClient
       return {
         id: "post-1",
         title: input.title,
+        slug: input.slug,
         status: "draft",
         contentFormat: input.contentFormat,
         content: input.content,
@@ -98,6 +101,7 @@ describe("Nairi admin console shell", () => {
     const getPost = vi.fn(async (postId: string): Promise<AdminPostDetail> => ({
       id: postId,
       title: "First draft",
+      slug: "first-draft",
       status: "draft",
       contentFormat: "markdown",
       content: "# First draft\n\nDraft body from the management API.",
@@ -123,6 +127,7 @@ describe("Nairi admin console shell", () => {
     const updatePost = vi.fn(async (_postId: string, input: AdminPostUpdateInput): Promise<AdminPostDetail> => ({
       id: "post-1",
       title: input.title,
+      slug: input.slug,
       status: "draft",
       contentFormat: input.contentFormat,
       content: input.content,
@@ -144,6 +149,7 @@ describe("Nairi admin console shell", () => {
 
     expect(updatePost).toHaveBeenCalledWith("post-1", {
       title: "Updated draft title",
+      slug: "first-draft",
       contentFormat: "markdown",
       content: "Updated draft body from the admin form.",
       expectedRevisionId: "revision-post-1-1"
@@ -163,6 +169,7 @@ describe("Nairi admin console shell", () => {
             resolve({
               id: postId,
               title: input.title,
+              slug: input.slug,
               status: "draft",
               contentFormat: input.contentFormat,
               content: input.content,
@@ -181,12 +188,14 @@ describe("Nairi admin console shell", () => {
               {
                 id: "post-1",
                 title: "First draft",
+                slug: "first-draft",
                 status: "draft",
                 updatedAt: "2026-06-08T00:00:00Z"
               },
               {
                 id: "post-2",
                 title: "Second draft",
+                slug: "second-draft",
                 status: "draft",
                 updatedAt: "2026-06-08T00:01:00Z"
               }
@@ -196,6 +205,7 @@ describe("Nairi admin console shell", () => {
             return {
               id: postId,
               title: postId === "post-1" ? "First draft" : "Second draft",
+              slug: postId === "post-1" ? "first-draft" : "second-draft",
               status: "draft",
               contentFormat: "markdown",
               content: postId === "post-1" ? "First draft body." : "Second draft body.",
@@ -221,6 +231,7 @@ describe("Nairi admin console shell", () => {
       updateResolvers.get("post-1")?.({
         id: "post-1",
         title: "Saved stale first draft",
+        slug: "first-draft",
         status: "draft",
         contentFormat: "markdown",
         content: "Stale first draft body.",
@@ -288,12 +299,14 @@ describe("Nairi admin console shell", () => {
               {
                 id: "post-1",
                 title: "First draft",
+                slug: "first-draft",
                 status: "draft",
                 updatedAt: "2026-06-08T00:00:00Z"
               },
               {
                 id: "post-2",
                 title: "Second draft",
+                slug: "second-draft",
                 status: "draft",
                 updatedAt: "2026-06-08T00:01:00Z"
               }
@@ -311,6 +324,7 @@ describe("Nairi admin console shell", () => {
       detailResolvers.get("post-2")?.({
         id: "post-2",
         title: "Second draft",
+        slug: "second-draft",
         status: "draft",
         contentFormat: "markdown",
         content: "Second body from the management API.",
@@ -324,6 +338,7 @@ describe("Nairi admin console shell", () => {
       detailResolvers.get("post-1")?.({
         id: "post-1",
         title: "First draft",
+        slug: "first-draft",
         status: "draft",
         contentFormat: "markdown",
         content: "Stale first body from the management API.",

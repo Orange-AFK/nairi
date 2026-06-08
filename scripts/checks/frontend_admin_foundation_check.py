@@ -85,6 +85,9 @@ required_client = [
     "Admin API base URL is not configured.",
     "Admin API base URL must be absolute.",
     "Admin API request failed.",
+    'method: "PATCH"',
+    "slug: input.slug",
+    "expectedRevisionId: input.expectedRevisionId",
 ]
 required_client_test = [
     "lists draft posts through the authenticated management API with an injected token provider",
@@ -93,6 +96,9 @@ required_client_test = [
     "fails closed when no API base URL is configured",
     "rejects relative API base URLs instead of guessing a browser-local target",
     "reports a safe generic error when the management API rejects the request",
+    "updates a draft through the authenticated management API with optimistic detail mapping",
+    "fails closed before PATCH when update credentials are missing",
+    "reports a safe generic error when the management API rejects an update",
 ]
 required_token_provider = [
     "AdminTokenProvider",

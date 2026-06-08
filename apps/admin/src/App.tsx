@@ -5,6 +5,7 @@ import "./styles.css";
 export type AdminPostSummary = {
   id: string;
   title: string;
+  slug: string;
   status: string;
   updatedAt: string;
 };
@@ -17,6 +18,7 @@ export type AdminPostDetail = AdminPostSummary & {
 
 export type AdminPostUpdateInput = {
   title: string;
+  slug: string;
   contentFormat: "markdown" | "mdx";
   content: string;
   expectedRevisionId: string;
@@ -126,6 +128,7 @@ export function App({ apiClient }: AppProps) {
     try {
       const updatedPost = await apiClient.updatePost(savedPostId, {
         title: String(formData.get("title") ?? ""),
+        slug: selectedPostDetail.slug,
         contentFormat: selectedPostDetail.contentFormat,
         content: String(formData.get("content") ?? ""),
         expectedRevisionId: savedRevisionId
@@ -143,6 +146,7 @@ export function App({ apiClient }: AppProps) {
               ? {
                   id: updatedPost.id,
                   title: updatedPost.title,
+                  slug: updatedPost.slug,
                   status: updatedPost.status,
                   updatedAt: updatedPost.updatedAt
                 }

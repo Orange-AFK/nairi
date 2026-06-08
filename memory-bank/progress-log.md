@@ -766,3 +766,10 @@ Every completed named task must add a progress entry with:
 9. Next recommended named task.
 
 If a task creates or changes durable architecture decisions, update `decisions.md` in the same task. If a task completes, defers, splits, or reorders functional work, update `roadmap.md`. If a task changes current capabilities, blockers, or current focus, update `project-state.md`.
+
+## Admin Runtime API Client Boundary
+
+1. Status: merged into the current branch scope.
+2. Scope: added a tested runtime `createAdminApiClient` for authenticated draft-list reads via `GET /api/v1/posts?status=draft`, wired from absolute `VITE_API_BASE_URL` in `main.tsx` with an injected token provider and no bundled token, while preserving the injected `AdminApiClient` boundary in `App`.
+3. Verification: focused client tests, full admin tests, typecheck, build, and frontend admin foundation guard.
+4. Deferred: token persistence, router, create/edit/publish UI, settings, media, scheduler, browser E2E, and production mutation.

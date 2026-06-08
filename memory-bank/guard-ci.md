@@ -247,3 +247,9 @@ Any development task that affects documents, contracts, public capability, API s
 2. Scope: requires the minimal `apps/admin` Vite React app files, injected `AdminApiClient` boundary, admin shell copy, component tests, and package scripts.
 3. Guardrail: the foundation app must not call `fetch` directly or reference direct database access in this boundary.
 4. CI: Guards installs admin dependencies, runs admin tests, runs admin typecheck, and builds the admin app.
+
+## Frontend Admin Runtime API Client Check
+
+1. `scripts/checks/frontend_admin_foundation_check.py` now also requires `apps/admin/src/adminApiClient.ts` and `apps/admin/src/adminApiClient.test.ts`.
+2. The guard verifies the runtime client uses the authenticated management list endpoint `/api/v1/posts?status=draft` while the React `App` component stays injected and env-free.
+3. Guards CI continues to run admin tests, typecheck, and build.

@@ -142,3 +142,9 @@
 
 1. Status: deferred.
 2. Goal: GHCR image publishing after Dockerfile, Compose, smoke-test, and release contracts exist.
+
+## Admin Runtime API Client Boundary
+
+1. Status: current follow-up slice.
+2. Goal: add the first tested runtime `createAdminApiClient` for authenticated draft-list reads with an injected token provider while keeping the React app injected and API-boundary-safe.
+3. Next after merge: admin module shell/routing or draft list UX, still without create/edit/publish mutation unless explicitly selected.

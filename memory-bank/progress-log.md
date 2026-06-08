@@ -1039,3 +1039,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: added a `Draft content format` select to the injected admin draft edit form so saved `updatePost` payloads can change `contentFormat` between `markdown` and `mdx`.
 3. Boundary: admin edit payload only; no backend route change, no public API change, no renderer behavior, no MDX execution, no router expansion, no token storage, no direct database access, and no live external side effects.
 4. Verification: focused RED/GREEN admin component test, docs/i18n/contract/API schema/secret guards, full local check runner, admin tests, admin typecheck/build, diff check, tight secret scan, independent review blocker check, PR Guards, main Guards, and GitHub Contents API readback passed.
+
+## Admin Edit Metadata Error Detail UX Boundary
+
+1. Status: implemented locally; PR verification pending.
+2. Scope: replaced the generic save failure copy for non-object `Draft metadata JSON` with the targeted safe copy `Draft metadata JSON must be an object.` while keeping the invalid metadata branch side-effect-free.
+3. Boundary: admin validation copy only; no backend route change, no API contract change, no public API change, no richer metadata schema validation, no renderer behavior, no MDX execution, no router expansion, no token storage, no direct database access, and no live external side effects.
+4. Verification: focused RED/GREEN admin component test, docs/i18n/contract/API schema/secret guards, full local check runner, admin tests, admin typecheck/build, diff check, tight secret scan, and independent review blocker check passed locally before PR.

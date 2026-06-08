@@ -73,6 +73,7 @@ required_app = [
     "Draft editing and publishing controls are hidden for this content item.",
     "Draft changes saved.",
     "Draft changes could not be saved.",
+    "Draft metadata JSON must be an object.",
     "No draft posts are ready for review.",
     "No published posts are in history yet.",
     "Select a draft from the list to load its API-backed detail.",

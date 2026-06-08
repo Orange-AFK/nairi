@@ -97,3 +97,10 @@ The admin console must use documented API endpoints only. It must not perform di
 2. `Content` remains the only API-backed working module and preserves the injected draft-list/preview boundary.
 3. `Media` and `Settings` are placeholder panels only; media workflows, settings writes, routing libraries, create/edit/publish mutations, audit, and token management remain deferred.
 4. Module switching is local React state and does not bypass documented API endpoints or direct database access rules.
+
+## Admin Draft Detail Readback Boundary
+
+1. The `Content` module now reads selected draft detail through injected `apiClient.getPost(postId)`.
+2. The runtime admin API client calls authenticated `GET /api/v1/posts/{postId}` and maps `contentFormat`, `content`, and `revisionId` into the admin detail view.
+3. The list still loads draft summaries only; detail loading is a separate readback step with a safe fallback message.
+4. Boundary: no create/edit/publish mutation, no public route reuse, no direct database access, no token persistence, and no router expansion.

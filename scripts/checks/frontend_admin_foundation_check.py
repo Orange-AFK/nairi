@@ -32,6 +32,8 @@ vite_config = VITE_CONFIG.read_text()
 required_app = [
     "AdminApiClient",
     "listPosts",
+    "getPost",
+    "AdminPostDetail",
     "CMS Admin Console",
     "Nairi Admin",
     'aria-label="Admin modules"',
@@ -40,12 +42,14 @@ required_app = [
     "Media library",
     "System settings",
     "API-backed draft preview",
+    "API-backed draft detail",
+    "Draft detail could not be loaded.",
 ]
 required_test = [
     "adminApiClient",
     "switches between reserved admin modules without leaving the injected API boundary",
     "loads draft content through an injected API client",
-    "selects a post without bypassing the injected API boundary",
+    "selects a post and reads draft detail through the injected API boundary",
     "userEvent.setup",
 ]
 required_main = [
@@ -59,6 +63,7 @@ required_main = [
 required_client = [
     "createAdminApiClient",
     "/api/v1/posts?status=draft",
+    "/api/v1/posts/${encodeURIComponent(postId)}",
     "getAuthToken",
     "Authorization",
     "Admin API credentials are not configured.",
@@ -68,6 +73,7 @@ required_client = [
 ]
 required_client_test = [
     "lists draft posts through the authenticated management API with an injected token provider",
+    "reads a draft detail through the authenticated management API",
     "fails closed when no admin API credentials are configured",
     "fails closed when no API base URL is configured",
     "rejects relative API base URLs instead of guessing a browser-local target",

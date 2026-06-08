@@ -1,4 +1,4 @@
-import type { AdminApiClient, AdminPostSummary } from "./App";
+import type { AdminApiClient, AdminPostDetail, AdminPostSummary } from "./App";
 
 type FetchLike = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 
@@ -14,6 +14,12 @@ type ManagementPostSummary = {
   status: string;
   updatedAt?: string;
   publishedAt?: string;
+};
+
+type ManagementPostDetail = ManagementPostSummary & {
+  contentFormat: "markdown" | "mdx";
+  content: string;
+  revisionId: string;
 };
 
 type ListPostsResponse = {
@@ -56,37 +62,74 @@ function mapPostSummary(post: ManagementPostSummary): AdminPostSummary {
   };
 }
 
+function mapPostDetail(post: ManagementPostDetail): AdminPostDetail {
+  return {
+    ...mapPostSummary(post),
+    contentFormat: post.contentFormat,
+    content: post.content,
+    revisionId: post.revisionId
+  };
+}
+
+function buildManagementUrl(apiBaseUrl: string, path: string): string {
+  try {
+    return buildUrl(apiBaseUrl, path);
+  } catch (error) {
+    if (error instanceof Error && error.message === "Admin API base URL is not configured.") {
+      throw error;
+    }
+    throw new Error("Admin API base URL must be absolute.");
+  }
+}
+
+type RuntimeAdminApiClientOptions = {
+  apiBaseUrl: string;
+  getAuthToken?: () => string;
+  fetchImpl: FetchLike;
+};
+
+async function fetchManagementJson<T>({
+  apiBaseUrl,
+  getAuthToken,
+  fetchImpl,
+  path
+}: RuntimeAdminApiClientOptions & { path: string }): Promise<T> {
+  const response = await fetchImpl(buildManagementUrl(apiBaseUrl, path), {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${requireAuthToken(getAuthToken)}`
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error("Admin API request failed.");
+  }
+
+  return (await response.json()) as T;
+}
+
 export function createAdminApiClient({
   apiBaseUrl,
   getAuthToken,
   fetchImpl = globalThis.fetch.bind(globalThis)
 }: CreateAdminApiClientOptions): AdminApiClient {
+  const clientOptions = { apiBaseUrl, getAuthToken, fetchImpl };
+
   return {
     async listPosts() {
-      let url: string;
-      try {
-        url = buildUrl(apiBaseUrl, "/api/v1/posts?status=draft");
-      } catch (error) {
-        if (error instanceof Error && error.message === "Admin API base URL is not configured.") {
-          throw error;
-        }
-        throw new Error("Admin API base URL must be absolute.");
-      }
-
-      const response = await fetchImpl(url, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${requireAuthToken(getAuthToken)}`
-        }
+      const payload = await fetchManagementJson<ListPostsResponse>({
+        ...clientOptions,
+        path: "/api/v1/posts?status=draft"
       });
-
-      if (!response.ok) {
-        throw new Error("Admin API request failed.");
-      }
-
-      const payload = (await response.json()) as ListPostsResponse;
       return (payload.items ?? []).map(mapPostSummary);
+    },
+    async getPost(postId: string) {
+      const payload = await fetchManagementJson<ManagementPostDetail>({
+        ...clientOptions,
+        path: `/api/v1/posts/${encodeURIComponent(postId)}`
+      });
+      return mapPostDetail(payload);
     }
   };
 }

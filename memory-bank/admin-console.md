@@ -104,3 +104,10 @@ The admin console must use documented API endpoints only. It must not perform di
 2. The runtime admin API client calls authenticated `GET /api/v1/posts/{postId}` and maps `contentFormat`, `content`, and `revisionId` into the admin detail view.
 3. The list still loads draft summaries only; detail loading is a separate readback step with a safe fallback message.
 4. Boundary: no create/edit/publish mutation, no public route reuse, no direct database access, no token persistence, and no router expansion.
+
+## Admin Draft Detail UX Refinement Boundary
+
+1. The `Content` module now marks the selected draft summary with `aria-pressed` and a stable selected style.
+2. Empty draft lists now show a stable message instead of a generic unselected-preview prompt.
+3. The unselected detail panel prompt is explicit that selecting a draft loads API-backed detail.
+4. Boundary: no create/edit/publish mutation, no router expansion, no direct fetch, no token persistence, and no media/settings business logic.

@@ -126,8 +126,15 @@ export function App({ apiClient }: AppProps) {
             <p className="section-label">Drafts</p>
             {isLoading ? <p>Loading admin content…</p> : null}
             {loadError ? <p role="status">{loadError}</p> : null}
+            {!isLoading && !loadError && posts.length === 0 ? <p>No draft posts are ready for review.</p> : null}
             {posts.map((post) => (
-              <button key={post.id} type="button" onClick={() => void selectPost(post)}>
+              <button
+                key={post.id}
+                type="button"
+                aria-pressed={selectedPost?.id === post.id}
+                className={selectedPost?.id === post.id ? "is-selected" : undefined}
+                onClick={() => void selectPost(post)}
+              >
                 <span>{post.title}</span>
                 <small>{post.status}</small>
               </button>
@@ -166,7 +173,7 @@ export function App({ apiClient }: AppProps) {
                 {selectedPostDetail ? <pre className="draft-content">{selectedPostDetail.content}</pre> : null}
               </>
             ) : (
-              <p>Select a draft to review.</p>
+              <p>Select a draft from the list to load its API-backed detail.</p>
             )}
           </article>
         </section>

@@ -44,12 +44,17 @@ required_app = [
     "API-backed draft preview",
     "API-backed draft detail",
     "Draft detail could not be loaded.",
+    "No draft posts are ready for review.",
+    "Select a draft from the list to load its API-backed detail.",
+    'aria-pressed={selectedPost?.id === post.id}',
 ]
 required_test = [
     "adminApiClient",
     "switches between reserved admin modules without leaving the injected API boundary",
     "loads draft content through an injected API client",
     "selects a post and reads draft detail through the injected API boundary",
+    "renders a stable empty state when no draft summaries are available",
+    "aria-pressed",
     "userEvent.setup",
 ]
 required_main = [

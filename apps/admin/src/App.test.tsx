@@ -60,8 +60,26 @@ describe("Nairi admin console shell", () => {
     expect(screen.getByRole("heading", { name: "Nairi Admin" })).toBeInTheDocument();
     expect(screen.getByText("Loading admin content…")).toBeInTheDocument();
 
-    expect(await screen.findByRole("button", { name: /First draft/ })).toBeInTheDocument();
+    const firstDraft = await screen.findByRole("button", { name: /First draft/ });
+    expect(firstDraft).toBeInTheDocument();
+    expect(firstDraft).toHaveAttribute("aria-pressed", "true");
+    expect(firstDraft).toHaveClass("is-selected");
     expect(screen.getAllByText("draft").length).toBeGreaterThan(0);
+  });
+
+  it("renders a stable empty state when no draft summaries are available", async () => {
+    render(
+      <App
+        apiClient={adminApiClient({
+          async listPosts() {
+            return [];
+          }
+        })}
+      />
+    );
+
+    expect(await screen.findByText("No draft posts are ready for review.")).toBeInTheDocument();
+    expect(screen.getByText("Select a draft from the list to load its API-backed detail.")).toBeInTheDocument();
   });
 
   it("selects a post and reads draft detail through the injected API boundary", async () => {
@@ -77,8 +95,11 @@ describe("Nairi admin console shell", () => {
     }));
     render(<App apiClient={adminApiClient({ getPost })} />);
 
-    await user.click(await screen.findByRole("button", { name: /First draft/ }));
+    const firstDraft = await screen.findByRole("button", { name: /First draft/ });
+    await user.click(firstDraft);
 
+    expect(firstDraft).toHaveAttribute("aria-pressed", "true");
+    expect(firstDraft).toHaveClass("is-selected");
     expect(getPost).toHaveBeenCalledWith("post-1");
     expect(await screen.findByRole("heading", { name: "First draft" })).toBeInTheDocument();
     expect(screen.getByText("API-backed draft detail"));

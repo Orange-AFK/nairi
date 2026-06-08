@@ -98,6 +98,12 @@ button {
   width: 100%;
 }
 
+.post-list button.is-selected,
+.post-list button[aria-pressed="true"] {
+  border-color: #8a5a25;
+  box-shadow: inset 4px 0 0 #8a5a25;
+}
+
 .post-list small,
 dd {
   color: #667085;

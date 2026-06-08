@@ -1005,3 +1005,12 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: updated `project-state.md`, `roadmap.md`, and local ignored Chinese companions so Admin Edit Metadata JSON Field Boundary is recorded as merged and read back.
 3. Boundary: docs-only closeout; no product behavior, API contract, admin UI, public frontend, deployment, live side effect, or guard semantic change.
 4. Verification: docs/i18n/contract/API schema/secret guards, full local check runner, diff check, runtime-artifact scan, unstaged secret-shaped scan, staged runtime-artifact scan, and staged secret-shaped scan passed locally; first independent review found this closeout verification line unclear and was addressed.
+
+## Admin Publish Request Persistence Boundary
+
+1. Status: completed and merged.
+2. Scope: added durable authenticated publish-review request creation with `POST /api/v1/posts/{post_id}/publish-requests`, `publish_requests` persistence, deterministic request IDs, `post.publish_requested` audit rows, and admin injected/runtime `requestPublishReview(postId, { revisionId })` wiring.
+3. Boundary: request-review creation uses `posts:publish` but does not mutate post status, does not call live publish, does not create `publish_jobs`, does not trigger invalidation dispatch, and does not add router/login/token persistence/direct database writes.
+4. Hardening: duplicate requests are idempotent through deterministic IDs and database conflict handling, failed admin request creation does not expose confirmation/publish controls, saving a new draft revision clears stale publish-review request state, and new publish-request audit rows avoid raw bearer-token storage.
+5. Verification: docs/i18n/contract/API schema/secret guards, full local check runner, admin tests, admin typecheck/build, backend post persistence tests, diff check, staged/HEAD/tight secret scans, independent review, PR Guards, main Guards, and GitHub Contents API readback passed.
+6. Next recommended named task: Publish Request Resolve Workflow Boundary.

@@ -121,13 +121,13 @@
 
 ## Next Named Work
 
-### Admin Publish Request Persistence Boundary
+### Publish Request Resolve Workflow Boundary
 
-1. Status: in local verification on branch `feat/admin-publish-review-request-persistence`.
-2. Scope: adds a durable `POST /api/v1/posts/{post_id}/publish-requests` API, `publish_requests` persistence, `post.publish_requested` audit event, and admin injected/runtime `requestPublishReview` wiring.
-3. Boundary: request-review creation uses `posts:publish` but does not mutate post status, does not call live publish, does not create `publish_jobs`, does not trigger invalidation dispatch, and does not add router/login/token persistence/direct database writes.
-4. Verification so far: focused backend persistence tests, admin component/client tests, admin typecheck, and frontend admin structural guard pass locally; full guard/review/PR/CI/readback remains in progress.
-5. Alternative next work after merge: publish-request review/resolve workflow, separate published-history/list module if product wants it, another narrow admin edit boundary, Executable Repair Tooling Design Boundary candidate next work, or Cloudflare Live Execution Design Boundary after a high-risk audit.
+1. Status: next recommended narrow admin/API workflow boundary after Admin Publish Request Persistence Boundary merged and read back on `main`.
+2. Starting point: `POST /api/v1/posts/{post_id}/publish-requests`, `publish_requests` persistence, `post.publish_requested` audit event, and admin injected/runtime `requestPublishReview` wiring exist and are verified.
+3. Goal: add the smallest authenticated review/resolve workflow for pending publish requests.
+4. Boundary: approval or rejection updates only the publish request review state; it must not mutate post status, call live publish, create `publish_jobs`, trigger invalidation dispatch, add deployment behavior, or bypass API scopes/audit.
+5. Alternative candidate next work: separate published-history/list module if product wants it, another narrow admin edit boundary, Executable Repair Tooling Design Boundary, or Cloudflare Live Execution Design Boundary after a high-risk audit.
 
 ## Blockers
 

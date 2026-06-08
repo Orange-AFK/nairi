@@ -7,7 +7,7 @@
 1. Nairi is in early alpha implementation.
 2. The implementation still follows the accepted API-first, agent-first CMS direction.
 3. Core public and management content flows exist as scaffold implementations with verified route tests and guards.
-4. The current development focus is to verify and merge Admin Edit Metadata JSON Field Boundary.
+4. The current development focus is post-merge source-of-truth closeout after Admin Edit Metadata JSON Field Boundary merged and passed main readback.
 5. CMS admin console work has advanced beyond the foundation shell into the runtime API client boundary through draft list/detail, draft update, publish-review staging, publish confirmation, injected `publishPost` wiring, post-publish list/read-only behavior, mixed-status copy, publish-review status scoping coverage, and explicit hash routing; it follows the Migration Operator Handoff Docs Boundary for typed migration policy failures, remains bounded to authenticated API contracts, and preserves manual intervention for migration repair workflows.
 
 ### Current Authority Snapshot
@@ -122,11 +122,11 @@
 
 ### Admin Edit Metadata JSON Field Boundary
 
-1. Status: implemented locally; verification and PR/main readback pending.
-2. Scope: adds one editable metadata JSON field to the React admin draft edit form and runtime update payload while preserving authenticated API-contract access and existing injected-client behavior.
+1. Status: merged into `main` as PR #102 and passed main readback.
+2. Scope: added one editable metadata JSON field to the React admin draft edit form and runtime update payload while preserving authenticated API-contract access and existing injected-client behavior.
 3. Boundary: admin edit metadata UI and update payload only; no metadata validation beyond safe JSON parsing, taxonomy selectors, create flow, publish behavior changes, token storage, routing library, direct database writes, production mutation outside documented APIs, scheduler behavior, live migration execution, public API changes, or deployment changes.
-4. Verification: focused RED/GREEN admin component and runtime client tests, full admin tests, admin typecheck/build, frontend admin structural check, docs/i18n/contract/API schema/secret guards, full local check runner, diff check, secret-shaped scan, PR CI, and main CI.
-5. Alternative next work: publish-request persistence when selected, separate published-history/list module if product wants it, Executable Repair Tooling Design Boundary candidate next work, or Cloudflare Live Execution Design Boundary after a high-risk audit.
+4. Verification: focused RED/GREEN admin component and runtime client tests, full admin tests, admin typecheck/build, frontend admin structural check, docs/i18n/contract/API schema/secret guards, full local check runner, diff check, secret-shaped scans, independent review, PR Guards, main Guards, and GitHub contents readback passed.
+5. Alternative next work: publish-request persistence when selected, separate published-history/list module if product wants it, another narrow admin edit boundary, Executable Repair Tooling Design Boundary candidate next work, or Cloudflare Live Execution Design Boundary after a high-risk audit.
 
 ## Blockers
 

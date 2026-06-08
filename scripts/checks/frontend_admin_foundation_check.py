@@ -50,6 +50,7 @@ required_app = [
     "Draft slug",
     "Draft summary",
     "Draft category ID",
+    "Draft series ID",
     "Draft tags",
     "Draft content",
     "Save draft changes",

@@ -21,6 +21,7 @@ describe("createAdminApiClient", () => {
               slug: "first-draft",
               summary: "First draft summary.",
               categoryId: "dispatches",
+              seriesId: "field-journal",
               tags: ["draft", "release-notes"],
               status: "draft",
               updatedAt: "2026-06-08T00:00:00Z"
@@ -45,6 +46,7 @@ describe("createAdminApiClient", () => {
         slug: "first-draft",
         summary: "First draft summary.",
         categoryId: "dispatches",
+        seriesId: "field-journal",
         tags: ["draft", "release-notes"],
         status: "draft",
         updatedAt: "2026-06-08T00:00:00Z"
@@ -111,6 +113,7 @@ describe("createAdminApiClient", () => {
         slug: "updated-draft",
         summary: "Updated draft summary.",
         categoryId: "field-notes",
+        seriesId: "monthly-field-journal",
         tags: ["updated", "release-notes"],
         contentFormat: "markdown",
         content: "Updated draft body.",
@@ -139,6 +142,7 @@ describe("createAdminApiClient", () => {
         slug: "updated-draft",
         summary: "Updated draft summary.",
         categoryId: "field-notes",
+        seriesId: "monthly-field-journal",
         tags: ["updated", "release-notes"],
         contentFormat: "markdown",
         content: "Updated draft body.",
@@ -150,6 +154,7 @@ describe("createAdminApiClient", () => {
       slug: "updated-draft",
       summary: "Updated draft summary.",
       categoryId: "field-notes",
+      seriesId: "monthly-field-journal",
       tags: ["updated", "release-notes"],
       status: "draft",
       contentFormat: "markdown",
@@ -173,6 +178,7 @@ describe("createAdminApiClient", () => {
         slug: "updated-draft",
         summary: "Updated draft summary.",
         categoryId: "field-notes",
+        seriesId: "monthly-field-journal",
         tags: ["updated", "release-notes"],
         contentFormat: "markdown",
         content: "Updated draft body.",
@@ -207,6 +213,41 @@ describe("createAdminApiClient", () => {
       slug: "updated-draft",
       summary: "Updated draft summary.",
       categoryId: null,
+      seriesId: "monthly-field-journal",
+      tags: ["updated", "release-notes"],
+      contentFormat: "markdown",
+      content: "Updated draft body.",
+      expectedRevisionId: "revision-post-1-1"
+    });
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
+  it("includes a cleared series ID as null in the update body", async () => {
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+      expect(JSON.parse(String(init?.body))).toEqual(expect.objectContaining({ seriesId: null }));
+
+      return new Response(
+        JSON.stringify({
+          postId: "post-1",
+          status: "draft",
+          revisionId: "revision-post-1-2",
+          updatedAt: "2026-06-08T00:05:00Z"
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
+    });
+    const client = createAdminApiClient({
+      apiBaseUrl: "https://api.example.test/",
+      getAuthToken: () => "tkn",
+      fetchImpl: fetchMock
+    });
+
+    await client.updatePost("post-1", {
+      title: "Updated draft",
+      slug: "updated-draft",
+      summary: "Updated draft summary.",
+      categoryId: "field-notes",
+      seriesId: null,
       tags: ["updated", "release-notes"],
       contentFormat: "markdown",
       content: "Updated draft body.",
@@ -229,6 +270,7 @@ describe("createAdminApiClient", () => {
         slug: "updated-draft",
         summary: "Updated draft summary.",
         categoryId: "field-notes",
+        seriesId: "monthly-field-journal",
         tags: ["updated", "release-notes"],
         contentFormat: "markdown",
         content: "Updated draft body.",

@@ -1,5 +1,6 @@
 import type {
   AdminApiClient,
+  AdminPostMetadata,
   AdminPostDetail,
   AdminPostPublishInput,
   AdminPostPublishResult,
@@ -23,6 +24,7 @@ type ManagementPostSummary = {
   categoryId: string | null;
   seriesId: string | null;
   tags: string[];
+  metadata: AdminPostMetadata;
   status: string;
   updatedAt?: string;
   publishedAt?: string;
@@ -89,6 +91,7 @@ function mapPostSummary(post: ManagementPostSummary): AdminPostSummary {
     categoryId: post.categoryId,
     seriesId: post.seriesId,
     tags: post.tags,
+    metadata: post.metadata,
     status: post.status,
     updatedAt: post.updatedAt ?? post.publishedAt ?? ""
   };
@@ -193,6 +196,7 @@ export function createAdminApiClient({
           categoryId: input.categoryId,
           seriesId: input.seriesId,
           tags: input.tags,
+          metadata: input.metadata,
           contentFormat: input.contentFormat,
           content: input.content,
           expectedRevisionId: input.expectedRevisionId
@@ -206,6 +210,7 @@ export function createAdminApiClient({
         categoryId: input.categoryId,
         seriesId: input.seriesId,
         tags: input.tags,
+        metadata: input.metadata,
         status: payload.status,
         contentFormat: input.contentFormat,
         content: input.content,

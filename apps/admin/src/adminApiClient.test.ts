@@ -23,6 +23,10 @@ describe("createAdminApiClient", () => {
               categoryId: "dispatches",
               seriesId: "field-journal",
               tags: ["draft", "release-notes"],
+              metadata: {
+                audience: "operators",
+                priority: 2
+              },
               status: "draft",
               updatedAt: "2026-06-08T00:00:00Z"
             }
@@ -48,6 +52,10 @@ describe("createAdminApiClient", () => {
         categoryId: "dispatches",
         seriesId: "field-journal",
         tags: ["draft", "release-notes"],
+        metadata: {
+          audience: "operators",
+          priority: 2
+        },
         status: "draft",
         updatedAt: "2026-06-08T00:00:00Z"
       }
@@ -115,6 +123,10 @@ describe("createAdminApiClient", () => {
         categoryId: "field-notes",
         seriesId: "monthly-field-journal",
         tags: ["updated", "release-notes"],
+        metadata: {
+          audience: "maintainers",
+          priority: 3
+        },
         contentFormat: "markdown",
         content: "Updated draft body.",
         expectedRevisionId: "revision-post-1-1"
@@ -144,6 +156,10 @@ describe("createAdminApiClient", () => {
         categoryId: "field-notes",
         seriesId: "monthly-field-journal",
         tags: ["updated", "release-notes"],
+        metadata: {
+          audience: "maintainers",
+          priority: 3
+        },
         contentFormat: "markdown",
         content: "Updated draft body.",
         expectedRevisionId: "revision-post-1-1"
@@ -156,6 +172,10 @@ describe("createAdminApiClient", () => {
       categoryId: "field-notes",
       seriesId: "monthly-field-journal",
       tags: ["updated", "release-notes"],
+      metadata: {
+        audience: "maintainers",
+        priority: 3
+      },
       status: "draft",
       contentFormat: "markdown",
       content: "Updated draft body.",
@@ -180,6 +200,7 @@ describe("createAdminApiClient", () => {
         categoryId: "field-notes",
         seriesId: "monthly-field-journal",
         tags: ["updated", "release-notes"],
+        metadata: {},
         contentFormat: "markdown",
         content: "Updated draft body.",
         expectedRevisionId: "revision-post-1-1"
@@ -215,6 +236,7 @@ describe("createAdminApiClient", () => {
       categoryId: null,
       seriesId: "monthly-field-journal",
       tags: ["updated", "release-notes"],
+      metadata: {},
       contentFormat: "markdown",
       content: "Updated draft body.",
       expectedRevisionId: "revision-post-1-1"
@@ -249,6 +271,7 @@ describe("createAdminApiClient", () => {
       categoryId: "field-notes",
       seriesId: null,
       tags: ["updated", "release-notes"],
+      metadata: {},
       contentFormat: "markdown",
       content: "Updated draft body.",
       expectedRevisionId: "revision-post-1-1"
@@ -272,6 +295,7 @@ describe("createAdminApiClient", () => {
         categoryId: "field-notes",
         seriesId: "monthly-field-journal",
         tags: ["updated", "release-notes"],
+        metadata: {},
         contentFormat: "markdown",
         content: "Updated draft body.",
         expectedRevisionId: "revision-post-1-1"

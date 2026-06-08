@@ -2,6 +2,8 @@ import { type FormEvent, useEffect, useRef, useState } from "react";
 
 import "./styles.css";
 
+export type AdminPostMetadata = Record<string, unknown>;
+
 export type AdminPostSummary = {
   id: string;
   title: string;
@@ -10,6 +12,7 @@ export type AdminPostSummary = {
   categoryId?: string | null;
   seriesId?: string | null;
   tags?: string[];
+  metadata?: AdminPostMetadata;
   status: string;
   updatedAt: string;
 };
@@ -27,6 +30,7 @@ export type AdminPostUpdateInput = {
   categoryId: string | null;
   seriesId: string | null;
   tags: string[];
+  metadata: AdminPostMetadata;
   contentFormat: "markdown" | "mdx";
   content: string;
   expectedRevisionId: string;
@@ -115,6 +119,23 @@ function adminRouteHash(route: AdminRoute): string {
 
 function parseDraftTags(value: string): string[] {
   return [...new Set(value.split(",").map((tag) => tag.trim()).filter(Boolean))];
+}
+
+function stringifyDraftMetadata(metadata: AdminPostMetadata | undefined): string {
+  return JSON.stringify(metadata ?? {}, null, 2);
+}
+
+function parseDraftMetadata(value: string): AdminPostMetadata {
+  const trimmedValue = value.trim();
+  if (!trimmedValue) {
+    return {};
+  }
+
+  const parsed = JSON.parse(trimmedValue) as unknown;
+  if (parsed === null || Array.isArray(parsed) || typeof parsed !== "object") {
+    throw new Error("Draft metadata must be a JSON object.");
+  }
+  return parsed as AdminPostMetadata;
 }
 
 export function App({ apiClient }: AppProps) {
@@ -249,6 +270,7 @@ export function App({ apiClient }: AppProps) {
         categoryId: categoryId || null,
         seriesId: seriesId || null,
         tags: parseDraftTags(String(formData.get("tags") ?? "")),
+        metadata: parseDraftMetadata(String(formData.get("metadata") ?? "")),
         contentFormat: selectedPostDetail.contentFormat,
         content: String(formData.get("content") ?? ""),
         expectedRevisionId: savedRevisionId
@@ -271,6 +293,7 @@ export function App({ apiClient }: AppProps) {
                   categoryId: updatedPost.categoryId,
                   seriesId: updatedPost.seriesId,
                   tags: updatedPost.tags,
+                  metadata: updatedPost.metadata,
                   status: updatedPost.status,
                   updatedAt: updatedPost.updatedAt
                 }
@@ -329,6 +352,7 @@ export function App({ apiClient }: AppProps) {
           categoryId: selectedPostDetail.categoryId,
           seriesId: selectedPostDetail.seriesId,
           tags: selectedPostDetail.tags,
+          metadata: selectedPostDetail.metadata,
           status: publishedPost.status,
           updatedAt: publishedPost.publishedAt
         };
@@ -479,6 +503,14 @@ export function App({ apiClient }: AppProps) {
                       <label>
                         Draft tags
                         <input name="tags" defaultValue={(selectedPostDetail.tags ?? []).join(", ")} />
+                      </label>
+                      <label>
+                        Draft metadata JSON
+                        <textarea
+                          name="metadata"
+                          defaultValue={stringifyDraftMetadata(selectedPostDetail.metadata)}
+                          rows={6}
+                        />
                       </label>
                       <label>
                         Draft content

@@ -991,3 +991,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: updated `project-state.md`, `roadmap.md`, and local ignored Chinese companions so current focus advances from Admin Router Adoption Boundary to Admin Edit Metadata JSON Field Boundary after PR #100 merged.
 3. Boundary: docs-only closeout; no product behavior, API contract, admin UI, public frontend, deployment, live side effect, or guard semantic change.
 4. Verification: docs guard, i18n doc guard, contract guard, API schema guard, secret guard, full local check runner, diff check, runtime-artifact scan, and secret-shaped scan.
+
+## Admin Edit Metadata JSON Field Boundary
+
+1. Status: implemented locally; PR verification pending.
+2. Scope: added editable `Draft metadata JSON` form field for draft details, parsed metadata as a JSON object during save, propagated `metadata` through the injected `apiClient.updatePost(postId, input)` contract, and included `metadata` in runtime `PATCH /api/v1/posts/{post_id}` bodies and optimistic detail mapping.
+3. Boundary: admin edit metadata UI and update payload only; no richer metadata validation, taxonomy selectors, create flow, publish behavior changes, token storage, routing library, direct database writes, production mutation outside documented APIs, scheduler behavior, live migration execution, public API changes, backend/API contract changes, deployment changes, or live Cloudflare execution.
+4. Verification: focused RED/GREEN admin component and runtime client tests, full admin tests, admin typecheck/build, frontend admin structural check, docs/i18n/contract/API schema/secret guards, full local check runner, diff check, runtime-artifact scan, unstaged secret-shaped scan, staged diff check, and staged secret-shaped scan passed locally, including blank `{}` normalization and non-object JSON safe-failure coverage; PR CI remains pending.

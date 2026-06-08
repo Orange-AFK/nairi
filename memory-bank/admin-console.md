@@ -155,6 +155,12 @@ The admin console must use documented API endpoints only. It must not perform di
 2. Save trims the field and submits `seriesId` through the injected `apiClient.updatePost(postId, input)` payload and runtime PATCH body alongside title, slug, summary, category ID, tags, content format, content, and expected revision id.
 3. Boundary: blank series ID normalizes to `null`; no series selector, taxonomy/series management UI, create/publish mutation, router expansion, login UI, token persistence, direct fetch, or direct database access is added.
 
+## Admin Edit Metadata JSON Field Boundary
+
+1. The draft edit form now renders an editable `Draft metadata JSON` field between tags and content.
+2. Save parses the field as a JSON object and submits `metadata` through the injected `apiClient.updatePost(postId, input)` payload and runtime PATCH body alongside title, slug, summary, category ID, series ID, tags, content format, content, and expected revision id.
+3. Boundary: blank metadata normalizes to `{}` and non-object JSON fails safely through the existing edit error path; no richer metadata validation, taxonomy selectors, create/publish mutation, router expansion, login UI, token persistence, direct fetch, direct database access, public API change, or backend/API contract change is added.
+
 ## Admin Publish Request Review Boundary
 
 1. The draft detail form now exposes a non-executing `Request publish review` button after `Save draft changes`.

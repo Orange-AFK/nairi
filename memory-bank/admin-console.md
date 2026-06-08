@@ -124,3 +124,9 @@ The admin console must use documented API endpoints only. It must not perform di
 1. Runtime `createAdminApiClient.updatePost(postId, input)` now calls authenticated `PATCH /api/v1/posts/{post_id}` with the encoded post id.
 2. The request body sends `title`, `slug`, `contentFormat`, `content`, and `expectedRevisionId`; failed credentials, invalid base URLs, and non-2xx update responses remain fail-closed.
 3. The admin UI still uses the injected API client boundary and preserves stale save-response protection; no publish/create/router/login/token-persistence flow is added.
+
+## Admin Edit Slug Field Boundary
+
+1. The draft edit form now renders an editable `Draft slug` field between title and content.
+2. Save submits the form slug through the injected `apiClient.updatePost(postId, input)` payload instead of preserving only the loaded detail slug.
+3. Boundary: no frontend slug validation, create/publish mutation, router expansion, login UI, token persistence, direct fetch, or direct database access is added.

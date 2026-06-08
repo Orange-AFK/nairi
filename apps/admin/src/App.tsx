@@ -128,7 +128,7 @@ export function App({ apiClient }: AppProps) {
     try {
       const updatedPost = await apiClient.updatePost(savedPostId, {
         title: String(formData.get("title") ?? ""),
-        slug: selectedPostDetail.slug,
+        slug: String(formData.get("slug") ?? ""),
         contentFormat: selectedPostDetail.contentFormat,
         content: String(formData.get("content") ?? ""),
         expectedRevisionId: savedRevisionId
@@ -248,6 +248,10 @@ export function App({ apiClient }: AppProps) {
                     <label>
                       Draft title
                       <input name="title" defaultValue={selectedPostDetail.title} />
+                    </label>
+                    <label>
+                      Draft slug
+                      <input name="slug" defaultValue={selectedPostDetail.slug} />
                     </label>
                     <label>
                       Draft content

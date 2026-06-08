@@ -47,6 +47,7 @@ required_app = [
     "API-backed draft detail",
     "Draft detail could not be loaded.",
     "Draft title",
+    "Draft slug",
     "Draft content",
     "Save draft changes",
     "Draft changes saved.",

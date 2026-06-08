@@ -677,6 +677,18 @@
 8. Decision impact: extended the accepted migration repair policy decision with workflow guidance; no new ADR was needed.
 9. Next recommended named task: Migration Operator Handoff Docs Boundary, Executable Repair Tooling Design Boundary, or CMS Admin Console Foundation Boundary.
 
+### Migration Operator Handoff Docs Boundary
+
+1. Status: completed.
+2. Scope: added the operator-facing runbook for SQLite migration rehearsal handoff and an executable guard that requires the runbook and memory-bank anchors.
+3. Changed files: `docs/migration-operator-handoff.md`, `docs/migration-operator-handoff-cn.md`, `scripts/checks/migration_operator_handoff_check.py`, `.github/workflows/guards.yml`, `memory-bank/guard-ci.md`, `memory-bank/project-state.md`, `memory-bank/roadmap.md`, and `memory-bank/progress-log.md`.
+4. Verification performed: added `migration_operator_handoff_check.py` first and observed RED on the missing runbook, Chinese pair, rehearsal CLI anchors, evidence bundle, escalation note, and memory-bank anchors; then added the runbook, CI step, and source-of-truth updates.
+5. Result: operators now have `docs/migration-operator-handoff.md`, an operator-facing runbook that covers `nairi-post-store-migration-rehearsal`, source database path, backup artifact path, rehearsal artifact path, rehearsal JSON review, source/backup/rehearsal paths, `preMigrationCounts`, `postMigrationCounts`, `postMigrationRows`, `readbackPostIds`, `schema_migrations`, `migration_name_mismatch`, manual intervention, evidence bundle, and escalation note handling.
+6. Boundary: no API contract, route behavior, SQLAlchemy/Alembic layer, PostgreSQL support, deployment integration, scheduling, automatic metadata repair, production database access, or live database migration execution was added.
+7. Risks or blockers: executable repair tooling, backup retention policy, SQLAlchemy models, Alembic integration, PostgreSQL support, deployment integration, and live database execution remain deferred.
+8. Decision impact: no new ADR; this operationalizes the accepted migration repair workflow and guard/CI decisions.
+9. Next recommended named task: Executable Repair Tooling Design Boundary, CMS Admin Console Foundation Boundary, or Cloudflare Live Execution Design Boundary.
+
 ## Progress Rule
 
 `progress-log.md` is append-only historical evidence. It is not the current roadmap and it is not the only authority for durable architecture decisions.

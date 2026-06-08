@@ -46,6 +46,9 @@ jobs:
       - name: Run migration repair workflow check
         run: PYTHONPATH=scripts/guards python3 scripts/checks/migration_repair_workflow_check.py
 
+      - name: Run migration operator handoff check
+        run: PYTHONPATH=scripts/guards python3 scripts/checks/migration_operator_handoff_check.py
+
       - name: Run frontend public detail check
         run: python3 scripts/checks/frontend_public_detail_check.py
 

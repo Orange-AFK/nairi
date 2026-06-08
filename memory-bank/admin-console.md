@@ -154,3 +154,9 @@ The admin console must use documented API endpoints only. It must not perform di
 1. The draft edit form now renders an editable `Draft series ID` field between category ID and tags.
 2. Save trims the field and submits `seriesId` through the injected `apiClient.updatePost(postId, input)` payload and runtime PATCH body alongside title, slug, summary, category ID, tags, content format, content, and expected revision id.
 3. Boundary: blank series ID normalizes to `null`; no series selector, taxonomy/series management UI, create/publish mutation, router expansion, login UI, token persistence, direct fetch, or direct database access is added.
+
+## Admin Publish Request Review Boundary
+
+1. The draft detail form now exposes a non-executing `Request publish review` button after `Save draft changes`.
+2. Clicking it stages a local review status for the current `revisionId` without calling `updatePost`, without introducing a runtime publish API client method, and without changing the post status.
+3. Boundary: this is a human-review UI affordance only; no `POST /api/v1/posts/{post_id}/publish` call, publish mutation, job creation, invalidation dispatch, router expansion, login UI, token persistence, direct fetch, or direct database access is added.

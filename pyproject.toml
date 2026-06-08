@@ -13,6 +13,7 @@ dependencies = [
 
 [project.scripts]
 nairi-post-store-migration-rehearsal = "nairi_api.migration_rehearsal:main"
+nairi-post-store-repair-dry-run = "nairi_api.migration_repair_dry_run:main"
 
 [project.optional-dependencies]
 test = [

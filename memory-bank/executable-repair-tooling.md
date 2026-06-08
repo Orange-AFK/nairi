@@ -100,6 +100,18 @@ Future tooling must refuse when any refusal cases apply:
 4. The future tool must not recommend direct metadata edits.
 5. The future tool must not generate an executable repair command.
 
+## Current Dry-Run Implementation
+
+1. `nairi-post-store-repair-dry-run` is the local dry-run analysis entrypoint for this contract.
+2. Implementation module: `nairi_api.migration_repair_dry_run`.
+3. The entrypoint reads an evidence bundle JSON file through `--evidence`.
+4. It performs preflight checks and emits the output contract as JSON.
+5. `analysis_ready` means the evidence bundle passed local dry-run preflight checks.
+6. `needs_manual_intervention` means the evidence is safe to summarize but the operator must escalate before any repair action, including `migration_name_mismatch`.
+7. `refused` means the evidence bundle is incomplete, unsafe, path-aliased, missing artifacts, missing required JSON fields, count-inconsistent, missing `schema_migrations` evidence, missing escalation-note evidence, or contains secret-like text.
+8. The implementation does not generate repair commands and does not mutate source, backup, or rehearsal artifacts.
+9. The implementation still has no automatic metadata repair, no production database mutation, and no live database migration execution.
+
 ## Future Implementation Gate
 
 Before implementation starts, a new named boundary must define tests for:

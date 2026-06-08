@@ -822,3 +822,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: added runtime `PATCH /api/v1/posts/{post_id}` support to `createAdminApiClient.updatePost`, including encoded ids, JSON body, bearer auth, safe failure, optimistic detail mapping, and slug propagation through admin summary/detail/update types.
 3. Boundary: no publish/create mutation, router expansion, login UI, token persistence, direct App fetch, or direct database access.
 4. Verification: RED admin API client tests for PATCH path/body/auth/failure before implementation, focused admin tests/typecheck, and admin foundation guard.
+
+## Admin Edit Slug Field Boundary
+
+1. Status: completed for editable draft slug field.
+2. Scope: added a `Draft slug` input to the admin edit form and verified save payloads use the edited slug through the injected update contract.
+3. Boundary: no frontend slug validation, create/publish mutation, router expansion, login UI, token persistence, direct App fetch, or direct database access.
+4. Verification: RED RTL test for missing slug field / stale payload, focused admin tests/typecheck, and admin foundation guard.

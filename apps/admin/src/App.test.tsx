@@ -140,16 +140,20 @@ describe("Nairi admin console shell", () => {
     await screen.findByText("revision-post-1-1");
 
     const titleField = screen.getByLabelText("Draft title");
+    const slugField = screen.getByLabelText("Draft slug");
     const contentField = screen.getByLabelText("Draft content");
+    expect(slugField).toHaveValue("first-draft");
     await user.clear(titleField);
     await user.type(titleField, "Updated draft title");
+    await user.clear(slugField);
+    await user.type(slugField, "updated-draft-slug");
     await user.clear(contentField);
     await user.type(contentField, "Updated draft body from the admin form.");
     await user.click(screen.getByRole("button", { name: "Save draft changes" }));
 
     expect(updatePost).toHaveBeenCalledWith("post-1", {
       title: "Updated draft title",
-      slug: "first-draft",
+      slug: "updated-draft-slug",
       contentFormat: "markdown",
       content: "Updated draft body from the admin form.",
       expectedRevisionId: "revision-post-1-1"

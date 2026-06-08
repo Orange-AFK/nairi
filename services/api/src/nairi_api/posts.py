@@ -90,6 +90,22 @@ class PostStoreMigration:
     apply: Callable[[sqlite3.Connection], None]
 
 
+class PostStoreMigrationError(RuntimeError):
+    def __init__(
+        self,
+        *,
+        code: str,
+        migration_id: int,
+        recorded_name: str,
+        expected_name: str,
+    ) -> None:
+        self.code = code
+        self.migration_id = migration_id
+        self.recorded_name = recorded_name
+        self.expected_name = expected_name
+        super().__init__(f"schema migration {migration_id} recorded as {recorded_name!r}, expected {expected_name!r}")
+
+
 @dataclass(frozen=True)
 class PostStoreMigrationRehearsalResult:
     backup_path: Path
@@ -117,8 +133,11 @@ def run_schema_migrations(connection: sqlite3.Connection, migrations: list[PostS
         applied_name = applied.get(migration.id)
         if applied_name is not None:
             if applied_name != migration.name:
-                raise ValueError(
-                    f"schema migration {migration.id} recorded as {applied_name!r}, expected {migration.name!r}"
+                raise PostStoreMigrationError(
+                    code="migration_name_mismatch",
+                    migration_id=migration.id,
+                    recorded_name=applied_name,
+                    expected_name=migration.name,
                 )
             continue
         try:

@@ -76,6 +76,7 @@
 14. The current publish job storage, authenticated published readback/filtering/pagination, public published summary list, public published detail, and minimal public `bodyHtml` rendering are scaffold boundaries only; no job runner, retry state machine, scheduling semantics, public filtering/pagination inputs, cache policy, or full MDX/component rendering is introduced yet.
 15. This boundary is intentionally smaller than the final SQLAlchemy/Alembic model layer.
 16. Future migration work must preserve these logical entities while replacing scaffold schema initialization with managed migrations.
+17. `schema_migrations` id/name mismatches are treated as migration policy conflicts and fail fast with `PostStoreMigrationError` code `migration_name_mismatch`; valid metadata with missing scaffold tables may still be reconciled by idempotent baseline DDL.
 
 ## Database Support
 

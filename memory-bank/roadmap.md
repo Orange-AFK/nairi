@@ -89,7 +89,7 @@
 
 1. Status: completed through Cloudflare dry-run dispatch boundary.
 2. Completed: public invalidation surfaces, durable recorded execution, dispatch result fields, dispatcher config, dispatcher interface, route integration, dispatch persistence, dispatcher error policy, contract adapter, Cloudflare config adapter, Cloudflare settings, inert Cloudflare request-plan construction, and configured Cloudflare dry-run dispatch bookkeeping.
-3. Active next candidate: Cloudflare Live Execution Design Boundary if live provider behavior is prioritized; otherwise migration repair policy, standalone rehearsal CLI, or CMS Admin Console Foundation.
+3. Active next candidate: Cloudflare Live Execution Design Boundary if live provider behavior is prioritized; otherwise standalone migration rehearsal CLI, broader migration repair workflow, or CMS Admin Console Foundation.
 4. Deferred: live HTTP client, authorization header sending, Cloudflare API response/error mapping, CDN purge, retry policy, external execution switch, and real job runner execution.
 
 ## Cloudflare Provider Adapter
@@ -109,9 +109,9 @@
 
 ### SQLAlchemy and Alembic Migration Layer
 
-1. Status: completed for SQLite baseline metadata, minimal ordered runner, and local migration rehearsal helper.
-2. Completed: `schema_migrations` metadata table, one-time `post_store_baseline` recording, reopen idempotency, pre-migration SQLite adoption without data loss, ordered pending migration application, idempotent skip of applied migrations, rollback on failed pending migrations, baseline schema reconciliation when metadata already exists, SQLite backup-API copy, path-alias rejection, exclusive destination creation, no-overwrite artifact safety, backup creation, rehearsal-copy migration, count verification, and `PostStore` readback verification.
-3. Deferred: standalone migration CLI, migration repair policy, Alembic integration, SQLAlchemy model layer, PostgreSQL support, and live database migration execution.
+1. Status: completed for SQLite baseline metadata, minimal ordered runner, local migration rehearsal helper, and stable metadata-mismatch policy errors.
+2. Completed: `schema_migrations` metadata table, one-time `post_store_baseline` recording, reopen idempotency, pre-migration SQLite adoption without data loss, ordered pending migration application, idempotent skip of applied migrations, rollback on failed pending migrations, baseline schema reconciliation when metadata already exists, SQLite backup-API copy, path-alias rejection, exclusive destination creation, no-overwrite artifact safety, backup creation, rehearsal-copy migration, count verification, `PostStore` readback verification, and typed `migration_name_mismatch` fail-fast errors.
+3. Deferred: standalone migration CLI, broader migration repair workflow, Alembic integration, SQLAlchemy model layer, PostgreSQL support, and live database migration execution.
 
 ## Admin Console
 

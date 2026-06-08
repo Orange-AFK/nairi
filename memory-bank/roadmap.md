@@ -117,11 +117,11 @@
 
 ### CMS Admin Console
 
-1. Status: runtime API client boundary completed through the admin publish review status scope boundary.
-2. Completed: `apps/admin` Vite React shell, injected API-client component tests, runtime `createAdminApiClient`, list/detail/update/publish API client wiring, draft edit and publish-review UI flow, post-publish list/read-only behavior, mixed-status copy, frontend admin structural guard, and Guards CI admin test/typecheck/build coverage.
+1. Status: runtime API client boundary completed through Admin Router Adoption Boundary.
+2. Completed: `apps/admin` Vite React shell, injected API-client component tests, runtime `createAdminApiClient`, list/detail/update/publish API client wiring, draft edit and publish-review UI flow, post-publish list/read-only behavior, mixed-status copy, explicit hash routing for admin modules and selected content detail, frontend admin structural guard, and Guards CI admin test/typecheck/build coverage.
 3. Goal: implement human-facing content review, editing, audit, media, settings, and recovery controls through authenticated API contracts.
 4. Constraint: admin must not write directly to the database or bypass API scopes/state transitions.
-5. Current detailed admin status is tracked in `Admin Runtime API Client Boundary`; next admin candidates remain explicit router adoption, richer edit metadata fields, publish-request persistence when selected, or a separate published-history/list module if product wants it.
+5. Current detailed admin status is tracked in `Admin Runtime API Client Boundary`; next admin candidates remain richer edit metadata fields, publish-request persistence when selected, or a separate published-history/list module if product wants it.
 
 ## Agent and MCP
 
@@ -145,6 +145,6 @@
 
 ## Admin Runtime API Client Boundary
 
-1. Status: completed locally through Admin Router Adoption Boundary; PR verification pending.
+1. Status: completed and merged through Admin Router Adoption Boundary.
 2. Completed: runtime `createAdminApiClient`, fail-closed `createAdminTokenProvider`, `Admin modules` navigation with `Content`, `Media`, and `Settings` shells, explicit hash routing for admin modules and selected content detail, `Content` module draft detail readback via `getPost(postId)`, selected draft affordance, empty draft-list copy, injected draft edit form contract via `updatePost(postId, input)`, runtime `PATCH /api/v1/posts/{post_id}` client wiring, editable draft slug payloads, editable draft summary payloads, editable draft tags payloads, editable draft category ID payloads, editable draft series ID payloads, `Request publish review`, publish confirmation intent, runtime `POST /api/v1/posts/{post_id}/publish` client wiring through `publishPost(postId, input)`, an App `Publish confirmed draft` action gated behind confirmation, post-publish removal from the draft review list while preserving detail readback, read-only detail behavior for published selections in the draft review workflow, status-aware `API-backed published detail` labelling for non-draft detail readback, mixed-status admin list labelling as `Content items`, mixed-status detail loading copy as `Loading item detail…`, explicit published read-only copy explaining hidden draft controls, draft workflow copy clarifying selected-draft scope, and publish-review status scoping regression coverage.
-3. Next candidate after merge: richer edit metadata fields, publish-request persistence when selected, or a separate published-history/list module if product wants it.
+3. Next candidate: Admin Edit Metadata JSON Field Boundary, publish-request persistence when selected, or a separate published-history/list module if product wants it.

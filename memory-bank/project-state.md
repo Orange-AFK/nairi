@@ -7,8 +7,8 @@
 1. Nairi is in early alpha implementation.
 2. The implementation still follows the accepted API-first, agent-first CMS direction.
 3. Core public and management content flows exist as scaffold implementations with verified route tests and guards.
-4. The current development focus is Admin Router Adoption Boundary local implementation and verification after the post-remediation lightweight audit cleared the 2026-06-08 audit-remediation queue.
-5. CMS admin console work has advanced beyond the foundation shell into the runtime API client boundary through draft list/detail, draft update, publish-review staging, publish confirmation, injected `publishPost` wiring, post-publish list/read-only behavior, mixed-status copy, and publish-review status scoping coverage; it follows the Migration Operator Handoff Docs Boundary for typed migration policy failures, remains bounded to authenticated API contracts, and preserves manual intervention for migration repair workflows.
+4. The current development focus is Admin Edit Metadata JSON Field Boundary after Admin Router Adoption Boundary merged and passed main readback.
+5. CMS admin console work has advanced beyond the foundation shell into the runtime API client boundary through draft list/detail, draft update, publish-review staging, publish confirmation, injected `publishPost` wiring, post-publish list/read-only behavior, mixed-status copy, publish-review status scoping coverage, and explicit hash routing; it follows the Migration Operator Handoff Docs Boundary for typed migration policy failures, remains bounded to authenticated API contracts, and preserves manual intervention for migration repair workflows.
 
 ### Current Authority Snapshot
 
@@ -101,7 +101,7 @@
 
 1. CMS admin console foundation exists under `apps/admin` as a minimal Vite React shell with runtime API client wiring for list, detail, update, and publish actions.
 2. Admin must use authenticated API contracts and must not write directly to the database.
-3. Current shell uses an injected API client in tests, has a confirmed publish action through the injected `publishPost` contract, and now has explicit client-side hash routing for admin modules and selected content detail; it still has no token storage, routing library, scheduler, direct database writes, production mutation outside documented APIs, or live database migration execution.
+3. Current shell uses an injected API client in tests, has a confirmed publish action through the injected `publishPost` contract, and has explicit client-side hash routing for admin modules and selected content detail; it still has no token storage, routing library, scheduler, direct database writes, production mutation outside documented APIs, or live database migration execution.
 
 ### Agent and MCP
 
@@ -120,13 +120,13 @@
 
 ## Next Named Work
 
-### Admin Router Adoption Boundary
+### Admin Edit Metadata JSON Field Boundary
 
-1. Status: local implementation complete; PR verification and merge/readback pending.
-2. Scope: introduced explicit admin hash routes for module/detail selection in the React admin shell while preserving authenticated API-contract access and existing injected-client behavior.
-3. Boundary: admin frontend hash routing only; no token storage, routing library, direct database writes, production mutation outside documented APIs, scheduler behavior, live migration execution, public API changes, or deployment changes.
-4. Verification: focused RED/GREEN route test, full admin tests, admin typecheck/build, frontend admin structural check, full local check runner, docs/i18n/contract/API schema/secret guards, diff check, secret-shaped scan, and runtime-artifact scan passed locally; PR CI and main CI remain pending.
-5. Next recommendation after merge: richer edit metadata fields, publish-request persistence when selected, separate published-history/list module if product wants it, Executable Repair Tooling Design Boundary candidate next work, or Cloudflare Live Execution Design Boundary after a high-risk audit.
+1. Status: candidate next feature work after Admin Router Adoption Boundary merged.
+2. Scope: add one editable metadata JSON field to the React admin draft edit form and runtime update payload while preserving authenticated API-contract access and existing injected-client behavior.
+3. Boundary: admin edit metadata UI and update payload only; no metadata validation beyond safe JSON parsing, taxonomy selectors, create flow, publish behavior changes, token storage, routing library, direct database writes, production mutation outside documented APIs, scheduler behavior, live migration execution, public API changes, or deployment changes.
+4. Verification: focused RED/GREEN admin component and runtime client tests, full admin tests, admin typecheck/build, frontend admin structural check, docs/i18n/contract/API schema/secret guards, full local check runner, diff check, secret-shaped scan, PR CI, and main CI.
+5. Alternative next work: publish-request persistence when selected, separate published-history/list module if product wants it, Executable Repair Tooling Design Boundary candidate next work, or Cloudflare Live Execution Design Boundary after a high-risk audit.
 
 ## Blockers
 

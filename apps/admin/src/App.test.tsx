@@ -428,6 +428,70 @@ describe("Nairi admin console shell", () => {
     expect(screen.queryByRole("button", { name: /^publish$/i })).not.toBeInTheDocument();
   });
 
+  it("clears staged publish review status when selecting another draft", async () => {
+    const user = userEvent.setup();
+    render(
+      <App
+        apiClient={adminApiClient({
+          async listPosts() {
+            return [
+              {
+                id: "post-1",
+                title: "First draft",
+                slug: "first-draft",
+                status: "draft",
+                updatedAt: "2026-06-08T00:00:00Z"
+              },
+              {
+                id: "post-2",
+                title: "Second draft",
+                slug: "second-draft",
+                status: "draft",
+                updatedAt: "2026-06-08T00:05:00Z"
+              }
+            ];
+          },
+          async getPost(postId: string) {
+            if (postId === "post-2") {
+              return {
+                id: "post-2",
+                title: "Second draft",
+                slug: "second-draft",
+                status: "draft",
+                contentFormat: "markdown",
+                content: "# Second draft\n\nSecond draft body.",
+                revisionId: "revision-post-2-1",
+                updatedAt: "2026-06-08T00:05:00Z"
+              };
+            }
+            return adminApiClient().getPost(postId);
+          }
+        })}
+      />
+    );
+
+    await user.click(await screen.findByRole("button", { name: /First draft/ }));
+    await screen.findByText("revision-post-1-1");
+    await user.click(screen.getByRole("button", { name: "Request publish review" }));
+
+    expect(screen.getByRole("status", { name: "Publish review request status" })).toHaveTextContent(
+      "Publish review request staged for revision revision-post-1-1."
+    );
+    await user.click(screen.getByRole("button", { name: "Confirm publication intent" }));
+    expect(screen.getByRole("status", { name: "Publish confirmation intent status" })).toHaveTextContent(
+      "Publication intent confirmed locally for revision revision-post-1-1."
+    );
+    expect(screen.getByRole("button", { name: "Publish confirmed draft" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /Second draft/ }));
+
+    expect(screen.queryByRole("status", { name: "Publish review request status" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("status", { name: "Publish confirmation intent status" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Publish confirmed draft" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Publish confirmation contract")).not.toBeInTheDocument();
+    expect(await screen.findByText("revision-post-2-1")).toBeInTheDocument();
+  });
+
   it("publishes a confirmed draft through the injected publish contract", async () => {
     const user = userEvent.setup();
     const updatePost = vi.fn(async (_postId: string, input: AdminPostUpdateInput): Promise<AdminPostDetail> => ({

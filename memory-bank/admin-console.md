@@ -221,3 +221,9 @@ The admin console must use documented API endpoints only. It must not perform di
 1. Draft detail forms now show `Draft controls only affect the selected draft.` above the draft edit/publish controls.
 2. Published/non-draft detail remains read-only and continues to hide draft workflow controls.
 3. Boundary: copy and regression coverage only; no update/publish API behavior changes, router, live refetch, published-list navigation, archive/history UI, filtering, or backend/API contract changes.
+
+## Admin Publish Review Status Scope Boundary
+
+1. Staged publish-review status remains scoped to the currently selected draft and is cleared when another draft is selected.
+2. The publish confirmation panel also clears with selection changes so an older staged revision is not shown for the newly selected draft.
+3. Boundary: regression coverage and guard/docs only; no backend publish-review persistence, publish API changes, router, live refetch, published-list navigation, archive/history UI, or filtering changes.

@@ -87,6 +87,7 @@ required_test = [
     "uses item loading copy for mixed-status detail selections",
     "submits draft edits through the injected update contract without publishing",
     "stages a publish review request without calling a publish mutation",
+    "clears staged publish review status when selecting another draft",
     "publishes a confirmed draft through the injected publish contract",
     "renders a safe publish action error when injected publish fails",
     "removes only the published draft from a multi-draft review list",

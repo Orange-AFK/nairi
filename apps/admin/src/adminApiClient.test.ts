@@ -63,6 +63,64 @@ describe("createAdminApiClient", () => {
     expect(fetchMock).toHaveBeenCalledOnce();
   });
 
+  it("lists published posts through the authenticated management API as a separate history request", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      expect(String(input)).toBe("https://api.example.test/api/v1/posts?status=published");
+      expect(init?.method).toBe("GET");
+      expect(init?.headers).toEqual({
+        Accept: "application/json",
+        Authorization: "Bearer tkn"
+      });
+
+      return new Response(
+        JSON.stringify({
+          items: [
+            {
+              postId: "post-2",
+              title: "Published field note",
+              slug: "published-field-note",
+              summary: "Published summary.",
+              categoryId: "dispatches",
+              seriesId: "field-journal",
+              tags: ["published"],
+              metadata: {
+                audience: "operators"
+              },
+              status: "published",
+              publishedAt: "2026-06-08T00:10:00Z"
+            }
+          ],
+          nextCursor: null
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
+    });
+
+    const client = createAdminApiClient({
+      apiBaseUrl: "https://api.example.test/",
+      getAuthToken: () => "tkn",
+      fetchImpl: fetchMock
+    });
+
+    await expect(client.listPublishedPosts()).resolves.toEqual([
+      {
+        id: "post-2",
+        title: "Published field note",
+        slug: "published-field-note",
+        summary: "Published summary.",
+        categoryId: "dispatches",
+        seriesId: "field-journal",
+        tags: ["published"],
+        metadata: {
+          audience: "operators"
+        },
+        status: "published",
+        updatedAt: "2026-06-08T00:10:00Z"
+      }
+    ]);
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
   it("fails closed when no admin API credentials are configured", async () => {
     const fetchMock = vi.fn();
     const client = createAdminApiClient({

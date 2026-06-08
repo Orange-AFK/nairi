@@ -8,7 +8,7 @@
 2. The implementation still follows the accepted API-first, agent-first CMS direction.
 3. Core public and management content flows exist as scaffold implementations with verified route tests and guards.
 4. The current development focus is post-merge source-of-truth closeout after Admin Edit Metadata JSON Field Boundary merged and passed main readback.
-5. CMS admin console work has advanced beyond the foundation shell into the runtime API client boundary through draft list/detail, draft update, publish-review staging, publish confirmation, injected `publishPost` wiring, post-publish list/read-only behavior, mixed-status copy, publish-review status scoping coverage, and explicit hash routing; it follows the Migration Operator Handoff Docs Boundary for typed migration policy failures, remains bounded to authenticated API contracts, and preserves manual intervention for migration repair workflows.
+5. CMS admin console work has advanced beyond the foundation shell into the runtime API client boundary through draft list/detail, draft update, publish-review staging, publish confirmation, injected `publishPost` wiring, post-publish list/read-only behavior, separate published-history list readback, mixed-status copy, publish-review status scoping coverage, and explicit hash routing; it follows the Migration Operator Handoff Docs Boundary for typed migration policy failures, remains bounded to authenticated API contracts, and preserves manual intervention for migration repair workflows.
 
 ### Current Authority Snapshot
 
@@ -100,7 +100,7 @@
 
 ### Admin Console
 
-1. CMS admin console foundation exists under `apps/admin` as a minimal Vite React shell with runtime API client wiring for list, detail, update, publish-review request, and publish actions.
+1. CMS admin console foundation exists under `apps/admin` as a minimal Vite React shell with runtime API client wiring for draft list, separate published-history list, detail, update, publish-review request, and publish actions.
 2. Admin must use authenticated API contracts and must not write directly to the database.
 3. Current shell uses an injected API client in tests, has a persisted publish-review request through `requestPublishReview`, has a confirmed publish action through the injected `publishPost` contract, and has explicit client-side hash routing for admin modules and selected content detail; it still has no token storage, routing library, scheduler, direct database writes, production mutation outside documented APIs, or live database migration execution.
 
@@ -127,7 +127,7 @@
 2. Starting point: `POST /api/v1/posts/{post_id}/publish-requests`, `publish_requests` persistence, `post.publish_requested` audit event, and admin injected/runtime `requestPublishReview` wiring exist and are verified.
 3. Completed scope: `POST /api/v1/publish-requests/{request_id}/resolve` resolves pending publish requests to `approved` or `rejected`, stores request-time `resolvedAt`, records `admin.publish_request.resolve`, and preserves the no-publish side-effect boundary.
 4. Boundary: approval or rejection updates only the publish request review state; it does not mutate post status, call live publish, create `publish_jobs`, trigger invalidation dispatch, add deployment behavior, or bypass API scopes/audit.
-5. Candidate next work: separate published-history/list module if product wants it, another narrow admin edit boundary, Executable Repair Tooling Design Boundary, or Cloudflare Live Execution Design Boundary after a high-risk audit.
+5. Candidate next work: another narrow admin edit boundary, Executable Repair Tooling Design Boundary, or Cloudflare Live Execution Design Boundary after a high-risk audit.
 
 ## Blockers
 

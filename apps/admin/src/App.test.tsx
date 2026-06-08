@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, vi } from "vitest";
 
@@ -29,6 +29,9 @@ function adminApiClient(overrides: Partial<AdminApiClient> = {}): AdminApiClient
           updatedAt: "2026-06-08T00:00:00Z"
         }
       ];
+    },
+    async listPublishedPosts() {
+      return [];
     },
     async getPost(postId: string) {
       return {
@@ -235,6 +238,60 @@ describe("Nairi admin console shell", () => {
 
     expect(await screen.findByText("No draft posts are ready for review.")).toBeInTheDocument();
     expect(screen.getByText("Select a draft from the list to load its API-backed detail.")).toBeInTheDocument();
+  });
+
+  it("renders published history through a separate injected list without changing the draft list label", async () => {
+    const user = userEvent.setup();
+    const listPublishedPosts = vi.fn(async () => [
+      {
+        id: "post-2",
+        title: "Published field note",
+        slug: "published-field-note",
+        status: "published",
+        updatedAt: "2026-06-08T00:10:00Z"
+      }
+    ]);
+
+    render(
+      <App
+        apiClient={adminApiClient({
+          listPublishedPosts,
+          async getPost(postId: string) {
+            if (postId === "post-2") {
+              return {
+                id: "post-2",
+                title: "Published field note",
+                slug: "published-field-note",
+                summary: "Published summary.",
+                categoryId: "dispatches",
+                seriesId: "field-journal",
+                tags: ["published"],
+                metadata: {},
+                status: "published",
+                contentFormat: "markdown",
+                content: "# Published field note\n\nPublished body.",
+                revisionId: "revision-post-2-published",
+                updatedAt: "2026-06-08T00:10:00Z"
+              };
+            }
+            return adminApiClient().getPost(postId);
+          }
+        })}
+      />
+    );
+
+    expect(await screen.findByRole("navigation", { name: "Draft posts" })).toBeInTheDocument();
+    expect(screen.getByText("Drafts")).toBeInTheDocument();
+    expect(await screen.findByRole("region", { name: "Published history" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Published field note/ })).toBeInTheDocument();
+    expect(listPublishedPosts).toHaveBeenCalledOnce();
+
+    await user.click(screen.getByRole("button", { name: /Published field note/ }));
+
+    expect(await screen.findByText("revision-post-2-published")).toBeInTheDocument();
+    expect(screen.getByText("API-backed published detail")).toBeInTheDocument();
+    expect(screen.getByText("Published detail is read-only in the draft review workflow.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Save draft changes" })).not.toBeInTheDocument();
   });
 
   it("labels a mixed-status admin list as content items without adding published navigation", async () => {
@@ -722,16 +779,20 @@ describe("Nairi admin console shell", () => {
     expect(await screen.findByRole("status", { name: "Publish action status" })).toHaveTextContent(
       "Draft published at 2026-06-08T00:10:00Z."
     );
-    expect(screen.queryByRole("button", { name: /First draft/ })).not.toBeInTheDocument();
+    expect(
+      within(screen.getByRole("navigation", { name: "Draft posts" })).queryByRole("button", { name: /First draft/ })
+    ).not.toBeInTheDocument();
     expect(screen.getByText("No draft posts are ready for review.")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "First draft" })).toBeInTheDocument();
-    expect(screen.getByText("published")).toBeInTheDocument();
+    expect(screen.getAllByText("published").length).toBeGreaterThan(0);
     expect(screen.getByText("API-backed published detail")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Publish confirmed draft" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Save draft changes" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Request publish review" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Confirm publication intent" })).not.toBeInTheDocument();
     expect(screen.getByText("Published detail is read-only in the draft review workflow.")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Published history" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /First draft/ })).toBeInTheDocument();
   });
 
   it("removes only the published draft from a multi-draft review list", async () => {
@@ -808,8 +869,10 @@ describe("Nairi admin console shell", () => {
     expect(await screen.findByRole("status", { name: "Publish action status" })).toHaveTextContent(
       "Draft published at 2026-06-08T00:10:00Z."
     );
-    expect(screen.queryByRole("button", { name: /First draft/ })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Second draft/ })).toBeInTheDocument();
+    expect(
+      within(screen.getByRole("navigation", { name: "Draft posts" })).queryByRole("button", { name: /First draft/ })
+    ).not.toBeInTheDocument();
+    expect(within(screen.getByRole("navigation", { name: "Draft posts" })).getByRole("button", { name: /Second draft/ })).toBeInTheDocument();
     expect(screen.queryByText("No draft posts are ready for review.")).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "First draft" })).toBeInTheDocument();
   });

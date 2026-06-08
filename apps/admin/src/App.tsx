@@ -82,6 +82,7 @@ export type AdminPublishReviewRequestResult = {
 
 export type AdminApiClient = {
   listPosts: () => Promise<AdminPostSummary[]>;
+  listPublishedPosts: () => Promise<AdminPostSummary[]>;
   getPost: (postId: string) => Promise<AdminPostDetail>;
   updatePost: (postId: string, input: AdminPostUpdateInput) => Promise<AdminPostDetail>;
   requestPublishReview: (
@@ -157,6 +158,7 @@ function parseDraftMetadata(value: string): AdminPostMetadata {
 export function App({ apiClient }: AppProps) {
   const [adminRoute, setAdminRoute] = useState<AdminRoute>(() => parseAdminRoute());
   const [posts, setPosts] = useState<AdminPostSummary[]>([]);
+  const [publishedPosts, setPublishedPosts] = useState<AdminPostSummary[]>([]);
   const [selectedPost, setSelectedPost] = useState<AdminPostSummary | null>(null);
   const [selectedPostDetail, setSelectedPostDetail] = useState<AdminPostDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -202,9 +204,13 @@ export function App({ apiClient }: AppProps) {
 
     async function loadPosts() {
       try {
-        const loadedPosts = await apiClient.listPosts();
+        const [loadedPosts, loadedPublishedPosts] = await Promise.all([
+          apiClient.listPosts(),
+          apiClient.listPublishedPosts()
+        ]);
         if (!cancelled) {
           setPosts(loadedPosts);
+          setPublishedPosts(loadedPublishedPosts);
           setSelectedPost(loadedPosts[0] ?? null);
           setIsLoading(false);
         }
@@ -382,6 +388,10 @@ export function App({ apiClient }: AppProps) {
           updatedAt: publishedPost.publishedAt
         });
         setPosts((currentPosts) => currentPosts.filter((post) => post.id !== publishedPost.id));
+        setPublishedPosts((currentPublishedPosts) => [
+          updatedSummary,
+          ...currentPublishedPosts.filter((post) => post.id !== publishedPost.id)
+        ]);
         setPublishActionStatus(`Draft published at ${publishedPost.publishedAt}.`);
         setPublishActionError(null);
         setPublishReviewStatus(null);
@@ -499,6 +509,26 @@ export function App({ apiClient }: AppProps) {
               </button>
             ))}
           </nav>
+
+          {!isLoading && !loadError ? (
+            <section className="post-list" aria-label="Published history">
+              <h2>Published history</h2>
+              <p className="section-label">Published history</p>
+              {publishedPosts.length === 0 ? <p>No published posts are in history yet.</p> : null}
+              {publishedPosts.map((post) => (
+                <button
+                  key={post.id}
+                  type="button"
+                  aria-pressed={selectedPost?.id === post.id}
+                  className={selectedPost?.id === post.id ? "is-selected" : undefined}
+                  onClick={() => void selectPost(post)}
+                >
+                  <span>{post.title}</span>
+                  <small>{post.status}</small>
+                </button>
+              ))}
+            </section>
+          ) : null}
 
           <article className="post-preview">
             {previewPost ? (

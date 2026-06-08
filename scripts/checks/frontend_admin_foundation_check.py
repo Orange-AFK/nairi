@@ -32,6 +32,7 @@ vite_config = VITE_CONFIG.read_text()
 required_app = [
     "AdminApiClient",
     "listPosts",
+    "listPublishedPosts",
     "getPost",
     "AdminPostDetail",
     "AdminPostUpdateInput",
@@ -44,6 +45,7 @@ required_app = [
     'aria-current={activeModule === adminModule.id ? "page" : undefined}',
     "Content workspace",
     "Content items",
+    "Published history",
     "Media library",
     "System settings",
     "API-backed draft preview",
@@ -71,6 +73,7 @@ required_app = [
     "Draft changes saved.",
     "Draft changes could not be saved.",
     "No draft posts are ready for review.",
+    "No published posts are in history yet.",
     "Select a draft from the list to load its API-backed detail.",
     "Loading draft detail…",
     "Loading item detail…",
@@ -84,6 +87,7 @@ required_test = [
     "selects a post and reads draft detail through the injected API boundary",
     "renders a stable empty state when no draft summaries are available",
     "labels a mixed-status admin list as content items without adding published navigation",
+    "renders published history through a separate injected list without changing the draft list label",
     "keeps draft loading copy for pending draft detail selections",
     "uses item loading copy for mixed-status detail selections",
     "submits draft edits through the injected update contract without publishing",
@@ -112,6 +116,7 @@ required_main = [
 required_client = [
     "createAdminApiClient",
     "/api/v1/posts?status=draft",
+    "/api/v1/posts?status=published",
     "/api/v1/posts/${encodeURIComponent(postId)}",
     "getAuthToken",
     "Authorization",
@@ -133,6 +138,7 @@ required_client = [
 ]
 required_client_test = [
     "lists draft posts through the authenticated management API with an injected token provider",
+    "lists published posts through the authenticated management API as a separate history request",
     "reads a draft detail through the authenticated management API",
     "fails closed when no admin API credentials are configured",
     "fails closed when no API base URL is configured",

@@ -68,6 +68,8 @@ required_app = [
     "Draft changes could not be saved.",
     "No draft posts are ready for review.",
     "Select a draft from the list to load its API-backed detail.",
+    "Loading draft detail…",
+    "Loading item detail…",
     'aria-pressed={selectedPost?.id === post.id}',
 ]
 required_test = [
@@ -78,6 +80,8 @@ required_test = [
     "selects a post and reads draft detail through the injected API boundary",
     "renders a stable empty state when no draft summaries are available",
     "labels a mixed-status admin list as content items without adding published navigation",
+    "keeps draft loading copy for pending draft detail selections",
+    "uses item loading copy for mixed-status detail selections",
     "submits draft edits through the injected update contract without publishing",
     "stages a publish review request without calling a publish mutation",
     "publishes a confirmed draft through the injected publish contract",

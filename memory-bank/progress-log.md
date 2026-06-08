@@ -913,3 +913,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: mixed-status admin lists now show `Content items`; all-draft lists continue showing `Drafts`.
 3. Tests: added a RED React test for a mixed draft/published injected list, then implemented the smallest derived label branch.
 4. Boundary: no data-source, router, refetch, published navigation, archive/history UI, filtering, or backend/API contract changes.
+
+## Admin Mixed-Status Detail Loading Copy Boundary
+
+1. Status: completed for local implementation.
+2. Scope: mixed-status detail selection loading copy now uses `Loading item detail…`; draft selection loading copy remains `Loading draft detail…`.
+3. Tests: added a RED React test with a pending published-detail promise, then implemented the smallest derived loading-copy branch.
+4. Boundary: no router, refetch, published navigation, filtering, empty-list behavior, or backend/API contract changes.

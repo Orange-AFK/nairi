@@ -304,6 +304,7 @@ export function App({ apiClient }: AppProps) {
   const previewPost = selectedPostDetail ?? selectedPost;
   const listContainsOnlyDrafts = posts.every((post) => post.status === "draft");
   const postListLabel = listContainsOnlyDrafts ? "Drafts" : "Content items";
+  const detailLoadingCopy = selectedPost?.status === "draft" ? "Loading draft detail…" : "Loading item detail…";
 
   return (
     <main className="admin-shell">
@@ -362,7 +363,7 @@ export function App({ apiClient }: AppProps) {
                     : "API-backed draft preview"}
                 </p>
                 <h2>{previewPost.title}</h2>
-                {isDetailLoading ? <p>Loading draft detail…</p> : null}
+                {isDetailLoading ? <p>{detailLoadingCopy}</p> : null}
                 {detailError ? <p role="status">{detailError}</p> : null}
                 <dl>
                   <div>

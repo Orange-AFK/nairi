@@ -934,3 +934,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: added draft-only form copy `Draft controls only affect the selected draft.` to clarify the selected-draft boundary.
 3. Tests: extended the draft detail readback regression to require the copy and paired it with the existing non-draft read-only regression.
 4. Boundary: no update/publish API behavior changes, router, refetch, published navigation, filtering, or backend/API contract changes.
+
+## Admin Publish Review Status Scope Boundary
+
+1. Status: completed for local implementation.
+2. Scope: added regression coverage proving `Publish review request staged...` and the confirmation panel disappear after selecting another draft.
+3. Result: current implementation already cleared review status on selection, so no App behavior change was required.
+4. Boundary: test/guard/docs hardening only; no backend persistence, publish API changes, router, refetch, navigation, filtering, or backend/API contract changes.

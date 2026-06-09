@@ -1053,3 +1053,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: updated `project-state.md`, `roadmap.md`, and this progress closeout so Admin Edit Metadata Error Detail UX Boundary is recorded as merged and read back.
 3. Boundary: docs-only closeout; no product behavior, API contract, admin UI, public frontend, deployment, live side effect, or guard semantic change.
 4. Verification: docs/i18n/contract/API schema/secret guards, full local check runner, diff check, docs tight secret scan, and independent docs closeout review passed locally; closeout PR Guards, main Guards, and readback remain pending for this docs-only closeout PR.
+
+## Admin Draft Save Error Recovery Hint Boundary
+
+1. Status: implemented locally; PR verification pending.
+2. Scope: generic save failure now also renders safe recovery hint `Reload the draft detail, review the latest revision, and retry.` alongside `Draft changes could not be saved.` without leaking raw backend/injected error messages.
+3. Boundary: admin UX copy only; no backend route change, no API contract change, no public API change, no richer error mapping, no renderer behavior, no MDX execution, no router expansion, no token storage, no direct database access, and no live external side effects.
+4. Verification: focused RED/GREEN admin component test, docs/i18n/contract/API schema/secret guards, full local check runner, admin tests, admin typecheck/build, diff check, tight secret scan, and independent review blocker check passed locally before PR.

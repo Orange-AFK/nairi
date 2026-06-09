@@ -147,6 +147,13 @@
 3. Boundary: admin validation copy only; no backend route change, no API contract change, no public API change, no richer metadata schema validation, no renderer behavior, no MDX execution, no router expansion, no token storage, no direct database access, and no live external side effects.
 4. Candidate next work: another narrow admin edit boundary, Executable Repair Tooling Design Boundary, or Cloudflare Live Execution Design Boundary after a high-risk audit.
 
+### Admin Draft Save Error Recovery Hint Boundary
+
+1. Status: implemented locally; PR verification pending.
+2. Completed scope: generic save failure now also renders safe recovery hint `Reload the draft detail, review the latest revision, and retry.` alongside `Draft changes could not be saved.` without leaking raw backend/injected error messages.
+3. Boundary: admin UX copy only; no backend route change, no API contract change, no public API change, no richer error mapping, no renderer behavior, no MDX execution, no router expansion, no token storage, no direct database access, and no live external side effects.
+4. Candidate next work: another narrow admin edit boundary, Executable Repair Tooling Design Boundary, or Cloudflare Live Execution Design Boundary after a high-risk audit.
+
 ## Blockers
 
 ### Current Blockers

@@ -1332,6 +1332,9 @@ describe("Nairi admin console shell", () => {
     await user.click(screen.getByRole("button", { name: "Save draft changes" }));
 
     expect(await screen.findByText("Draft changes could not be saved.")).toBeInTheDocument();
+    expect(screen.getByText("Reload the draft detail, review the latest revision, and retry."))
+      .toBeInTheDocument();
+    expect(screen.queryByText("stale revision")).not.toBeInTheDocument();
   });
 
   it("renders a safe detail error state when injected detail loading fails", async () => {

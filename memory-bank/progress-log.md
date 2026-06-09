@@ -1088,3 +1088,22 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 7. Result: passed.
 8. Non-goals: no audit events, no hierarchical parent, no post-to-category enforcement, no admin UI, no MCP wiring, no tag/series entities.
 9. Next candidates: Tags CRUD, Series CRUD, admin console category picker, or Docker/Compose deployment.
+
+### Tag Management CRUD Boundary
+
+1. Status: completed.
+2. Scope: scaffold SQLite-backed `tags` table via `TagStore`, full CRUD routes with `taxonomy:read`/`taxonomy:write` scope enforcement.
+3. Routes: `GET /api/v1/tags`, `POST /api/v1/tags`, `GET /api/v1/tags/{id}`, `PATCH /api/v1/tags/{id}`, `DELETE /api/v1/tags/{id}`.
+4. Scopes: `taxonomy:read`, `taxonomy:write`.
+5. Files changed:
+   - `services/api/src/nairi_api/taxonomy.py` — new `TagStore` + `Tag` dataclass + `DuplicateTagSlugError` + `TagNotFoundError`
+   - `services/api/src/nairi_api/main.py` — imports, Pydantic models, routes, `tag_to_get_response`, `app.state.tag_store` init
+   - `services/api/tests/test_tag_api.py` — 18 tests (auth, CRUD, errors, ordering, persistence)
+   - `memory-bank/data-model.md` — add Tag entity
+   - `memory-bank/api-contract.md` — add Tag API contracts (5 endpoints)
+   - `memory-bank/roadmap.md` — update Taxonomy section with Tag Management entry
+   - `memory-bank/progress-log.md` — this entry
+6. Verification performed: 18 test_tag_api.py tests passed, 137 total API tests passed, no regressions.
+7. Result: passed.
+8. Non-goals: no audit events, no admin UI, no MCP wiring, no tag-to-post relationship enforcement.
+9. Next candidates: Series CRUD, admin console tag picker, admin console category picker, or Docker/Compose deployment.

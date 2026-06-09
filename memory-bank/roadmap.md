@@ -117,7 +117,7 @@
 
 ### CMS Admin Console
 
-1. Status: runtime API client boundary completed through Admin Edit Metadata Error Detail UX Boundary; merged and read back on `main`.
+1. Status: runtime API client boundary completed through Admin Draft Save Error Recovery Hint Boundary; merged and read back on `main`.
 2. Completed: `apps/admin` Vite React shell, injected API-client component tests, runtime `createAdminApiClient`, draft list, separate published-history list, detail/update/publish API client wiring, draft edit and persisted publish-review request UI flow, post-publish list/read-only behavior, mixed-status copy, explicit hash routing for admin modules and selected content detail, frontend admin structural guard, and Guards CI admin test/typecheck/build coverage.
 3. Goal: implement human-facing content review, editing, audit, media, settings, and recovery controls through authenticated API contracts.
 4. Constraint: admin must not write directly to the database or bypass API scopes/state transitions.
@@ -145,6 +145,6 @@
 
 ## Admin Runtime API Client Boundary
 
-1. Status: completed and merged through Admin Edit Metadata Error Detail UX Boundary.
+1. Status: completed and merged through Admin Draft Save Error Recovery Hint Boundary.
 2. Completed: runtime `createAdminApiClient`, fail-closed `createAdminTokenProvider`, `Admin modules` navigation with `Content`, `Media`, and `Settings` shells, explicit hash routing for admin modules and selected content detail, `Content` module draft detail readback via `getPost(postId)`, selected draft affordance, empty draft-list copy, separate `listPublishedPosts()` runtime request to `GET /api/v1/posts?status=published`, separate Published history UI list, injected draft edit form contract via `updatePost(postId, input)`, runtime `PATCH /api/v1/posts/{post_id}` client wiring, editable draft slug payloads, editable draft summary payloads, editable draft tags payloads, editable draft category ID payloads, editable draft series ID payloads, editable draft metadata JSON payloads, targeted non-object metadata JSON error copy, editable draft content-format payloads, persisted `Request publish review` through `requestPublishReview(postId, { revisionId })`, publish confirmation intent, runtime `POST /api/v1/posts/{post_id}/publish` client wiring through `publishPost(postId, input)`, an App `Publish confirmed draft` action gated behind confirmation, post-publish removal from the draft review list while preserving detail readback, read-only detail behavior for published selections in the draft review workflow, status-aware `API-backed published detail` labelling for non-draft detail readback, mixed-status admin list labelling as `Content items`, mixed-status detail loading copy as `Loading item detail…`, explicit published read-only copy explaining hidden draft controls, draft workflow copy clarifying selected-draft scope, and publish-review status scoping regression coverage.
 3. Next candidate: another narrow admin edit boundary.

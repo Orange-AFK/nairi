@@ -1,0 +1,15 @@
+FROM node:20-slim
+
+WORKDIR /app
+
+# Install dependencies first (better layer caching)
+COPY package.json package-lock.json* ./
+RUN npm install --legacy-peer-deps 2>/dev/null || npm install --legacy-peer-deps
+
+# Copy source (mount as volume for hot-reload in dev)
+COPY . .
+
+EXPOSE 5173
+
+# Dev mode with hot-reload bound to all interfaces
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

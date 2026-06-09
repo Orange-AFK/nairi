@@ -1046,3 +1046,10 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: replaced the generic save failure copy for non-object `Draft metadata JSON` with the targeted safe copy `Draft metadata JSON must be an object.` while keeping the invalid metadata branch side-effect-free.
 3. Boundary: admin validation copy only; no backend route change, no API contract change, no public API change, no richer metadata schema validation, no renderer behavior, no MDX execution, no router expansion, no token storage, no direct database access, and no live external side effects.
 4. Verification: focused RED/GREEN admin component test, docs/i18n/contract/API schema/secret guards, full local check runner, admin tests, admin typecheck/build, diff check, tight secret scan, and independent review blocker check passed locally before PR.
+
+## Admin Edit Metadata Error Detail UX Boundary Merge Closeout
+
+1. Status: completed for post-merge source-of-truth alignment after PR #112 merged into `main`.
+2. Scope: updated `project-state.md`, `roadmap.md`, and this progress closeout so Admin Edit Metadata Error Detail UX Boundary is recorded as merged and read back.
+3. Boundary: docs-only closeout; no product behavior, API contract, admin UI, public frontend, deployment, live side effect, or guard semantic change.
+4. Verification: docs/i18n/contract/API schema/secret guards, full local check runner, diff check, docs tight secret scan, and independent docs closeout review passed locally; closeout PR Guards, main Guards, and readback remain pending for this docs-only closeout PR.

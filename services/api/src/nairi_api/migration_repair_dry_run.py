@@ -1,10 +1,12 @@
 import argparse
 import json
 import re
+import sys
+from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any
 
-REQUIRED_FIELDS = [
+REQUIRED_EVIDENCE_FIELDS: tuple[str, ...] = (
     "commandInvocation",
     "sourceDatabasePath",
     "backupArtifactPath",
@@ -14,179 +16,327 @@ REQUIRED_FIELDS = [
     "rehearsalJson",
     "observedStopCondition",
     "operatorEscalationNote",
-]
+)
 
-REQUIRED_REHEARSAL_JSON_FIELDS = [
+REQUIRED_REHEARSAL_JSON_FIELDS: tuple[str, ...] = (
+    "backupPath",
+    "rehearsalPath",
     "preMigrationCounts",
     "postMigrationCounts",
     "postMigrationRows",
     "readbackPostIds",
-]
+)
 
-SECRET_PATTERNS = [
-    re.compile(r"gh[pousr]_[A-Za-z0-9_]{8,}"),
-    re.compile(r"github_pat_[A-Za-z0-9_]{8,}"),
-    re.compile(r"Bearer\s+[A-Za-z0-9._-]{16,}", re.IGNORECASE),
-    re.compile(r"__SECRET_LIKE__"),
-]
+_SECRET_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(r"__[A-Z_]{3,}__"),
+    re.compile(r"Bearer\s+[A-Za-z0-9._-]{10,}"),
+    re.compile(r"github_pat_[A-Za-z0-9_]{20,}"),
+    re.compile(r"gh[opusr]_[A-Za-z0-9_]{20,}"),
+)
 
-
-def _base_result(*, status: str, reason: str, policy_code: str | None, recommended_next_action: str) -> dict[str, Any]:
-    return {
-        "status": status,
-        "reason": reason,
-        "policyCode": policy_code,
-        "validatedArtifacts": {},
-        "observedCounts": {},
-        "observedMigrationRows": [],
-        "observedReadbackPostIds": [],
-        "recommendedNextAction": recommended_next_action,
-    }
+_ESCALATION_KEYWORDS: tuple[str, ...] = (
+    "No metadata",
+    "production mutation",
+    "live database",
+    "metadata edit",
+)
 
 
-def _refused(reason: str, policy_code: str = "invalid_evidence_bundle") -> dict[str, Any]:
-    return _base_result(
-        status="refused",
-        reason=reason,
-        policy_code=policy_code,
-        recommended_next_action="Fix the evidence bundle and rerun dry-run analysis; do not mutate databases.",
-    )
+def _check_evidence_fields(evidence: Mapping[str, Any]) -> str | None:
+    """Return policyCode if a required field is missing, else None."""
+    for field in REQUIRED_EVIDENCE_FIELDS:
+        if field not in evidence:
+            return "missing_evidence_field"
+    return None
 
 
-def _stringify_for_scan(value: object) -> str:
-    return json.dumps(value, sort_keys=True, default=str)
+def _check_artifacts_exist(evidence: Mapping[str, Any]) -> str | None:
+    """Return policyCode if any artifact path does not exist, else None."""
+    for key in ("sourceDatabasePath", "backupArtifactPath", "rehearsalArtifactPath"):
+        path = evidence[key]
+        if isinstance(path, str) and not Path(path).exists():
+            return "missing_artifact"
+    return None
 
 
-def _contains_secret_like_value(bundle: Mapping[str, Any]) -> bool:
-    serialized = _stringify_for_scan(bundle)
-    return any(pattern.search(serialized) for pattern in SECRET_PATTERNS)
+def _check_path_aliasing(evidence: Mapping[str, Any]) -> str | None:
+    """Return policyCode if any two artifact paths resolve to the same location, else None."""
+    paths = [
+        str(Path(evidence["sourceDatabasePath"]).resolve()),
+        str(Path(evidence["backupArtifactPath"]).resolve()),
+        str(Path(evidence["rehearsalArtifactPath"]).resolve()),
+    ]
+    if len(paths) != len(set(paths)):
+        return "path_aliasing"
+    return None
 
 
-def _resolve_existing_path(value: object) -> Path | None:
-    if not isinstance(value, str) or not value:
-        return None
-    path = Path(value).resolve()
-    if not path.exists():
-        return None
-    return path
+def _check_rehearsal_json_is_dict(evidence: Mapping[str, Any]) -> str | None:
+    """Return policyCode if rehearsalJson is not a dict, else None."""
+    rj = evidence.get("rehearsalJson")
+    if not isinstance(rj, dict):
+        return "invalid_rehearsal_json"
+    return None
 
 
-def _migration_rows_include_schema_migrations(rows: object) -> bool:
-    if not isinstance(rows, list):
+def _check_rehearsal_json_fields(rehearsal_json: Mapping[str, Any]) -> str | None:
+    """Return policyCode if a required rehearsal JSON field is missing, else None."""
+    for field in REQUIRED_REHEARSAL_JSON_FIELDS:
+        if field not in rehearsal_json:
+            return "missing_rehearsal_json_field"
+    return None
+
+
+def _check_schema_migrations_present(evidence: Mapping[str, Any]) -> str | None:
+    """Return policyCode if stop_condition is migration_name_mismatch but postMigrationRows is empty."""
+    stop_condition = evidence.get("observedStopCondition")
+    if stop_condition == "migration_name_mismatch":
+        rj = evidence.get("rehearsalJson")
+        if isinstance(rj, dict):
+            rows = rj.get("postMigrationRows")
+            if isinstance(rows, list) and len(rows) == 0:
+                return "missing_schema_migrations"
+    return None
+
+
+def _check_counts_match(rehearsal_json: Mapping[str, Any]) -> str | None:
+    """Return policyCode if preMigrationCounts != postMigrationCounts, else None."""
+    pre = rehearsal_json.get("preMigrationCounts")
+    post = rehearsal_json.get("postMigrationCounts")
+    if isinstance(pre, dict) and isinstance(post, dict):
+        if pre != post:
+            return "count_mismatch"
+    return None
+
+
+def _check_escalation_note(evidence: Mapping[str, Any]) -> str | None:
+    """Return policyCode if operatorEscalationNote lacks required detail, else None."""
+    note = evidence.get("operatorEscalationNote", "")
+    if not isinstance(note, str):
+        return "missing_escalation_note"
+    if not any(keyword.lower() in note.lower() for keyword in _ESCALATION_KEYWORDS):
+        return "missing_escalation_note"
+    return None
+
+
+def _has_secret_like_text(value: object) -> bool:
+    """Check if a string value contains secret-like patterns."""
+    if not isinstance(value, str):
         return False
-    for row in rows:
-        if not isinstance(row, list | tuple) or len(row) != 2:
-            return False
-        migration_id, migration_name = row
-        if migration_id == 1 and isinstance(migration_name, str) and migration_name:
+    for pattern in _SECRET_PATTERNS:
+        if pattern.search(value):
             return True
     return False
 
 
-def _counts_are_consistent(rehearsal_json: Mapping[str, Any]) -> bool:
-    pre_counts = rehearsal_json.get("preMigrationCounts")
-    post_counts = rehearsal_json.get("postMigrationCounts")
-    if not isinstance(pre_counts, dict) or not isinstance(post_counts, dict):
-        return False
-    return pre_counts == post_counts
+def _check_secret_like_evidence(evidence: Mapping[str, Any]) -> str | None:
+    """Return policyCode if any evidence field contains secret-like text, else None."""
+    for key, value in evidence.items():
+        if _has_secret_like_text(value):
+            return "secret_like_evidence"
+        if isinstance(value, (dict, list)):
+            stack: list[object] = [value]
+            while stack:
+                item = stack.pop()
+                if isinstance(item, dict):
+                    for v in item.values():
+                        if _has_secret_like_text(v):
+                            return "secret_like_evidence"
+                        if isinstance(v, (dict, list)):
+                            stack.append(v)
+                elif isinstance(item, list):
+                    for elem in item:
+                        if _has_secret_like_text(elem):
+                            return "secret_like_evidence"
+                        if isinstance(elem, (dict, list)):
+                            stack.append(elem)
+    return None
 
 
-def analyze_evidence_bundle(evidence: Mapping[str, Any]) -> dict[str, Any]:
-    missing = [field for field in REQUIRED_FIELDS if field not in evidence]
-    if missing:
-        return _refused(f"Evidence bundle missing required field: {missing[0]}", "missing_evidence_field")
-
-    if _contains_secret_like_value(evidence):
-        return _refused("Evidence bundle contains secret-like text and cannot be analyzed safely.", "secret_like_evidence")
-
-    source_path = _resolve_existing_path(evidence.get("sourceDatabasePath"))
-    backup_path = _resolve_existing_path(evidence.get("backupArtifactPath"))
-    rehearsal_path = _resolve_existing_path(evidence.get("rehearsalArtifactPath"))
-    if source_path is None or backup_path is None or rehearsal_path is None:
-        return _refused("Evidence bundle references a missing source, backup, or rehearsal artifact.", "missing_artifact")
-    if len({source_path, backup_path, rehearsal_path}) != 3:
-        return _refused("Source, backup, and rehearsal artifact paths must be distinct.", "path_aliasing")
-
-    rehearsal_json = evidence.get("rehearsalJson")
-    if not isinstance(rehearsal_json, Mapping):
-        return _refused("Evidence bundle rehearsalJson must be structured JSON.", "invalid_rehearsal_json")
-    missing_rehearsal_field = [field for field in REQUIRED_REHEARSAL_JSON_FIELDS if field not in rehearsal_json]
-    if missing_rehearsal_field:
-        return _refused(
-            f"Rehearsal JSON missing required field: {missing_rehearsal_field[0]}",
-            "missing_rehearsal_json_field",
-        )
-    if not _migration_rows_include_schema_migrations(rehearsal_json.get("postMigrationRows")):
-        return _refused("Rehearsal JSON does not include expected schema_migrations evidence.", "missing_schema_migrations")
-    if not _counts_are_consistent(rehearsal_json):
-        return _refused("Pre/post migration counts are inconsistent for this dry-run boundary.", "count_mismatch")
-    note = evidence.get("operatorEscalationNote")
-    if not isinstance(note, str) or not any(marker in note.lower() for marker in ("not", "no ")):
-        return _refused("Operator escalation note must state which action was intentionally not taken.", "missing_escalation_note")
-
-    validated_artifacts = {
-        "sourceDatabasePath": str(source_path),
-        "backupArtifactPath": str(backup_path),
-        "rehearsalArtifactPath": str(rehearsal_path),
+def _build_refused(policy_code: str, reason: str) -> dict[str, object]:
+    return {
+        "status": "refused",
+        "reason": reason,
+        "policyCode": policy_code,
+        "validatedArtifacts": None,
+        "observedCounts": None,
+        "observedMigrationRows": None,
+        "observedReadbackPostIds": None,
+        "recommendedNextAction": None,
     }
-    observed_counts = {
-        "preMigrationCounts": rehearsal_json["preMigrationCounts"],
-        "postMigrationCounts": rehearsal_json["postMigrationCounts"],
+
+
+def _build_intervention(
+    evidence: Mapping[str, Any],
+    rehearsal_json: Mapping[str, Any],
+) -> dict[str, object]:
+    return {
+        "status": "needs_manual_intervention",
+        "reason": "manual intervention is required: the rehearsal detected a migration name mismatch.",
+        "policyCode": "migration_name_mismatch",
+        "validatedArtifacts": {
+            "sourceDatabasePath": evidence["sourceDatabasePath"],
+            "backupArtifactPath": evidence["backupArtifactPath"],
+            "rehearsalArtifactPath": evidence["rehearsalArtifactPath"],
+        },
+        "observedCounts": {
+            "preMigrationCounts": rehearsal_json["preMigrationCounts"],
+            "postMigrationCounts": rehearsal_json["postMigrationCounts"],
+        },
+        "observedMigrationRows": rehearsal_json.get("postMigrationRows", []),
+        "observedReadbackPostIds": rehearsal_json.get("readbackPostIds", []),
+        "recommendedNextAction": "Escalate with the evidence bundle; do not edit schema_migrations.",
     }
-    observed_migration_rows = rehearsal_json["postMigrationRows"]
-    observed_readback_post_ids = rehearsal_json["readbackPostIds"]
 
-    if evidence.get("observedStopCondition") == "migration_name_mismatch":
-        return {
-            "status": "needs_manual_intervention",
-            "reason": "migration_name_mismatch requires manual intervention before any repair action.",
-            "policyCode": "migration_name_mismatch",
-            "validatedArtifacts": validated_artifacts,
-            "observedCounts": observed_counts,
-            "observedMigrationRows": observed_migration_rows,
-            "observedReadbackPostIds": observed_readback_post_ids,
-            "recommendedNextAction": "Escalate with the evidence bundle; do not edit schema_migrations.",
-        }
 
+def _build_analysis_ready(
+    evidence: Mapping[str, Any],
+    rehearsal_json: Mapping[str, Any],
+) -> dict[str, object]:
     return {
         "status": "analysis_ready",
         "reason": "Evidence bundle passed dry-run preflight checks.",
         "policyCode": None,
-        "validatedArtifacts": validated_artifacts,
-        "observedCounts": observed_counts,
-        "observedMigrationRows": observed_migration_rows,
-        "observedReadbackPostIds": observed_readback_post_ids,
+        "validatedArtifacts": {
+            "sourceDatabasePath": evidence["sourceDatabasePath"],
+            "backupArtifactPath": evidence["backupArtifactPath"],
+            "rehearsalArtifactPath": evidence["rehearsalArtifactPath"],
+        },
+        "observedCounts": {
+            "preMigrationCounts": rehearsal_json["preMigrationCounts"],
+            "postMigrationCounts": rehearsal_json["postMigrationCounts"],
+        },
+        "observedMigrationRows": rehearsal_json.get("postMigrationRows", []),
+        "observedReadbackPostIds": rehearsal_json.get("readbackPostIds", []),
         "recommendedNextAction": "Keep artifacts for review; do not run repair commands from this dry-run analysis.",
     }
 
 
-def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Dry-run analyze a PostStore migration repair evidence bundle.")
-    parser.add_argument("--evidence", required=True, type=Path, help="Evidence bundle JSON file to analyze.")
-    return parser
+def analyze_evidence_bundle(evidence: Mapping[str, Any]) -> dict[str, object]:
+    """Run dry-run preflight analysis on an evidence bundle.
+
+    Returns the output contract dict as defined in
+    memory-bank/executable-repair-tooling.md.
+    """
+    # --- Preflight checks (fail-fast) ---
+
+    if policy_code := _check_evidence_fields(evidence):
+        missing = [f for f in REQUIRED_EVIDENCE_FIELDS if f not in evidence]
+        return _build_refused(
+            policy_code,
+            f"Required evidence field(s) missing: {', '.join(missing)}.",
+        )
+
+    if policy_code := _check_artifacts_exist(evidence):
+        missing = []
+        for key in ("sourceDatabasePath", "backupArtifactPath", "rehearsalArtifactPath"):
+            path = evidence[key]
+            if isinstance(path, str) and not Path(path).exists():
+                missing.append(key)
+        return _build_refused(
+            policy_code,
+            f"Required artifact(s) do not exist: {', '.join(missing)}.",
+        )
+
+    if policy_code := _check_path_aliasing(evidence):
+        return _build_refused(
+            policy_code,
+            "Two or more artifact paths resolve to the same location.",
+        )
+
+    if policy_code := _check_rehearsal_json_is_dict(evidence):
+        return _build_refused(
+            policy_code,
+            "rehearsalJson is not a structured JSON object.",
+        )
+
+    rehearsal_json: Mapping[str, Any] = evidence["rehearsalJson"]  # type: ignore[assignment]
+
+    if policy_code := _check_rehearsal_json_fields(rehearsal_json):
+        missing = [f for f in REQUIRED_REHEARSAL_JSON_FIELDS if f not in rehearsal_json]
+        return _build_refused(
+            policy_code,
+            f"Required rehearsal JSON field(s) missing: {', '.join(missing)}.",
+        )
+
+    if policy_code := _check_schema_migrations_present(evidence):
+        return _build_refused(
+            policy_code,
+            "Schema migrations metadata is missing from the rehearsal results for a migration-name-mismatch stop condition.",
+        )
+
+    if policy_code := _check_counts_match(rehearsal_json):
+        return _build_refused(
+            policy_code,
+            "preMigrationCounts and postMigrationCounts are not equal.",
+        )
+
+    if policy_code := _check_escalation_note(evidence):
+        return _build_refused(
+            policy_code,
+            "operatorEscalationNote does not confirm that no metadata edits, production mutation, or live database migration execution were performed.",
+        )
+
+    if policy_code := _check_secret_like_evidence(evidence):
+        return _build_refused(
+            policy_code,
+            "Evidence bundle contains secret-like text in one or more fields.",
+        )
+
+    # --- Decision logic ---
+
+    stop_condition = evidence.get("observedStopCondition")
+    if stop_condition == "migration_name_mismatch":
+        return _build_intervention(evidence, rehearsal_json)
+
+    return _build_analysis_ready(evidence, rehearsal_json)
+
+
+def _find_evidence_file_path(argv: Sequence[str] | None) -> str:
+    parser = argparse.ArgumentParser(description="Nairi post-store repair dry-run analysis.")
+    parser.add_argument("--evidence", required=True, type=str, help="Path to evidence bundle JSON file.")
+    args = parser.parse_args(argv)
+    return args.evidence
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    parser = _build_parser()
-    args = parser.parse_args(argv)
-    try:
-        raw_evidence = json.loads(args.evidence.read_text())
-    except (OSError, json.JSONDecodeError) as error:
-        print(
-            json.dumps(
-                _refused(f"Could not read evidence bundle: {error}", "unreadable_evidence_bundle"),
-                sort_keys=True,
-            )
+    evidence_path_str = _find_evidence_file_path(argv)
+    evidence_path = Path(evidence_path_str)
+
+    if not evidence_path.exists() or not evidence_path.is_file():
+        payload = _build_refused(
+            "unreadable_evidence_bundle",
+            f"Cannot read evidence bundle: {evidence_path}",
         )
-        return 2
-    if not isinstance(raw_evidence, Mapping):
-        print(json.dumps(_refused("Evidence bundle must be a JSON object.", "invalid_evidence_bundle"), sort_keys=True))
+        print(json.dumps(payload, sort_keys=True))
         return 2
 
-    result = analyze_evidence_bundle(raw_evidence)
+    try:
+        raw = evidence_path.read_text()
+        evidence = json.loads(raw)
+    except (json.JSONDecodeError, OSError):
+        payload = _build_refused(
+            "invalid_evidence_bundle",
+            "Evidence bundle is not valid JSON or cannot be decoded.",
+        )
+        print(json.dumps(payload, sort_keys=True))
+        return 2
+
+    if not isinstance(evidence, dict):
+        payload = _build_refused(
+            "invalid_evidence_bundle",
+            "Evidence bundle is not a JSON object.",
+        )
+        print(json.dumps(payload, sort_keys=True))
+        return 2
+
+    result = analyze_evidence_bundle(evidence)
     print(json.dumps(result, sort_keys=True))
-    return 0 if result["status"] in {"analysis_ready", "needs_manual_intervention"} else 2
+
+    if result["status"] == "analysis_ready":
+        return 0
+    return 2
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(main(sys.argv[1:]))

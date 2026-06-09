@@ -23,6 +23,12 @@ from nairi_api.posts import (
     StoredPostDraft,
     UpdatedPostDraft,
 )
+from nairi_api.taxonomy import (
+    Category,
+    CategoryNotFoundError,
+    CategoryStore,
+    DuplicateCategorySlugError,
+)
 
 
 class CreatePostDraftRequest(BaseModel):
@@ -198,6 +204,48 @@ class ReadPublishedPostResponse(PublishedPostSummaryResponse):
     content: str
 
 
+class CreateCategoryRequest(BaseModel):
+    name: str
+    slug: str
+    description: str | None = None
+
+
+class CreateCategoryResponse(BaseModel):
+    category_id: str = Field(alias="categoryId")
+    name: str
+    slug: str
+    description: str | None = None
+    created_at: str = Field(alias="createdAt")
+    updated_at: str = Field(alias="updatedAt")
+
+
+class GetCategoryResponse(BaseModel):
+    category_id: str = Field(alias="categoryId")
+    name: str
+    slug: str
+    description: str | None = None
+    created_at: str = Field(alias="createdAt")
+    updated_at: str = Field(alias="updatedAt")
+
+
+class UpdateCategoryRequest(BaseModel):
+    name: str
+    slug: str
+    description: str | None = None
+
+
+class UpdateCategoryResponse(BaseModel):
+    category_id: str = Field(alias="categoryId")
+    name: str
+    slug: str
+    description: str | None = None
+    updated_at: str = Field(alias="updatedAt")
+
+
+class ListCategoriesResponse(BaseModel):
+    items: list[GetCategoryResponse]
+
+
 SLUG_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
@@ -266,6 +314,17 @@ def public_post_summary_response(post: StoredPostDraft) -> PublicPostSummaryResp
     )
 
 
+def category_to_get_response(cat: Category) -> GetCategoryResponse:
+    return GetCategoryResponse(
+        categoryId=cat.category_id,
+        name=cat.name,
+        slug=cat.slug,
+        description=cat.description,
+        createdAt=cat.created_at,
+        updatedAt=cat.updated_at,
+    )
+
+
 def render_public_body_html(content: str) -> str:
     paragraphs: list[str] = []
     for block in content.split("\n\n"):
@@ -306,6 +365,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app = FastAPI(title="Nairi API", version=settings.version)
     app.state.settings = settings
     app.state.post_store = PostStore(settings.database_path)
+    app.state.category_store = CategoryStore(settings.database_path)
     app.state.public_invalidation_dispatcher = build_public_invalidation_dispatcher(settings)
     app.add_exception_handler(ApiError, api_error_response)
 
@@ -320,6 +380,88 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/api/v1/mdx-components")
     def list_mdx_components(_actor: object = Depends(require_scope("settings:read"))) -> dict[str, list[dict[str, str]]]:
         return {"items": []}
+
+    @app.get("/api/v1/categories")
+    def list_categories(
+        _actor: AuthenticatedActor = Depends(require_scope("taxonomy:read")),
+    ) -> ListCategoriesResponse:
+        categories = app.state.category_store.list_categories()
+        return ListCategoriesResponse(items=[category_to_get_response(cat) for cat in categories])
+
+    @app.post("/api/v1/categories", status_code=201)
+    def create_category(
+        request: CreateCategoryRequest,
+        _actor: AuthenticatedActor = Depends(require_scope("taxonomy:write")),
+    ) -> CreateCategoryResponse:
+        if not request.name.strip():
+            raise ApiError(400, "invalid_request", "Invalid request", {"name": "Name is required"})
+        if not SLUG_PATTERN.fullmatch(request.slug):
+            raise ApiError(400, "invalid_request", "Invalid request", {"slug": "Slug must contain only lowercase letters, numbers, and hyphens"})
+        try:
+            cat = app.state.category_store.create_category(
+                name=request.name,
+                slug=request.slug,
+                description=request.description,
+            )
+        except DuplicateCategorySlugError as error:
+            raise ApiError(409, "conflict", "Category slug already exists", {"slug": error.slug}) from error
+        return CreateCategoryResponse(
+            categoryId=cat.category_id,
+            name=cat.name,
+            slug=cat.slug,
+            description=cat.description,
+            createdAt=cat.created_at,
+            updatedAt=cat.updated_at,
+        )
+
+    @app.get("/api/v1/categories/{category_id}")
+    def get_category(
+        category_id: str,
+        _actor: AuthenticatedActor = Depends(require_scope("taxonomy:read")),
+    ) -> GetCategoryResponse:
+        cat = app.state.category_store.get_category(category_id)
+        if cat is None:
+            raise ApiError(404, "not_found", "Category not found", {"categoryId": category_id})
+        return category_to_get_response(cat)
+
+    @app.patch("/api/v1/categories/{category_id}")
+    def update_category(
+        category_id: str,
+        request: UpdateCategoryRequest,
+        _actor: AuthenticatedActor = Depends(require_scope("taxonomy:write")),
+    ) -> UpdateCategoryResponse:
+        if not request.name.strip():
+            raise ApiError(400, "invalid_request", "Invalid request", {"name": "Name is required"})
+        if not SLUG_PATTERN.fullmatch(request.slug):
+            raise ApiError(400, "invalid_request", "Invalid request", {"slug": "Slug must contain only lowercase letters, numbers, and hyphens"})
+        try:
+            cat = app.state.category_store.update_category(
+                category_id=category_id,
+                name=request.name,
+                slug=request.slug,
+                description=request.description,
+            )
+        except CategoryNotFoundError as error:
+            raise ApiError(404, "not_found", "Category not found", {"categoryId": error.category_id}) from error
+        except DuplicateCategorySlugError as error:
+            raise ApiError(409, "conflict", "Category slug already exists", {"slug": error.slug}) from error
+        return UpdateCategoryResponse(
+            categoryId=cat.category_id,
+            name=cat.name,
+            slug=cat.slug,
+            description=cat.description,
+            updatedAt=cat.updated_at,
+        )
+
+    @app.delete("/api/v1/categories/{category_id}", status_code=204)
+    def delete_category(
+        category_id: str,
+        _actor: AuthenticatedActor = Depends(require_scope("taxonomy:write")),
+    ) -> None:
+        try:
+            app.state.category_store.delete_category(category_id)
+        except CategoryNotFoundError as error:
+            raise ApiError(404, "not_found", "Category not found", {"categoryId": error.category_id}) from error
 
     @app.get("/api/v1/public/posts")
     def list_public_posts(

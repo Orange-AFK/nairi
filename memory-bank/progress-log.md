@@ -1067,3 +1067,24 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 2. Scope: updated `project-state.md`, `roadmap.md`, and this progress closeout so Admin Draft Save Error Recovery Hint Boundary is recorded as merged and read back.
 3. Boundary: docs-only closeout; no product behavior, API contract, admin UI, public frontend, deployment, live side effect, or guard semantic change.
 4. Verification: docs/i18n/contract/API schema/secret guards, full local check runner, diff check, docs tight secret scan, and independent docs closeout review passed locally; closeout PR Guards, main Guards, and readback remain pending for this docs-only closeout PR.
+
+### 2026-06-09 — Category Management CRUD Boundary
+
+1. Status: completed, not yet merged.
+2. Scope: added scaffold SQLite-backed `categories` table with full CRUD routes.
+3. Routes: `GET /api/v1/categories`, `POST /api/v1/categories`, `GET /api/v1/categories/{id}`, `PATCH /api/v1/categories/{id}`, `DELETE /api/v1/categories/{id}`.
+4. Scopes: `taxonomy:read`, `taxonomy:write`.
+5. Files changed:
+   - `services/api/src/nairi_api/taxonomy.py` — new `CategoryStore` + `Category` dataclass
+   - `services/api/src/nairi_api/main.py` — imports, Pydantic models, routes, `category_to_get_response`, `app.state.category_store` init
+   - `services/api/tests/test_category_api.py` — 18 tests (auth, CRUD, errors, ordering, persistence)
+   - `memory-bank/contract-index.md` — add `taxonomy:read`, `taxonomy:write`
+   - `memory-bank/data-model.md` — add Category entity
+   - `memory-bank/api-contract.md` — add Category API contracts (5 endpoints)
+   - `memory-bank/project-state.md` — add completed boundary entry
+   - `memory-bank/roadmap.md` — add Taxonomy > Category Management section
+   - `memory-bank/progress-log.md` — this entry
+6. Verification performed: 18 test_category_api.py tests passed, 119 total API tests passed, no regressions.
+7. Result: passed.
+8. Non-goals: no audit events, no hierarchical parent, no post-to-category enforcement, no admin UI, no MCP wiring, no tag/series entities.
+9. Next candidates: Tags CRUD, Series CRUD, admin console category picker, or Docker/Compose deployment.

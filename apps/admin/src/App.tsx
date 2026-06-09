@@ -88,6 +88,14 @@ export type AdminCategory = {
   updatedAt: string;
 };
 
+export type AdminTag = {
+  tagId: string;
+  name: string;
+  slug: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type AdminApiClient = {
   listPosts: () => Promise<AdminPostSummary[]>;
   listPublishedPosts: () => Promise<AdminPostSummary[]>;
@@ -99,6 +107,7 @@ export type AdminApiClient = {
   ) => Promise<AdminPublishReviewRequestResult>;
   publishPost: (postId: string, input: AdminPostPublishInput) => Promise<AdminPostPublishResult>;
   listCategories: () => Promise<AdminCategory[]>;
+  listTags: () => Promise<AdminTag[]>;
 };
 
 type AdminModule = "content" | "media" | "settings";
@@ -185,6 +194,7 @@ export function App({ apiClient }: AppProps) {
   const [publishActionStatus, setPublishActionStatus] = useState<string | null>(null);
   const [publishActionError, setPublishActionError] = useState<string | null>(null);
   const [categories, setCategories] = useState<AdminCategory[]>([]);
+  const [tags, setTags] = useState<AdminTag[]>([]);
   const detailRequestIdRef = useRef(0);
   const saveRequestIdRef = useRef(0);
   const publishRequestIdRef = useRef(0);
@@ -253,6 +263,24 @@ export function App({ apiClient }: AppProps) {
       }
     }
     void loadCategories();
+    return () => {
+      cancelled = true;
+    };
+  }, [apiClient]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadTags() {
+      try {
+        const loaded = await apiClient.listTags();
+        if (!cancelled) {
+          setTags(loaded);
+        }
+      } catch {
+        // tag loading failure does not block draft editing
+      }
+    }
+    void loadTags();
     return () => {
       cancelled = true;
     };
@@ -635,8 +663,13 @@ export function App({ apiClient }: AppProps) {
                       </label>
                       <label>
                         Draft tags
-                        <input name="tags" defaultValue={(selectedPostDetail.tags ?? []).join(", ")} />
+                        <input name="tags" defaultValue={(selectedPostDetail.tags ?? []).join(", ")} list="tag-suggestions" />
                       </label>
+                      <datalist id="tag-suggestions">
+                        {tags.map((t) => (
+                          <option key={t.tagId} value={t.name} />
+                        ))}
+                      </datalist>
                       <label>
                         Draft metadata JSON
                         <textarea

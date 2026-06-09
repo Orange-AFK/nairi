@@ -109,6 +109,12 @@ function adminApiClient(overrides: Partial<AdminApiClient> = {}): AdminApiClient
         { categoryId: "field-notes", name: "Field Notes", slug: "field-notes", createdAt: "2026-06-01T00:00:00Z", updatedAt: "2026-06-01T00:00:00Z" }
       ];
     },
+    async listTags() {
+      return [
+        { tagId: "tag-draft", name: "draft", slug: "draft", createdAt: "2026-06-01T00:00:00Z", updatedAt: "2026-06-01T00:00:00Z" },
+        { tagId: "tag-release-notes", name: "release-notes", slug: "release-notes", createdAt: "2026-06-01T00:00:00Z", updatedAt: "2026-06-01T00:00:00Z" }
+      ];
+    },
     ...overrides
   };
 }

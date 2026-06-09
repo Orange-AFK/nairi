@@ -56,6 +56,14 @@
 1. Records sensitive and state-changing operations.
 2. Key fields: `id`, `eventType`, `actorType`, `actorId`, `targetType`, `targetId`, `metadata`, `createdAt`.
 
+### Category
+
+1. Represents a content category for classifying posts.
+2. Key fields: `id`, `name`, `slug`, `description`, `createdAt`, `updatedAt`.
+3. Currently stored in a scaffold SQLite `categories` table initialized by `CategoryStore`.
+4. Posts reference categories through `categoryId` in post metadata.
+5. Future: hierarchical categories through `parentId`.
+
 ## Current Persistence Boundary
 
 ### Article Draft Persistence

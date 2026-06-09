@@ -154,6 +154,17 @@
 3. Boundary: admin UX copy only; no backend route change, no API contract change, no public API change, no richer error mapping, no renderer behavior, no MDX execution, no router expansion, no token storage, no direct database access, and no live external side effects.
 4. Candidate next work: another narrow admin edit boundary, Executable Repair Tooling Design Boundary, or Cloudflare Live Execution Design Boundary after a high-risk audit.
 
+### Category Management CRUD Boundary
+
+1. Status: completed, not yet merged.
+2. Added `CategoryStore` with scaffold SQLite-backed `categories` table, supporting list/create/get/update/delete.
+3. Added routes: `GET /api/v1/categories`, `POST /api/v1/categories`, `GET /api/v1/categories/{id}`, `PATCH /api/v1/categories/{id}`, `DELETE /api/v1/categories/{id}`.
+4. New scopes: `taxonomy:read` for read-only access, `taxonomy:write` for create/update/delete.
+5. Routes use existing scope auth chain (bearer token, `require_scope`), standard `ApiError` for 400/404/409, deterministic `cat-{slug}` IDs, slug validation via `SLUG_PATTERN`, list ordering by `name` ascending, and `tmp_path`-based test isolation.
+6. 18 tests covering auth rejection (missing token, missing scope, wrong scope), CRUD operations, duplicate slug, blank name, invalid slug, 404 cases, alphabetical ordering, and data persistence across app restarts.
+7. Non-goals for this boundary: no audit events (deferred), no hierarchical parent support, no post-to-category relationship enforcement, no admin console UI changes, no MCP tool wiring, no tag/series entity implementation.
+8. Next candidates: Tags CRUD, Series CRUD, admin console category picker, or Docker/Compose deployment.
+
 ## Blockers
 
 ### Current Blockers

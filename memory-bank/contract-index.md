@@ -47,6 +47,8 @@
 5. `pages:write`
 6. `media:read`
 7. `media:write`
+8. `taxonomy:read`
+9. `taxonomy:write`
 
 ### System Scopes
 

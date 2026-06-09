@@ -53,6 +53,14 @@
 2. Completed: publish contract, state transition, publish-job storage, published read/list, filters, and pagination through authenticated management routes.
 3. Deferred: scheduled publish lifecycle, queued/running job lifecycle, retry/failure workflow, and real job runner execution.
 
+## Taxonomy
+
+### Category Management
+
+1. Status: completed, not yet merged on `main`.
+2. Completed: scaffold SQLite-backed `categories` table via `CategoryStore`, full CRUD routes with `taxonomy:read`/`taxonomy:write` scope enforcement, deterministic `cat-{slug}` IDs, slug validation, duplicate slug rejection, alphabetical name ordering, and 18 verified tests.
+3. Deferred: tag entity, series entity, admin console category picker, hierarchical categories via `parentId`, audit events for taxonomy operations, and MCP tool wiring.
+
 ## Public Content API
 
 ### Anonymous Public Content Reads

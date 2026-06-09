@@ -80,6 +80,14 @@ export type AdminPublishReviewRequestResult = {
   requestedAt: string;
 };
 
+export type AdminCategory = {
+  categoryId: string;
+  name: string;
+  slug: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type AdminApiClient = {
   listPosts: () => Promise<AdminPostSummary[]>;
   listPublishedPosts: () => Promise<AdminPostSummary[]>;
@@ -90,6 +98,7 @@ export type AdminApiClient = {
     input: AdminPublishReviewRequestInput
   ) => Promise<AdminPublishReviewRequestResult>;
   publishPost: (postId: string, input: AdminPostPublishInput) => Promise<AdminPostPublishResult>;
+  listCategories: () => Promise<AdminCategory[]>;
 };
 
 type AdminModule = "content" | "media" | "settings";
@@ -175,6 +184,7 @@ export function App({ apiClient }: AppProps) {
   const [publishConfirmationStatus, setPublishConfirmationStatus] = useState<string | null>(null);
   const [publishActionStatus, setPublishActionStatus] = useState<string | null>(null);
   const [publishActionError, setPublishActionError] = useState<string | null>(null);
+  const [categories, setCategories] = useState<AdminCategory[]>([]);
   const detailRequestIdRef = useRef(0);
   const saveRequestIdRef = useRef(0);
   const publishRequestIdRef = useRef(0);
@@ -225,6 +235,24 @@ export function App({ apiClient }: AppProps) {
 
     void loadPosts();
 
+    return () => {
+      cancelled = true;
+    };
+  }, [apiClient]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadCategories() {
+      try {
+        const loaded = await apiClient.listCategories();
+        if (!cancelled) {
+          setCategories(loaded);
+        }
+      } catch {
+        // category loading failure does not block draft editing
+      }
+    }
+    void loadCategories();
     return () => {
       cancelled = true;
     };
@@ -591,8 +619,15 @@ export function App({ apiClient }: AppProps) {
                         <textarea name="summary" defaultValue={selectedPostDetail.summary ?? ""} rows={3} />
                       </label>
                       <label>
-                        Draft category ID
-                        <input name="categoryId" defaultValue={selectedPostDetail.categoryId ?? ""} />
+                        Draft category
+                        <select name="categoryId" defaultValue={selectedPostDetail.categoryId ?? ""}>
+                          <option value="">— none —</option>
+                          {categories.map((cat) => (
+                            <option key={cat.categoryId} value={cat.categoryId}>
+                              {cat.name}
+                            </option>
+                          ))}
+                        </select>
                       </label>
                       <label>
                         Draft series ID

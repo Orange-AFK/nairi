@@ -7,8 +7,8 @@
 1. Nairi is in early alpha implementation.
 2. The implementation still follows the accepted API-first, agent-first CMS direction.
 3. Core public and management content flows exist as scaffold implementations with verified route tests and guards.
-4. The current development focus is post-merge source-of-truth closeout after Admin Draft Save Error Recovery Hint Boundary merged and passed main readback.
-5. CMS admin console work has advanced beyond the foundation shell into the runtime API client boundary through draft list/detail, draft update, content-format edit payloads, targeted metadata JSON error copy, publish-review staging, publish confirmation, injected `publishPost` wiring, post-publish list/read-only behavior, separate published-history list readback, mixed-status copy, publish-review status scoping coverage, and explicit hash routing; it follows the Migration Operator Handoff Docs Boundary for typed migration policy failures, remains bounded to authenticated API contracts, and preserves manual intervention for migration repair workflows.
+4. The current development focus is taxonomy-to-post relationship enforcement and admin console picker closeout; API validation of category, series, and tag references on post create/update is active on `main`.
+5. CMS admin console work has advanced beyond the foundation shell into the runtime API client boundary through draft list/detail, draft update, content-format edit payloads, targeted metadata JSON error copy, publish-review staging, publish confirmation, injected `publishPost` wiring, post-publish list/read-only behavior, separate published-history list readback, mixed-status copy, publish-review status scoping coverage, explicit hash routing, and API-backed category/tag/series pickers; it remains bounded to authenticated API contracts.
 
 ### Current Authority Snapshot
 
@@ -41,6 +41,14 @@
 3. Authenticated publish-review requests persist pending human review intent with `post.publish_requested` audit rows while leaving draft status unchanged.
 4. Authenticated publish requests perform the first immediate publish transition, preserve current revision, record `post.published`, and create durable publish-job bookkeeping.
 5. Authenticated published read/list/filter/pagination exists through management routes with `posts:read` scope.
+
+### Taxonomy
+
+1. CategoryStore, TagStore, and SeriesStore provide full CRUD with deterministic IDs, slug validation, and duplicate rejection.
+2. Management routes under `/api/v1/categories`, `/api/v1/tags`, `/api/v1/series` enforce `taxonomy:read`/`taxonomy:write` scopes.
+3. PostStore validates category_id, series_id, and tag_id references on create and update when taxonomy stores are wired.
+4. Admin console uses category, tag, and series pickers populated from API.
+5. Deferred: MCP tool wiring, audit events for taxonomy operations.
 
 ### Public Content API
 
@@ -93,10 +101,11 @@
 2. `schema_migrations` records the current `(1, "post_store_baseline")` row and the runner skips already-applied migrations.
 3. Existing pre-migration SQLite files can be adopted by creating migration metadata without losing posts, revisions, or audit rows.
 4. A local rehearsal helper can copy a source SQLite file to backup and rehearsal paths, trigger migration on the rehearsal copy, and verify metadata/count/readback safety.
-5. Migration metadata name mismatches fail fast with a stable `PostStoreMigrationError` carrying `migration_name_mismatch` policy metadata; they are not auto-repaired.
+5. Migration metadata name mismatches fail fast with a stable `PostStoreMigrationError` carrying `migration_name_mismatch` policy metadata; they require manual intervention and are not auto-repaired.
 6. `nairi-post-store-migration-rehearsal` is a local-only console script that rehearses migration against caller-provided source/backup/rehearsal paths and emits a JSON summary.
-7. SQLAlchemy and Alembic are target stack components but are not yet introduced in code.
-8. PostgreSQL remains a future production option after managed migrations exist.
+7. The Migration Operator Handoff Docs Boundary completed typed migration policy failures and operator intervention workflows.
+8. SQLAlchemy and Alembic are target stack components but are not yet introduced in code.
+9. PostgreSQL remains a future production option after managed migrations exist.
 
 ### Admin Console
 

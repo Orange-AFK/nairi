@@ -7,7 +7,7 @@
 1. Nairi is in early alpha implementation.
 2. The implementation still follows the accepted API-first, agent-first CMS direction.
 3. Core public and management content flows exist as scaffold implementations with verified route tests and guards.
-4. The current development focus is taxonomy-to-post relationship enforcement and admin console picker closeout; API validation of category, series, and tag references on post create/update is active on `main`.
+4. The current development focus is post-public-taxonomy-enrichment boundary closeout and documentation; taxonomy-to-post enforcement is active on `main`, taxonomy enrichment for public posts is active on a feature branch.
 5. CMS admin console work has advanced beyond the foundation shell into the runtime API client boundary through draft list/detail, draft update, content-format edit payloads, targeted metadata JSON error copy, publish-review staging, publish confirmation, injected `publishPost` wiring, post-publish list/read-only behavior, separate published-history list readback, mixed-status copy, publish-review status scoping coverage, explicit hash routing, and API-backed category/tag/series pickers; it remains bounded to authenticated API contracts.
 
 ### Current Authority Snapshot
@@ -48,7 +48,8 @@
 2. Management routes under `/api/v1/categories`, `/api/v1/tags`, `/api/v1/series` enforce `taxonomy:read`/`taxonomy:write` scopes.
 3. PostStore validates category_id, series_id, and tag_id references on create and update when taxonomy stores are wired.
 4. Admin console uses category, tag, and series pickers populated from API.
-5. Deferred: MCP tool wiring, audit events for taxonomy operations.
+5. Public post responses include resolved taxonomy names via `category`, `series`, `tagsEnriched` fields; orphaned references return null/empty.
+6. Deferred: MCP tool wiring, audit events for taxonomy operations, management-route taxonomy enrichment.
 
 ### Public Content API
 

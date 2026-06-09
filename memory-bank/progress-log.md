@@ -1140,4 +1140,20 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 4. Verification: 160 API tests pass, guards pass, admin tests/build pass, public build passes.
 5. Result: passed.
 6. Non-goals: MCP tool wiring, audit events for taxonomy operations.
-7. Next candidates: Docker/Compose deployment, API-side category/series/tag relation enforcement on published-list queries, or admin console improvements.
+7. Next candidates: Docker/Compose deployment，API-side category/series/tag relation enforcement on published-list queries，or admin console improvements。
+
+### Post Public Taxonomy Enrichment
+
+1. Status: completed.
+2. Scope: public post list/detail responses now include resolved taxonomy names via `category`、`series`、`tagsEnriched` fields; orphaned references return null/empty.
+3. Changes:
+   - Added `PublicTaxonomyItem` Pydantic model (`id`, `name`, `slug`).
+   - Added `category`、`series`、`tagsEnriched` fields to `PublicPostSummaryResponse`.
+   - Added `_resolve_taxonomy_for_post()` helper that looks up taxonomy entities by ID.
+   - Updated `public_post_summary_response()` to accept optional taxonomy store params and populate enrichment fields.
+   - Updated `list_public_posts` and `read_public_post` routes to pass taxonomy stores.
+   - Added 3 API tests: valid enrichment、detail enrichment、orphaned taxonomy → null.
+4. Verification: 163 API tests pass，guards pass，admin + public builds pass。
+5. Result: passed.
+6. Non-goals: management-route taxonomy enrichment、tag deletion cascade、published-list SQL join optimization.
+7. Next candidates: Docker/Compose deployment、management-route taxonomy enrichment、或 MCP tool wiring。

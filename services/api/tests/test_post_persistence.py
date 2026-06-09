@@ -1748,6 +1748,9 @@ def test_list_public_posts_returns_public_safe_published_summaries_without_auth(
                 "categoryId": "category-public",
                 "seriesId": "series-public",
                 "publishedAt": "2026-06-07T08:03:00Z",
+                "category": None,
+                "series": None,
+                "tagsEnriched": [],
             }
         ],
         "nextCursor": None,
@@ -1848,6 +1851,9 @@ def test_get_public_post_by_slug_returns_public_safe_published_detail_without_au
         "categoryId": "category-public-detail",
         "seriesId": "series-public-detail",
         "publishedAt": "2026-06-07T08:03:00Z",
+        "category": None,
+        "series": None,
+        "tagsEnriched": [],
     }
     serialized_response = str(detail_response.json())
     assert "revisionId" not in serialized_response
@@ -2984,3 +2990,150 @@ def test_update_draft_rejects_invalid_category_id(tmp_path: Path) -> None:
         assert e.category_id == "cat-nonexistent"
     else:
         raise AssertionError("expected CategoryNotFoundError")
+
+
+def test_public_list_resolves_taxonomy_names_when_entities_exist(tmp_path: Path) -> None:
+    db = str(tmp_path / "nairi.db")
+    settings = Settings(
+        api_tokens={"post-writer-token": ["posts:write"], "post-publisher-token": ["posts:publish"]},
+        database_path=db,
+    )
+    app = create_app(settings=settings)
+    # Seed taxonomy using the same store instances the app uses
+    app.state.category_store.create_category("Guides", "guides", "Tutorial guides")
+    app.state.tag_store.create_tag("ops", "ops")
+    app.state.tag_store.create_tag("second", "second")
+    app.state.series_store.create_series("Updated Series", "updated", "An updated series")
+    client = TestClient(app)
+
+    # Create and publish a post with taxonomy references
+    payload = {
+        "title": "Taxonomy Enrichment Post",
+        "slug": "taxonomy-enrichment-post",
+        "contentFormat": "markdown",
+        "content": "# Enriched post",
+        "summary": "With taxonomy.",
+        "tags": ["tag-ops", "tag-second"],
+        "categoryId": "cat-guides",
+        "seriesId": "series-updated",
+        "metadata": {},
+    }
+    create_resp = client.post(
+        "/api/v1/posts", json=payload, headers={"Authorization": "Bearer post-writer-token"}
+    )
+    assert create_resp.status_code == 201
+    post_id = create_resp.json()["postId"]
+    revision_id = create_resp.json()["revisionId"]
+    pub_resp = client.post(
+        f"/api/v1/posts/{post_id}/publish",
+        json={"revisionId": revision_id, "publishMode": "immediate", "scheduledAt": None},
+        headers={"Authorization": "Bearer post-publisher-token"},
+    )
+    assert pub_resp.status_code == 200
+
+    # Verify public list enrichment
+    list_resp = client.get("/api/v1/public/posts")
+    assert list_resp.status_code == 200
+    items = list_resp.json()["items"]
+    assert len(items) >= 1
+    post_item = next(i for i in items if i["slug"] == "taxonomy-enrichment-post")
+    assert post_item["categoryId"] == "cat-guides"
+    assert post_item["seriesId"] == "series-updated"
+    assert post_item["tags"] == ["tag-ops", "tag-second"]
+    # Resolved enrichment
+    assert post_item["category"] == {"id": "cat-guides", "name": "Guides", "slug": "guides"}
+    assert post_item["series"] == {"id": "series-updated", "name": "Updated Series", "slug": "updated"}
+    assert post_item["tagsEnriched"] == [
+        {"id": "tag-ops", "name": "ops", "slug": "ops"},
+        {"id": "tag-second", "name": "second", "slug": "second"},
+    ]
+
+
+def test_public_detail_resolves_taxonomy_names_when_entities_exist(tmp_path: Path) -> None:
+    db = str(tmp_path / "nairi.db")
+    settings = Settings(
+        api_tokens={"post-writer-token": ["posts:write"], "post-publisher-token": ["posts:publish"]},
+        database_path=db,
+    )
+    app = create_app(settings=settings)
+    app.state.category_store.create_category("Guides", "guides", "Tutorial guides")
+    app.state.tag_store.create_tag("ops", "ops")
+    app.state.series_store.create_series("Updated Series", "updated", "An updated series")
+    client = TestClient(app)
+
+    payload = {
+        "title": "Taxonomy Detail Post",
+        "slug": "taxonomy-detail-post",
+        "contentFormat": "markdown",
+        "content": "# Detail content",
+        "summary": "Detail taxonomy.",
+        "tags": ["tag-ops"],
+        "categoryId": "cat-guides",
+        "seriesId": "series-updated",
+        "metadata": {},
+    }
+    create_resp = client.post(
+        "/api/v1/posts", json=payload, headers={"Authorization": "Bearer post-writer-token"}
+    )
+    assert create_resp.status_code == 201
+    post_id = create_resp.json()["postId"]
+    revision_id = create_resp.json()["revisionId"]
+    pub_resp = client.post(
+        f"/api/v1/posts/{post_id}/publish",
+        json={"revisionId": revision_id, "publishMode": "immediate", "scheduledAt": None},
+        headers={"Authorization": "Bearer post-publisher-token"},
+    )
+    assert pub_resp.status_code == 200
+
+    detail_resp = client.get("/api/v1/public/posts/taxonomy-detail-post")
+    assert detail_resp.status_code == 200
+    item = detail_resp.json()
+    assert item["category"] == {"id": "cat-guides", "name": "Guides", "slug": "guides"}
+    assert item["series"] == {"id": "series-updated", "name": "Updated Series", "slug": "updated"}
+    assert item["tagsEnriched"] == [{"id": "tag-ops", "name": "ops", "slug": "ops"}]
+
+
+def test_public_post_returns_null_for_deleted_taxonomy(tmp_path: Path) -> None:
+    """When a taxonomy entity is deleted after a post references it, the API returns null for that field."""
+    import sqlite3
+    db = str(tmp_path / "nairi.db")
+    settings = Settings(
+        api_tokens={"post-writer-token": ["posts:write"], "post-publisher-token": ["posts:publish"]},
+        database_path=db,
+    )
+    app = create_app(settings=settings)
+    # Trigger lazy schema initialization before direct SQL insert
+    app.state.category_store.list_categories()  # initializes category/tag/series tables
+    app.state.post_store.get_draft("__init_schema__")  # initializes post tables
+    client = TestClient(app)
+
+    # Directly insert a published post with non-existent taxonomy IDs into the DB
+    # (bypasses PostStore validation, simulating orphaned taxonomy after entity deletion)
+    with sqlite3.connect(db) as conn:
+        conn.execute("PRAGMA busy_timeout = 30000")
+        conn.execute(
+            "INSERT INTO posts (id, title, slug, status, content_format, current_revision_id, created_at, updated_at, published_at)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            ("orphan-post-1", "Orphan Taxonomy Post", "orphan-taxonomy-post", "published",
+             "markdown", "orphan-rev-1", "2026-06-07T08:03:00Z", "2026-06-07T08:03:00Z", "2026-06-07T08:03:00Z"),
+        )
+        conn.execute(
+            "INSERT INTO post_revisions (id, post_id, content, metadata, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+            ("orphan-rev-1", "orphan-post-1", "# Orphan",
+             '{"summary":"All taxonomy orphaned.","tags":["tag-orphan-a","tag-orphan-b"],"categoryId":"cat-orphan-cat","seriesId":"series-orphan-series"}',
+             "token:t1", "2026-06-07T08:03:00Z"),
+        )
+        conn.commit()
+
+    list_resp = client.get("/api/v1/public/posts")
+    assert list_resp.status_code == 200
+    items = list_resp.json()["items"]
+    post_item = next(i for i in items if i["slug"] == "orphan-taxonomy-post")
+    # IDs are still stored in DB
+    assert post_item["categoryId"] == "cat-orphan-cat"
+    assert post_item["seriesId"] == "series-orphan-series"
+    assert post_item["tags"] == ["tag-orphan-a", "tag-orphan-b"]
+    # But resolved values are null/empty since entities don't exist
+    assert post_item["category"] is None
+    assert post_item["series"] is None
+    assert post_item["tagsEnriched"] == []

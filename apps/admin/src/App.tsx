@@ -96,6 +96,15 @@ export type AdminTag = {
   updatedAt: string;
 };
 
+export type AdminSeries = {
+  seriesId: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type AdminApiClient = {
   listPosts: () => Promise<AdminPostSummary[]>;
   listPublishedPosts: () => Promise<AdminPostSummary[]>;
@@ -108,6 +117,7 @@ export type AdminApiClient = {
   publishPost: (postId: string, input: AdminPostPublishInput) => Promise<AdminPostPublishResult>;
   listCategories: () => Promise<AdminCategory[]>;
   listTags: () => Promise<AdminTag[]>;
+  listSeries: () => Promise<AdminSeries[]>;
 };
 
 type AdminModule = "content" | "media" | "settings";
@@ -195,6 +205,7 @@ export function App({ apiClient }: AppProps) {
   const [publishActionError, setPublishActionError] = useState<string | null>(null);
   const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [tags, setTags] = useState<AdminTag[]>([]);
+  const [series, setSeries] = useState<AdminSeries[]>([]);
   const detailRequestIdRef = useRef(0);
   const saveRequestIdRef = useRef(0);
   const publishRequestIdRef = useRef(0);
@@ -281,6 +292,24 @@ export function App({ apiClient }: AppProps) {
       }
     }
     void loadTags();
+    return () => {
+      cancelled = true;
+    };
+  }, [apiClient]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadSeries() {
+      try {
+        const loaded = await apiClient.listSeries();
+        if (!cancelled) {
+          setSeries(loaded);
+        }
+      } catch {
+        // series loading failure does not block draft editing
+      }
+    }
+    void loadSeries();
     return () => {
       cancelled = true;
     };
@@ -658,8 +687,15 @@ export function App({ apiClient }: AppProps) {
                         </select>
                       </label>
                       <label>
-                        Draft series ID
-                        <input name="seriesId" defaultValue={selectedPostDetail.seriesId ?? ""} />
+                        Draft series
+                        <select name="seriesId" defaultValue={selectedPostDetail.seriesId ?? ""}>
+                          <option value="">— none —</option>
+                          {series.map((s) => (
+                            <option key={s.seriesId} value={s.seriesId}>
+                              {s.name}
+                            </option>
+                          ))}
+                        </select>
                       </label>
                       <label>
                         Draft tags

@@ -2,6 +2,7 @@ import type {
   AdminApiClient,
   AdminCategory,
   AdminTag,
+  AdminSeries,
   AdminPostMetadata,
   AdminPostDetail,
   AdminPostPublishInput,
@@ -89,6 +90,19 @@ type ManagementTag = {
 
 type ListTagsResponse = {
   items?: ManagementTag[];
+};
+
+type ManagementSeries = {
+  seriesId: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type ListSeriesResponse = {
+  items?: ManagementSeries[];
 };
 
 function requireAbsoluteApiBaseUrl(apiBaseUrl: string): string {
@@ -310,6 +324,13 @@ export function createAdminApiClient({
         path: "/api/v1/tags"
       });
       return (payload.items ?? []) as AdminTag[];
+    },
+    async listSeries() {
+      const payload = await fetchManagementJson<ListSeriesResponse>({
+        ...clientOptions,
+        path: "/api/v1/series"
+      });
+      return (payload.items ?? []) as AdminSeries[];
     }
   };
 }

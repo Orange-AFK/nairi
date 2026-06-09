@@ -71,6 +71,13 @@
 3. Currently stored in a scaffold SQLite `tags` table initialized by `TagStore`.
 4. Posts reference tags through `tags` array in post metadata.
 
+### Series
+
+1. Represents a content series for grouping related posts.
+2. Key fields: `id`, `name`, `slug`, `description`, `createdAt`, `updatedAt`.
+3. Currently stored in a scaffold SQLite `series` table initialized by `SeriesStore`.
+4. Posts reference series through `seriesId` in post metadata.
+
 ## Current Persistence Boundary
 
 ### Article Draft Persistence

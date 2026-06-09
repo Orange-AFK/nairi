@@ -1106,4 +1106,24 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 6. Verification performed: 18 test_tag_api.py tests passed, 137 total API tests passed, no regressions.
 7. Result: passed.
 8. Non-goals: no audit events, no admin UI, no MCP wiring, no tag-to-post relationship enforcement.
-9. Next candidates: Series CRUD, admin console tag picker, admin console category picker, or Docker/Compose deployment.
+9. Next candidates: Series CRUD, admin console tag picker, admin console category picker、或 Docker/Compose deployment。
+
+### Series Management CRUD Boundary
+
+1. Status: completed。
+2. Scope: scaffold SQLite-backed `series` table via `SeriesStore`、full CRUD routes 配合 `taxonomy:read`/`taxonomy:write` scope enforcement.
+3. Routes: `GET /api/v1/series`、`POST /api/v1/series`、`GET /api/v1/series/{id}`、`PATCH /api/v1/series/{id}`、`DELETE /api/v1/series/{id}`。
+4. Scopes: `taxonomy:read`、`taxonomy:write`。
+5. 变更文件:
+   - `services/api/src/nairi_api/taxonomy.py` — 新 `SeriesStore` + `Series` dataclass + `DuplicateSeriesSlugError` + `SeriesNotFoundError`，以及 TagStore._init_schema 中添加 series 表
+   - `services/api/src/nairi_api/main.py` — imports、Pydantic models、routes、`series_to_get_response`、`app.state.series_store` init
+   - `services/api/tests/test_series_api.py` — 18 个测试（auth、CRUD、errors、ordering、persistence）
+   - `memory-bank/data-model.md` — 添加 Series entity
+   - `memory-bank/api-contract.md` — 添加 Series API contracts（5 endpoints）
+   - `memory-bank/roadmap.md` — 添加 Series Management entry
+   - `memory-bank/progress-log.md` — 本条目
+   - 中文对应文档同步更新
+6. Verification: 18 test_series_api.py 测试通过，155 个总 API 测试通过，无回归。
+7. Result: passed。
+8. Non-goals: 无 audit events、无 admin UI、无 MCP wiring、无 series-to-post relationship enforcement。
+9. Next candidates: admin console tag picker、admin console category picker、admin console series picker、或 Docker/Compose deployment。

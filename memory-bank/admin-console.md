@@ -163,9 +163,15 @@ The admin console must use documented API endpoints only. It must not perform di
 
 ## Admin Edit Metadata Error Detail UX Boundary
 
-1. Non-object `Draft metadata JSON` now renders the targeted safe error copy `Draft metadata JSON must be an object.` instead of only the generic save failure copy.
-2. The invalid metadata branch remains local to the injected edit form and does not call `apiClient.updatePost`.
-3. Boundary: safe admin validation copy only; no backend route change, API contract change, public API change, richer metadata schema validation, token storage, direct fetch, direct database access, create/publish mutation, router expansion, renderer behavior, or live external side effect is added.
+1. Non-object `Draft metadata JSON` now renders the targeted safe error copy `Draft metadata JSON must be an object.` instead of only the generic save failure copy. Invalid metadata branch remains local and does not call `apiClient.updatePost`.
+2. Boundary: safe admin validation copy only; no backend route change, API contract change, public API change, richer metadata schema validation, token storage, direct fetch, direct database access, create/publish mutation, router expansion, renderer behavior, or live external side effect is added.
+
+## Admin Draft Save Error Recovery Hint Boundary
+
+1. The generic save failure now also renders a safe recovery hint: `Reload the draft detail, review the latest revision, and retry.` alongside `Draft changes could not be saved.`
+2. The recovery hint does not appear when the error is the targeted metadata validation copy (that path has its own clear message).
+3. The hint is safe: it suggests user action without leaking raw backend/injected error messages.
+4. Boundary: admin UX copy only; no backend route change, no API contract change, no public API change, no richer error mapping, no renderer behavior, no MDX execution, no router expansion, no token storage, no direct database access, and no live external side effects.
 
 ## Admin Publish Request Review Boundary
 

@@ -169,6 +169,7 @@ export function App({ apiClient }: AppProps) {
   const [detailError, setDetailError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveErrorHint, setSaveErrorHint] = useState<string | null>(null);
   const [publishReviewStatus, setPublishReviewStatus] = useState<string | null>(null);
   const [publishReviewRequest, setPublishReviewRequest] = useState<AdminPublishReviewRequestResult | null>(null);
   const [publishConfirmationStatus, setPublishConfirmationStatus] = useState<string | null>(null);
@@ -239,6 +240,7 @@ export function App({ apiClient }: AppProps) {
     setDetailError(null);
     setSaveStatus(null);
     setSaveError(null);
+    setSaveErrorHint(null);
     setPublishReviewStatus(null);
     setPublishReviewRequest(null);
     setPublishConfirmationStatus(null);
@@ -282,6 +284,7 @@ export function App({ apiClient }: AppProps) {
     setIsSavingDraft(true);
     setSaveStatus(null);
     setSaveError(null);
+    setSaveErrorHint(null);
 
     try {
       const summary = String(formData.get("summary") ?? "").trim();
@@ -333,11 +336,13 @@ export function App({ apiClient }: AppProps) {
       }
     } catch (error) {
       if (saveRequestIdRef.current === saveRequestId) {
-        setSaveError(
-          error instanceof Error && error.message === "Draft metadata must be a JSON object."
-            ? "Draft metadata JSON must be an object."
-            : "Draft changes could not be saved."
-        );
+        if (error instanceof Error && error.message === "Draft metadata must be a JSON object.") {
+          setSaveError("Draft metadata JSON must be an object.");
+          setSaveErrorHint(null);
+        } else {
+          setSaveError("Draft changes could not be saved.");
+          setSaveErrorHint("Reload the draft detail, review the latest revision, and retry.");
+        }
       }
     } finally {
       if (saveRequestIdRef.current === saveRequestId) {
@@ -628,6 +633,7 @@ export function App({ apiClient }: AppProps) {
                       </button>
                       {saveStatus ? <p role="status">{saveStatus}</p> : null}
                       {saveError ? <p role="status">{saveError}</p> : null}
+                      {saveErrorHint ? <p>{saveErrorHint}</p> : null}
                       {publishReviewStatus ? (
                         <p role="status" aria-label="Publish review request status">
                           {publishReviewStatus}

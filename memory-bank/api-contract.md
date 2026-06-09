@@ -141,6 +141,61 @@
 6. Audit event: none for delete in scaffold boundary.
 7. Errors: `404` with code `not_found` when `category_id` is unknown.
 
+### List Tags
+
+1. Method: `GET`
+2. Path: `/api/v1/tags`
+3. Scope: `taxonomy:read`
+4. Request body fields: none
+5. Response fields: `items`
+6. Ordering: alphabetical by `name`
+7. Audit event: none for list.
+
+### Create Tag
+
+1. Method: `POST`
+2. Path: `/api/v1/tags`
+3. Scope: `taxonomy:write`
+4. Request body fields: `name`, `slug`
+5. Response fields: `tagId`, `name`, `slug`, `createdAt`, `updatedAt`
+6. Timestamp rule: `createdAt` and `updatedAt` are request-time UTC timestamps serialized as `YYYY-MM-DDTHH:MM:SSZ`.
+7. Audit event: none for create in scaffold boundary.
+8. Errors: `409` with code `conflict` when the requested `slug` already exists.
+9. Errors: `400` with code `invalid_request` when `name` is blank or `slug` is not lowercase letters/numbers/hyphens.
+10. `tagId` is deterministic: `tag-{slug}`.
+
+### Get Tag
+
+1. Method: `GET`
+2. Path: `/api/v1/tags/{tag_id}`
+3. Scope: `taxonomy:read`
+4. Request body fields: none
+5. Response fields: `tagId`, `name`, `slug`, `createdAt`, `updatedAt`
+6. Errors: `404` with code `not_found` when `tag_id` is unknown.
+7. Audit event: none for readback.
+
+### Update Tag
+
+1. Method: `PATCH`
+2. Path: `/api/v1/tags/{tag_id}`
+3. Scope: `taxonomy:write`
+4. Request body fields: `name`, `slug`
+5. Response fields: `tagId`, `name`, `slug`, `updatedAt`
+6. Timestamp rule: `updatedAt` is a request-time UTC timestamp serialized as `YYYY-MM-DDTHH:MM:SSZ`.
+7. Audit event: none for update in scaffold boundary.
+8. Errors: `404` with code `not_found` when `tag_id` is unknown.
+9. Errors: `409` with code `conflict` when the requested `slug` already belongs to another tag.
+
+### Delete Tag
+
+1. Method: `DELETE`
+2. Path: `/api/v1/tags/{tag_id}`
+3. Scope: `taxonomy:write`
+4. Request body fields: none
+5. Response body: none (204 No Content)
+6. Audit event: none for delete in scaffold boundary.
+7. Errors: `404` with code `not_found` when `tag_id` is unknown.
+
 ### Create Post Draft
 
 1. Method: `POST`

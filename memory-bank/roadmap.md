@@ -55,11 +55,11 @@
 
 ## Taxonomy
 
-### Category Management
+### Tag Management
 
 1. Status: completed, not yet merged on `main`.
-2. Completed: scaffold SQLite-backed `categories` table via `CategoryStore`, full CRUD routes with `taxonomy:read`/`taxonomy:write` scope enforcement, deterministic `cat-{slug}` IDs, slug validation, duplicate slug rejection, alphabetical name ordering, and 18 verified tests.
-3. Deferred: tag entity, series entity, admin console category picker, hierarchical categories via `parentId`, audit events for taxonomy operations, and MCP tool wiring.
+2. Completed: scaffold SQLite-backed `tags` table via `TagStore`, full CRUD routes with `taxonomy:read`/`taxonomy:write` scope enforcement, deterministic `tag-{slug}` IDs, slug validation, duplicate slug rejection, alphabetical name ordering, and 18 verified tests.
+3. Deferred: admin console tag picker, MCP tool wiring, audit events for tag operations, and tag-to-post relationship enforcement.
 
 ## Public Content API
 

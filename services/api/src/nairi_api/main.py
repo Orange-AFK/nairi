@@ -28,6 +28,10 @@ from nairi_api.taxonomy import (
     CategoryNotFoundError,
     CategoryStore,
     DuplicateCategorySlugError,
+    DuplicateTagSlugError,
+    Tag,
+    TagNotFoundError,
+    TagStore,
 )
 
 
@@ -246,6 +250,43 @@ class ListCategoriesResponse(BaseModel):
     items: list[GetCategoryResponse]
 
 
+class CreateTagRequest(BaseModel):
+    name: str
+    slug: str
+
+
+class CreateTagResponse(BaseModel):
+    tag_id: str = Field(alias="tagId")
+    name: str
+    slug: str
+    created_at: str = Field(alias="createdAt")
+    updated_at: str = Field(alias="updatedAt")
+
+
+class GetTagResponse(BaseModel):
+    tag_id: str = Field(alias="tagId")
+    name: str
+    slug: str
+    created_at: str = Field(alias="createdAt")
+    updated_at: str = Field(alias="updatedAt")
+
+
+class UpdateTagRequest(BaseModel):
+    name: str
+    slug: str
+
+
+class UpdateTagResponse(BaseModel):
+    tag_id: str = Field(alias="tagId")
+    name: str
+    slug: str
+    updated_at: str = Field(alias="updatedAt")
+
+
+class ListTagsResponse(BaseModel):
+    items: list[GetTagResponse]
+
+
 SLUG_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
@@ -325,6 +366,16 @@ def category_to_get_response(cat: Category) -> GetCategoryResponse:
     )
 
 
+def tag_to_get_response(tag: Tag) -> GetTagResponse:
+    return GetTagResponse(
+        tagId=tag.tag_id,
+        name=tag.name,
+        slug=tag.slug,
+        createdAt=tag.created_at,
+        updatedAt=tag.updated_at,
+    )
+
+
 def render_public_body_html(content: str) -> str:
     paragraphs: list[str] = []
     for block in content.split("\n\n"):
@@ -366,6 +417,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = settings
     app.state.post_store = PostStore(settings.database_path)
     app.state.category_store = CategoryStore(settings.database_path)
+    app.state.tag_store = TagStore(settings.database_path)
     app.state.public_invalidation_dispatcher = build_public_invalidation_dispatcher(settings)
     app.add_exception_handler(ApiError, api_error_response)
 
@@ -462,6 +514,77 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             app.state.category_store.delete_category(category_id)
         except CategoryNotFoundError as error:
             raise ApiError(404, "not_found", "Category not found", {"categoryId": error.category_id}) from error
+
+    @app.get("/api/v1/tags")
+    def list_tags(
+        _actor: AuthenticatedActor = Depends(require_scope("taxonomy:read")),
+    ) -> ListTagsResponse:
+        tags = app.state.tag_store.list_tags()
+        return ListTagsResponse(items=[tag_to_get_response(t) for t in tags])
+
+    @app.post("/api/v1/tags", status_code=201)
+    def create_tag(
+        request: CreateTagRequest,
+        _actor: AuthenticatedActor = Depends(require_scope("taxonomy:write")),
+    ) -> CreateTagResponse:
+        if not request.name.strip():
+            raise ApiError(400, "invalid_request", "Invalid request", {"name": "Name is required"})
+        if not SLUG_PATTERN.fullmatch(request.slug):
+            raise ApiError(400, "invalid_request", "Invalid request", {"slug": "Slug must contain only lowercase letters, numbers, and hyphens"})
+        try:
+            tag = app.state.tag_store.create_tag(name=request.name, slug=request.slug)
+        except DuplicateTagSlugError as error:
+            raise ApiError(409, "conflict", "Tag slug already exists", {"slug": error.slug}) from error
+        return CreateTagResponse(
+            tagId=tag.tag_id,
+            name=tag.name,
+            slug=tag.slug,
+            createdAt=tag.created_at,
+            updatedAt=tag.updated_at,
+        )
+
+    @app.get("/api/v1/tags/{tag_id}")
+    def get_tag(
+        tag_id: str,
+        _actor: AuthenticatedActor = Depends(require_scope("taxonomy:read")),
+    ) -> GetTagResponse:
+        tag = app.state.tag_store.get_tag(tag_id)
+        if tag is None:
+            raise ApiError(404, "not_found", "Tag not found", {"tagId": tag_id})
+        return tag_to_get_response(tag)
+
+    @app.patch("/api/v1/tags/{tag_id}")
+    def update_tag(
+        tag_id: str,
+        request: UpdateTagRequest,
+        _actor: AuthenticatedActor = Depends(require_scope("taxonomy:write")),
+    ) -> UpdateTagResponse:
+        if not request.name.strip():
+            raise ApiError(400, "invalid_request", "Invalid request", {"name": "Name is required"})
+        if not SLUG_PATTERN.fullmatch(request.slug):
+            raise ApiError(400, "invalid_request", "Invalid request", {"slug": "Slug must contain only lowercase letters, numbers, and hyphens"})
+        try:
+            tag = app.state.tag_store.update_tag(tag_id=tag_id, name=request.name, slug=request.slug)
+        except TagNotFoundError as error:
+            raise ApiError(404, "not_found", "Tag not found", {"tagId": error.tag_id}) from error
+        except DuplicateTagSlugError as error:
+            raise ApiError(409, "conflict", "Tag slug already exists", {"slug": error.slug}) from error
+        return UpdateTagResponse(
+            tagId=tag.tag_id,
+            name=tag.name,
+            slug=tag.slug,
+            updatedAt=tag.updated_at,
+        )
+
+    @app.delete("/api/v1/tags/{tag_id}", status_code=204)
+    def delete_tag(
+        tag_id: str,
+        _actor: AuthenticatedActor = Depends(require_scope("taxonomy:write")),
+    ) -> None:
+        try:
+            app.state.tag_store.delete_tag(tag_id)
+        except TagNotFoundError as error:
+            raise ApiError(404, "not_found", "Tag not found", {"tagId": error.tag_id}) from error
 
     @app.get("/api/v1/public/posts")
     def list_public_posts(

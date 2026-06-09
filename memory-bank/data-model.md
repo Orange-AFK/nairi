@@ -64,6 +64,13 @@
 4. Posts reference categories through `categoryId` in post metadata.
 5. Future: hierarchical categories through `parentId`.
 
+### Tag
+
+1. Represents a content tag for classifying posts.
+2. Key fields: `id`, `name`, `slug`, `createdAt`, `updatedAt`.
+3. Currently stored in a scaffold SQLite `tags` table initialized by `TagStore`.
+4. Posts reference tags through `tags` array in post metadata.
+
 ## Current Persistence Boundary
 
 ### Article Draft Persistence

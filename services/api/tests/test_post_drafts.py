@@ -24,7 +24,7 @@ def draft_payload() -> dict[str, object]:
         "contentFormat": "markdown",
         "content": "# First Nairi draft\n\nA short draft body.",
         "summary": "A short draft summary.",
-        "tags": ["nairi", "draft"],
+        "tags": [],
         "categoryId": None,
         "seriesId": None,
         "metadata": {"source": "route-test"},

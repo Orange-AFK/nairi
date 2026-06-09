@@ -1127,3 +1127,17 @@ If a task creates or changes durable architecture decisions, update `decisions.m
 7. Result: passed。
 8. Non-goals: 无 audit events、无 admin UI、无 MCP wiring、无 series-to-post relationship enforcement。
 9. Next candidates: admin console tag picker、admin console category picker、admin console series picker、或 Docker/Compose deployment。
+
+### Taxonomy-to-Post Relationship Enforcement
+
+1. Status: completed.
+2. Scope: PostStore validates category_id, series_id, and tag_id references on create_draft and update_draft when taxonomy stores are wired.
+3. Changes:
+   - `PostStore.__init__` accepts optional `category_store`, `tag_store`, `series_store` params.
+   - `_validate_taxonomy_references()` raises `CategoryNotFoundError`, `SeriesNotFoundError`, or `TagNotFoundError` on invalid references.
+   - `create_app()` reorders store init to create taxonomy stores before PostStore, then wires them.
+   - Existing route tests updated: `draft_payload()` uses empty tags, tests that use taxonomy fields seed taxonomy entities.
+4. Verification: 160 API tests pass, guards pass, admin tests/build pass, public build passes.
+5. Result: passed.
+6. Non-goals: MCP tool wiring, audit events for taxonomy operations.
+7. Next candidates: Docker/Compose deployment, API-side category/series/tag relation enforcement on published-list queries, or admin console improvements.

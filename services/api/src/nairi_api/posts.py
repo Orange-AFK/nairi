@@ -7,6 +7,15 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Callable, Literal, cast
 
+from nairi_api.taxonomy import (
+    CategoryNotFoundError,
+    CategoryStore,
+    SeriesNotFoundError,
+    SeriesStore,
+    TagNotFoundError,
+    TagStore,
+)
+
 
 DRAFT_STATUS = "draft"
 PUBLISHED_STATUS = "published"
@@ -296,9 +305,36 @@ class PublishReviewRequestConflictError(Exception):
 
 
 class PostStore:
-    def __init__(self, database_path: str, clock: Callable[[], datetime] | None = None) -> None:
+    def __init__(
+        self,
+        database_path: str,
+        clock: Callable[[], datetime] | None = None,
+        category_store: CategoryStore | None = None,
+        tag_store: TagStore | None = None,
+        series_store: SeriesStore | None = None,
+    ) -> None:
         self.database_path = database_path
         self.clock = clock or (lambda: datetime.now(UTC))
+        self.category_store = category_store
+        self.tag_store = tag_store
+        self.series_store = series_store
+
+    def _validate_taxonomy_references(
+        self,
+        category_id: str | None,
+        series_id: str | None,
+        tags: list[str],
+    ) -> None:
+        if category_id is not None and self.category_store is not None:
+            if self.category_store.get_category(category_id) is None:
+                raise CategoryNotFoundError(category_id)
+        if series_id is not None and self.series_store is not None:
+            if self.series_store.get_series(series_id) is None:
+                raise SeriesNotFoundError(series_id)
+        if tags and self.tag_store is not None:
+            for tag_id in tags:
+                if self.tag_store.get_tag(tag_id) is None:
+                    raise TagNotFoundError(tag_id)
 
     def create_draft(self, draft: PostDraftInput, actor_token: str) -> CreatedPostDraft:
         post_id = f"draft-{draft.slug}"
@@ -322,6 +358,11 @@ class PostStore:
             ).fetchone()
             if existing_post is not None:
                 raise DuplicatePostSlugError(draft.slug)
+            self._validate_taxonomy_references(
+                category_id=draft.category_id,
+                series_id=draft.series_id,
+                tags=draft.tags,
+            )
             connection.execute(
                 """
                 INSERT INTO posts (id, title, slug, status, content_format, current_revision_id, created_at, updated_at)
@@ -405,6 +446,11 @@ class PostStore:
             ).fetchone()
             if existing_slug is not None:
                 raise DuplicatePostSlugError(draft.slug)
+            self._validate_taxonomy_references(
+                category_id=draft.category_id,
+                series_id=draft.series_id,
+                tags=draft.tags,
+            )
             revision_count = connection.execute(
                 "SELECT COUNT(*) FROM post_revisions WHERE post_id = ?",
                 (post_id,),

@@ -17,6 +17,31 @@ from nairi_api.posts import (
     rehearse_post_store_migration,
     run_schema_migrations,
 )
+from nairi_api.taxonomy import (
+    CategoryNotFoundError,
+    CategoryStore,
+    SeriesNotFoundError,
+    SeriesStore,
+    TagNotFoundError,
+    TagStore,
+)
+
+
+def seed_taxonomy(db: str) -> tuple[CategoryStore, TagStore, SeriesStore]:
+    """Seed taxonomy entities for tests that need valid taxonomy references."""
+    cat_store = CategoryStore(db)
+    tag_store = TagStore(db)
+    series_store = SeriesStore(db)
+    cat_store.create_category("Guides", "guides", "Tutorial guides")
+    cat_store.create_category("Updated", "updated", "Updated items")
+    cat_store.create_category("Public", "public", "Public content")
+    tag_store.create_tag("storage", "storage")
+    tag_store.create_tag("second", "second")
+    tag_store.create_tag("updated", "updated")
+    tag_store.create_tag("featured", "featured")
+    tag_store.create_tag("public", "public")
+    series_store.create_series("Updated Series", "updated", "An updated series")
+    return cat_store, tag_store, series_store
 
 
 def build_client(database_path: Path) -> TestClient:
@@ -37,7 +62,7 @@ def draft_payload() -> dict[str, object]:
         "contentFormat": "markdown",
         "content": "# Persistent draft\n\nStored body.",
         "summary": "Stored summary.",
-        "tags": ["storage"],
+        "tags": [],
         "categoryId": None,
         "seriesId": None,
         "metadata": {"source": "persistence-test"},
@@ -123,7 +148,7 @@ def test_list_post_drafts_returns_created_drafts_for_reader_scope(tmp_path: Path
             "title": "Second persistent draft",
             "slug": "second-persistent-draft",
             "summary": "Second stored summary.",
-            "tags": ["storage", "second"],
+            "tags": [],
             "metadata": {"source": "second-persistence-test"},
         }
     )
@@ -156,7 +181,7 @@ def test_list_post_drafts_returns_created_drafts_for_reader_scope(tmp_path: Path
                 "status": "draft",
                 "contentFormat": "markdown",
                 "summary": "Stored summary.",
-                "tags": ["storage"],
+                "tags": [],
                 "categoryId": None,
                 "seriesId": None,
                 "metadata": {"source": "persistence-test"},
@@ -171,7 +196,7 @@ def test_list_post_drafts_returns_created_drafts_for_reader_scope(tmp_path: Path
                 "status": "draft",
                 "contentFormat": "markdown",
                 "summary": "Second stored summary.",
-                "tags": ["storage", "second"],
+                "tags": [],
                 "categoryId": None,
                 "seriesId": None,
                 "metadata": {"source": "second-persistence-test"},
@@ -332,7 +357,7 @@ def test_update_post_draft_creates_revision_and_updates_current_draft(tmp_path: 
             original_revision_id,
             post_id,
             "# Persistent draft\n\nStored body.",
-            '{"source":"persistence-test","summary":"Stored summary.","tags":["storage"],"categoryId":null,"seriesId":null}',
+            '{"source":"persistence-test","summary":"Stored summary.","tags":[],"categoryId":null,"seriesId":null}',
             "token:post-writer-token",
             "2026-06-07T08:09:10Z",
         ),
@@ -1386,7 +1411,7 @@ def test_list_published_posts_returns_published_summaries_for_reader_scope(tmp_p
                 "status": "published",
                 "contentFormat": "markdown",
                 "summary": "Stored summary.",
-                "tags": ["storage"],
+                "tags": [],
                 "categoryId": None,
                 "seriesId": None,
                 "metadata": {"source": "persistence-test"},
@@ -1887,7 +1912,7 @@ def test_get_published_post_returns_published_detail_for_reader_scope(tmp_path: 
         "contentFormat": "markdown",
         "content": "# Persistent draft\n\nStored body.",
         "summary": "Stored summary.",
-        "tags": ["storage"],
+        "tags": [],
         "categoryId": None,
         "seriesId": None,
         "metadata": {"source": "persistence-test"},
@@ -1958,7 +1983,7 @@ def test_publish_post_draft_adds_published_at_column_for_existing_scaffold_datab
                 "revision-persistent-draft-1",
                 "draft-persistent-draft",
                 "# Persistent draft\n\nStored body.",
-                '{"source":"persistence-test","summary":"Stored summary.","tags":["storage"],"categoryId":null,"seriesId":null}',
+                '{"source":"persistence-test","summary":"Stored summary.","tags":[],"categoryId":null,"seriesId":null}',
                 "token:post-writer-token",
                 "2026-06-07T08:09:10Z",
             ),
@@ -2184,7 +2209,7 @@ def test_get_post_draft_returns_created_draft_for_reader_scope(tmp_path: Path) -
         "contentFormat": "markdown",
         "content": "# Persistent draft\n\nStored body.",
         "summary": "Stored summary.",
-        "tags": ["storage"],
+        "tags": [],
         "categoryId": None,
         "seriesId": None,
         "metadata": {"source": "persistence-test"},
@@ -2287,7 +2312,7 @@ def test_create_post_draft_persists_post_and_revision(tmp_path: Path) -> None:
         body["revisionId"],
         body["postId"],
         "# Persistent draft\n\nStored body.",
-        '{"source":"persistence-test","summary":"Stored summary.","tags":["storage"],"categoryId":null,"seriesId":null}',
+        '{"source":"persistence-test","summary":"Stored summary.","tags":[],"categoryId":null,"seriesId":null}',
         "token:post-writer-token",
         body["createdAt"],
     )
@@ -2829,3 +2854,133 @@ def test_post_store_migration_rehearsal_rejects_path_aliases_and_existing_artifa
         assert error.args == (rehearsal_path,)
     else:
         raise AssertionError("existing rehearsal artifacts should not be overwritten")
+
+
+def test_create_draft_rejects_invalid_category_id(tmp_path: Path) -> None:
+    db = str(tmp_path / "nairi.db")
+    cat_store = CategoryStore(db)
+    post_store = PostStore(db, category_store=cat_store)
+    draft = PostDraftInput(
+        title="Test",
+        slug="test",
+        content_format="markdown",
+        content="# Test",
+        summary=None,
+        tags=[],
+        category_id="cat-nonexistent",
+        series_id=None,
+        metadata={},
+    )
+    try:
+        post_store.create_draft(draft, actor_token="t1")
+    except CategoryNotFoundError as e:
+        assert e.category_id == "cat-nonexistent"
+    else:
+        raise AssertionError("expected CategoryNotFoundError")
+
+
+def test_create_draft_rejects_invalid_series_id(tmp_path: Path) -> None:
+    db = str(tmp_path / "nairi.db")
+    series_store = SeriesStore(db)
+    post_store = PostStore(db, series_store=series_store)
+    draft = PostDraftInput(
+        title="Test",
+        slug="test",
+        content_format="markdown",
+        content="# Test",
+        summary=None,
+        tags=[],
+        category_id=None,
+        series_id="series-nonexistent",
+        metadata={},
+    )
+    try:
+        post_store.create_draft(draft, actor_token="t1")
+    except SeriesNotFoundError as e:
+        assert e.series_id == "series-nonexistent"
+    else:
+        raise AssertionError("expected SeriesNotFoundError")
+
+
+def test_create_draft_rejects_invalid_tag_ids(tmp_path: Path) -> None:
+    db = str(tmp_path / "nairi.db")
+    tag_store = TagStore(db)
+    post_store = PostStore(db, tag_store=tag_store)
+    draft = PostDraftInput(
+        title="Test",
+        slug="test",
+        content_format="markdown",
+        content="# Test",
+        summary=None,
+        tags=["tag-valid", "tag-invalid"],
+        category_id=None,
+        series_id=None,
+        metadata={},
+    )
+    try:
+        post_store.create_draft(draft, actor_token="t1")
+    except TagNotFoundError as e:
+        assert e.tag_id in ("tag-valid", "tag-invalid")
+    else:
+        raise AssertionError("expected TagNotFoundError")
+
+
+def test_create_draft_accepts_valid_taxonomy_references(tmp_path: Path) -> None:
+    db = str(tmp_path / "nairi.db")
+    cat_store = CategoryStore(db)
+    tag_store = TagStore(db)
+    series_store = SeriesStore(db)
+    cat_store.create_category("Field Notes", "field-notes", "FF series")
+    tag_store.create_tag("ops", "ops")
+    series_store.create_series("Field Journal", "field-journal", "JJ collection")
+    post_store = PostStore(db, category_store=cat_store, tag_store=tag_store, series_store=series_store)
+    draft = PostDraftInput(
+        title="Valid taxonomy draft",
+        slug="valid-taxonomy-draft",
+        content_format="markdown",
+        content="# Valid",
+        summary="Valid.",
+        tags=["tag-ops"],
+        category_id="cat-field-notes",
+        series_id="series-field-journal",
+        metadata={"key": "val"},
+    )
+    result = post_store.create_draft(draft, actor_token="t1")
+    assert result.post_id == "draft-valid-taxonomy-draft"
+
+
+def test_update_draft_rejects_invalid_category_id(tmp_path: Path) -> None:
+    db = str(tmp_path / "nairi.db")
+    cat_store = CategoryStore(db)
+    post_store = PostStore(db, category_store=cat_store)
+    post_store.create_draft(
+        PostDraftInput(
+            title="Original",
+            slug="orig",
+            content_format="markdown",
+            content="# Orig",
+            summary=None,
+            tags=[],
+            category_id=None,
+            series_id=None,
+            metadata={},
+        ),
+        actor_token="t1",
+    )
+    draft = PostDraftInput(
+        title="Updated",
+        slug="orig",
+        content_format="markdown",
+        content="# Updated",
+        summary=None,
+        tags=[],
+        category_id="cat-nonexistent",
+        series_id=None,
+        metadata={},
+    )
+    try:
+        post_store.update_draft("draft-orig", draft, actor_token="t1", expected_revision_id="revision-orig-1")
+    except CategoryNotFoundError as e:
+        assert e.category_id == "cat-nonexistent"
+    else:
+        raise AssertionError("expected CategoryNotFoundError")

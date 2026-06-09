@@ -472,10 +472,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         settings = get_settings()
     app = FastAPI(title="Nairi API", version=settings.version)
     app.state.settings = settings
-    app.state.post_store = PostStore(settings.database_path)
     app.state.category_store = CategoryStore(settings.database_path)
     app.state.tag_store = TagStore(settings.database_path)
     app.state.series_store = SeriesStore(settings.database_path)
+    app.state.post_store = PostStore(
+        settings.database_path,
+        category_store=app.state.category_store,
+        tag_store=app.state.tag_store,
+        series_store=app.state.series_store,
+    )
     app.state.public_invalidation_dispatcher = build_public_invalidation_dispatcher(settings)
     app.add_exception_handler(ApiError, api_error_response)
 

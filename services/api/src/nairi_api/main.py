@@ -169,6 +169,12 @@ class PublishedPostSummaryResponse(BaseModel):
     updated_at: str = Field(alias="updatedAt")
 
 
+class PublicTaxonomyItem(BaseModel):
+    id: str
+    name: str
+    slug: str
+
+
 class PublicPostSummaryResponse(BaseModel):
     post_id: str = Field(alias="postId")
     title: str
@@ -180,6 +186,10 @@ class PublicPostSummaryResponse(BaseModel):
     category_id: str | None = Field(alias="categoryId")
     series_id: str | None = Field(alias="seriesId")
     published_at: str = Field(alias="publishedAt")
+    # Resolved taxonomy — null when the referenced entity has been deleted
+    category: PublicTaxonomyItem | None = None
+    series: PublicTaxonomyItem | None = None
+    tags_enriched: list[PublicTaxonomyItem] = Field(default_factory=list, alias="tagsEnriched")
 
 
 class ListPostDraftsResponse(BaseModel):
@@ -386,7 +396,47 @@ def published_post_summary_response(post: StoredPostDraft) -> PublishedPostSumma
     )
 
 
-def public_post_summary_response(post: StoredPostDraft) -> PublicPostSummaryResponse:
+def _resolve_taxonomy_for_post(
+    category_store: CategoryStore | None,
+    series_store: SeriesStore | None,
+    tag_store: TagStore | None,
+    category_id: str | None,
+    series_id: str | None,
+    tag_ids: list[str],
+) -> tuple[PublicTaxonomyItem | None, PublicTaxonomyItem | None, list[PublicTaxonomyItem]]:
+    resolved_category: PublicTaxonomyItem | None = None
+    if category_id is not None and category_store is not None:
+        cat = category_store.get_category(category_id)
+        if cat is not None:
+            resolved_category = PublicTaxonomyItem(id=cat.category_id, name=cat.name, slug=cat.slug)
+
+    resolved_series: PublicTaxonomyItem | None = None
+    if series_id is not None and series_store is not None:
+        series = series_store.get_series(series_id)
+        if series is not None:
+            resolved_series = PublicTaxonomyItem(id=series.series_id, name=series.name, slug=series.slug)
+
+    resolved_tags: list[PublicTaxonomyItem] = []
+    if tag_store is not None:
+        for tag_id in tag_ids:
+            tag = tag_store.get_tag(tag_id)
+            if tag is not None:
+                resolved_tags.append(PublicTaxonomyItem(id=tag.tag_id, name=tag.name, slug=tag.slug))
+    # If tag_store is not available, silently skip enrichment (IDs still returned)
+
+    return resolved_category, resolved_series, resolved_tags
+
+
+def public_post_summary_response(
+    post: StoredPostDraft,
+    category_store: CategoryStore | None = None,
+    series_store: SeriesStore | None = None,
+    tag_store: TagStore | None = None,
+) -> PublicPostSummaryResponse:
+    resolved_category, resolved_series, resolved_tags = _resolve_taxonomy_for_post(
+        category_store, series_store, tag_store,
+        post.category_id, post.series_id, post.tags,
+    )
     return PublicPostSummaryResponse(
         postId=post.post_id,
         title=post.title,
@@ -398,6 +448,9 @@ def public_post_summary_response(post: StoredPostDraft) -> PublicPostSummaryResp
         categoryId=post.category_id,
         seriesId=post.series_id,
         publishedAt=post.published_at or post.updated_at,
+        category=resolved_category,
+        series=resolved_series,
+        tagsEnriched=resolved_tags,
     )
 
 
@@ -739,7 +792,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         published_posts: list[StoredPostDraft] = app.state.post_store.list_published()
         published_posts, next_cursor = paginate_posts(published_posts, limit, cursor)
         return ListPublicPostsResponse(
-            items=[public_post_summary_response(post) for post in published_posts],
+            items=[
+                public_post_summary_response(
+                    post,
+                    category_store=app.state.category_store,
+                    series_store=app.state.series_store,
+                    tag_store=app.state.tag_store,
+                )
+                for post in published_posts
+            ],
             nextCursor=next_cursor,
             page=PageMetadataResponse(limit=limit, cursor=cursor, hasNextPage=next_cursor is not None),
         )
@@ -750,7 +811,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if published_post is None:
             raise ApiError(404, "not_found", "Post not found", {"slug": slug})
         return ReadPublicPostResponse(
-            **public_post_summary_response(published_post).model_dump(by_alias=True),
+            **public_post_summary_response(
+                published_post,
+                category_store=app.state.category_store,
+                series_store=app.state.series_store,
+                tag_store=app.state.tag_store,
+            ).model_dump(by_alias=True),
             content=published_post.content,
             bodyHtml=render_public_body_html(published_post.content),
         )

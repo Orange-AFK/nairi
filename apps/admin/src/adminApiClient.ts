@@ -1,5 +1,6 @@
 import type {
   AdminApiClient,
+  AdminCategory,
   AdminPostMetadata,
   AdminPostDetail,
   AdminPostPublishInput,
@@ -63,6 +64,18 @@ type ManagementPublishReviewRequestResponse = {
 
 type ListPostsResponse = {
   items?: ManagementPostSummary[];
+};
+
+type ManagementCategory = {
+  categoryId: string;
+  name: string;
+  slug: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type ListCategoriesResponse = {
+  items?: ManagementCategory[];
 };
 
 function requireAbsoluteApiBaseUrl(apiBaseUrl: string): string {
@@ -270,6 +283,13 @@ export function createAdminApiClient({
         }
       });
       return mapPostPublishResult(payload);
+    },
+    async listCategories() {
+      const payload = await fetchManagementJson<ListCategoriesResponse>({
+        ...clientOptions,
+        path: "/api/v1/categories"
+      });
+      return (payload.items ?? []) as AdminCategory[];
     }
   };
 }

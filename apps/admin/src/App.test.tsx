@@ -103,6 +103,12 @@ function adminApiClient(overrides: Partial<AdminApiClient> = {}): AdminApiClient
         requestedAt: "2026-06-08T00:06:00Z"
       };
     },
+    async listCategories() {
+      return [
+        { categoryId: "dispatches", name: "Dispatches", slug: "dispatches", createdAt: "2026-06-01T00:00:00Z", updatedAt: "2026-06-01T00:00:00Z" },
+        { categoryId: "field-notes", name: "Field Notes", slug: "field-notes", createdAt: "2026-06-01T00:00:00Z", updatedAt: "2026-06-01T00:00:00Z" }
+      ];
+    },
     ...overrides
   };
 }
@@ -514,7 +520,7 @@ describe("Nairi admin console shell", () => {
     const titleField = screen.getByLabelText("Draft title");
     const slugField = screen.getByLabelText("Draft slug");
     const summaryField = screen.getByLabelText("Draft summary");
-    const categoryField = screen.getByLabelText("Draft category ID");
+    const categoryField = screen.getByLabelText("Draft category");
     const seriesField = screen.getByLabelText("Draft series ID");
     const tagsField = screen.getByLabelText("Draft tags");
     const metadataField = screen.getByLabelText("Draft metadata JSON");
@@ -533,8 +539,7 @@ describe("Nairi admin console shell", () => {
     await user.type(slugField, "updated-draft-slug");
     await user.clear(summaryField);
     await user.type(summaryField, "Updated draft summary from the admin form.");
-    await user.clear(categoryField);
-    await user.type(categoryField, "field-notes");
+    await user.selectOptions(categoryField, "field-notes");
     await user.clear(seriesField);
     await user.type(seriesField, "monthly-field-journal");
     await user.clear(tagsField);
@@ -1061,7 +1066,7 @@ describe("Nairi admin console shell", () => {
     );
   });
 
-  it("normalizes a cleared draft category ID to null before update", async () => {
+  it("normalizes an unset draft category to null before update", async () => {
     const user = userEvent.setup();
     const updatePost = vi.fn(async (_postId: string, input: AdminPostUpdateInput): Promise<AdminPostDetail> => ({
       id: "post-1",
@@ -1083,9 +1088,8 @@ describe("Nairi admin console shell", () => {
     await user.click(await screen.findByRole("button", { name: /First draft/ }));
     await screen.findByText("revision-post-1-1");
 
-    const categoryField = screen.getByLabelText("Draft category ID");
-    await user.clear(categoryField);
-    await user.type(categoryField, "   ");
+    const categoryField = screen.getByLabelText("Draft category");
+    await user.selectOptions(categoryField, "");
     await user.click(screen.getByRole("button", { name: "Save draft changes" }));
 
     expect(updatePost).toHaveBeenCalledWith(

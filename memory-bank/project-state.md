@@ -101,10 +101,11 @@
 2. `schema_migrations` records the current `(1, "post_store_baseline")` row and the runner skips already-applied migrations.
 3. Existing pre-migration SQLite files can be adopted by creating migration metadata without losing posts, revisions, or audit rows.
 4. A local rehearsal helper can copy a source SQLite file to backup and rehearsal paths, trigger migration on the rehearsal copy, and verify metadata/count/readback safety.
-5. Migration metadata name mismatches fail fast with a stable `PostStoreMigrationError` carrying `migration_name_mismatch` policy metadata; they are not auto-repaired.
+5. Migration metadata name mismatches fail fast with a stable `PostStoreMigrationError` carrying `migration_name_mismatch` policy metadata; they require manual intervention and are not auto-repaired.
 6. `nairi-post-store-migration-rehearsal` is a local-only console script that rehearses migration against caller-provided source/backup/rehearsal paths and emits a JSON summary.
-7. SQLAlchemy and Alembic are target stack components but are not yet introduced in code.
-8. PostgreSQL remains a future production option after managed migrations exist.
+7. The Migration Operator Handoff Docs Boundary completed typed migration policy failures and operator intervention workflows.
+8. SQLAlchemy and Alembic are target stack components but are not yet introduced in code.
+9. PostgreSQL remains a future production option after managed migrations exist.
 
 ### Admin Console
 

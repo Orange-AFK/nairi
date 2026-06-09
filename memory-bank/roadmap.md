@@ -61,6 +61,12 @@
 2. Completed: scaffold SQLite-backed `tags` table via `TagStore`, full CRUD routes with `taxonomy:read`/`taxonomy:write` scope enforcement, deterministic `tag-{slug}` IDs, slug validation, duplicate slug rejection, alphabetical name ordering, and 18 verified tests.
 3. Deferred: admin console tag picker, MCP tool wiring, audit events for tag operations, and tag-to-post relationship enforcement.
 
+### Series Management
+
+1. Status: in progress (not yet merged on `main`).
+2. Completed: scaffold SQLite-backed `series` table via `SeriesStore`, full CRUD routes with `taxonomy:read`/`taxonomy:write` scope enforcement, deterministic `series-{slug}` IDs, slug validation, duplicate slug rejection, alphabetical name ordering, and 18 verified tests.
+3. Deferred: admin console series picker, MCP tool wiring, audit events for series operations, and series-to-post relationship enforcement.
+
 ## Public Content API
 
 ### Anonymous Public Content Reads

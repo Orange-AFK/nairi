@@ -28,7 +28,11 @@ from nairi_api.taxonomy import (
     CategoryNotFoundError,
     CategoryStore,
     DuplicateCategorySlugError,
+    DuplicateSeriesSlugError,
     DuplicateTagSlugError,
+    Series,
+    SeriesNotFoundError,
+    SeriesStore,
     Tag,
     TagNotFoundError,
     TagStore,
@@ -287,6 +291,48 @@ class ListTagsResponse(BaseModel):
     items: list[GetTagResponse]
 
 
+class CreateSeriesRequest(BaseModel):
+    name: str
+    slug: str
+    description: str | None = None
+
+
+class CreateSeriesResponse(BaseModel):
+    series_id: str = Field(alias="seriesId")
+    name: str
+    slug: str
+    description: str | None = None
+    created_at: str = Field(alias="createdAt")
+    updated_at: str = Field(alias="updatedAt")
+
+
+class GetSeriesResponse(BaseModel):
+    series_id: str = Field(alias="seriesId")
+    name: str
+    slug: str
+    description: str | None = None
+    created_at: str = Field(alias="createdAt")
+    updated_at: str = Field(alias="updatedAt")
+
+
+class UpdateSeriesRequest(BaseModel):
+    name: str
+    slug: str
+    description: str | None = None
+
+
+class UpdateSeriesResponse(BaseModel):
+    series_id: str = Field(alias="seriesId")
+    name: str
+    slug: str
+    description: str | None = None
+    updated_at: str = Field(alias="updatedAt")
+
+
+class ListSeriesResponse(BaseModel):
+    items: list[GetSeriesResponse]
+
+
 SLUG_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
@@ -376,6 +422,17 @@ def tag_to_get_response(tag: Tag) -> GetTagResponse:
     )
 
 
+def series_to_get_response(series: Series) -> GetSeriesResponse:
+    return GetSeriesResponse(
+        seriesId=series.series_id,
+        name=series.name,
+        slug=series.slug,
+        description=series.description,
+        createdAt=series.created_at,
+        updatedAt=series.updated_at,
+    )
+
+
 def render_public_body_html(content: str) -> str:
     paragraphs: list[str] = []
     for block in content.split("\n\n"):
@@ -418,6 +475,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.post_store = PostStore(settings.database_path)
     app.state.category_store = CategoryStore(settings.database_path)
     app.state.tag_store = TagStore(settings.database_path)
+    app.state.series_store = SeriesStore(settings.database_path)
     app.state.public_invalidation_dispatcher = build_public_invalidation_dispatcher(settings)
     app.add_exception_handler(ApiError, api_error_response)
 
@@ -585,6 +643,88 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             app.state.tag_store.delete_tag(tag_id)
         except TagNotFoundError as error:
             raise ApiError(404, "not_found", "Tag not found", {"tagId": error.tag_id}) from error
+
+    @app.get("/api/v1/series")
+    def list_series(
+        _actor: AuthenticatedActor = Depends(require_scope("taxonomy:read")),
+    ) -> ListSeriesResponse:
+        series_list = app.state.series_store.list_series()
+        return ListSeriesResponse(items=[series_to_get_response(s) for s in series_list])
+
+    @app.post("/api/v1/series", status_code=201)
+    def create_series(
+        request: CreateSeriesRequest,
+        _actor: AuthenticatedActor = Depends(require_scope("taxonomy:write")),
+    ) -> CreateSeriesResponse:
+        if not request.name.strip():
+            raise ApiError(400, "invalid_request", "Invalid request", {"name": "Name is required"})
+        if not SLUG_PATTERN.fullmatch(request.slug):
+            raise ApiError(400, "invalid_request", "Invalid request", {"slug": "Slug must contain only lowercase letters, numbers, and hyphens"})
+        try:
+            series = app.state.series_store.create_series(
+                name=request.name,
+                slug=request.slug,
+                description=request.description,
+            )
+        except DuplicateSeriesSlugError as error:
+            raise ApiError(409, "conflict", "Series slug already exists", {"slug": error.slug}) from error
+        return CreateSeriesResponse(
+            seriesId=series.series_id,
+            name=series.name,
+            slug=series.slug,
+            description=series.description,
+            createdAt=series.created_at,
+            updatedAt=series.updated_at,
+        )
+
+    @app.get("/api/v1/series/{series_id}")
+    def get_series(
+        series_id: str,
+        _actor: AuthenticatedActor = Depends(require_scope("taxonomy:read")),
+    ) -> GetSeriesResponse:
+        series = app.state.series_store.get_series(series_id)
+        if series is None:
+            raise ApiError(404, "not_found", "Series not found", {"seriesId": series_id})
+        return series_to_get_response(series)
+
+    @app.patch("/api/v1/series/{series_id}")
+    def update_series(
+        series_id: str,
+        request: UpdateSeriesRequest,
+        _actor: AuthenticatedActor = Depends(require_scope("taxonomy:write")),
+    ) -> UpdateSeriesResponse:
+        if not request.name.strip():
+            raise ApiError(400, "invalid_request", "Invalid request", {"name": "Name is required"})
+        if not SLUG_PATTERN.fullmatch(request.slug):
+            raise ApiError(400, "invalid_request", "Invalid request", {"slug": "Slug must contain only lowercase letters, numbers, and hyphens"})
+        try:
+            series = app.state.series_store.update_series(
+                series_id=series_id,
+                name=request.name,
+                slug=request.slug,
+                description=request.description,
+            )
+        except SeriesNotFoundError as error:
+            raise ApiError(404, "not_found", "Series not found", {"seriesId": error.series_id}) from error
+        except DuplicateSeriesSlugError as error:
+            raise ApiError(409, "conflict", "Series slug already exists", {"slug": error.slug}) from error
+        return UpdateSeriesResponse(
+            seriesId=series.series_id,
+            name=series.name,
+            slug=series.slug,
+            description=series.description,
+            updatedAt=series.updated_at,
+        )
+
+    @app.delete("/api/v1/series/{series_id}", status_code=204)
+    def delete_series(
+        series_id: str,
+        _actor: AuthenticatedActor = Depends(require_scope("taxonomy:write")),
+    ) -> None:
+        try:
+            app.state.series_store.delete_series(series_id)
+        except SeriesNotFoundError as error:
+            raise ApiError(404, "not_found", "Series not found", {"seriesId": error.series_id}) from error
 
     @app.get("/api/v1/public/posts")
     def list_public_posts(

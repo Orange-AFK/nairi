@@ -196,6 +196,61 @@
 6. Audit event: none for delete in scaffold boundary.
 7. Errors: `404` with code `not_found` when `tag_id` is unknown.
 
+### List Series
+
+1. Method: `GET`
+2. Path: `/api/v1/series`
+3. Scope: `taxonomy:read`
+4. Request body fields: none
+5. Response fields: `items`
+6. Ordering: alphabetical by `name`
+7. Audit event: none for list.
+
+### Create Series
+
+1. Method: `POST`
+2. Path: `/api/v1/series`
+3. Scope: `taxonomy:write`
+4. Request body fields: `name`, `slug`, `description`
+5. Response fields: `seriesId`, `name`, `slug`, `description`, `createdAt`, `updatedAt`
+6. Timestamp rule: `createdAt` and `updatedAt` are request-time UTC timestamps serialized as `YYYY-MM-DDTHH:MM:SSZ`.
+7. Audit event: none for create in scaffold boundary.
+8. Errors: `409` with code `conflict` when the requested `slug` already exists.
+9. Errors: `400` with code `invalid_request` when `name` is blank or `slug` is not lowercase letters/numbers/hyphens.
+10. `seriesId` is deterministic: `series-{slug}`.
+
+### Get Series
+
+1. Method: `GET`
+2. Path: `/api/v1/series/{series_id}`
+3. Scope: `taxonomy:read`
+4. Request body fields: none
+5. Response fields: `seriesId`, `name`, `slug`, `description`, `createdAt`, `updatedAt`
+6. Errors: `404` with code `not_found` when `series_id` is unknown.
+7. Audit event: none for readback.
+
+### Update Series
+
+1. Method: `PATCH`
+2. Path: `/api/v1/series/{series_id}`
+3. Scope: `taxonomy:write`
+4. Request body fields: `name`, `slug`, `description`
+5. Response fields: `seriesId`, `name`, `slug`, `description`, `updatedAt`
+6. Timestamp rule: `updatedAt` is a request-time UTC timestamp serialized as `YYYY-MM-DDTHH:MM:SSZ`.
+7. Audit event: none for update in scaffold boundary.
+8. Errors: `404` with code `not_found` when `series_id` is unknown.
+9. Errors: `409` with code `conflict` when the requested `slug` already belongs to another series.
+
+### Delete Series
+
+1. Method: `DELETE`
+2. Path: `/api/v1/series/{series_id}`
+3. Scope: `taxonomy:write`
+4. Request body fields: none
+5. Response body: none (204 No Content)
+6. Audit event: none for delete in scaffold boundary.
+7. Errors: `404` with code `not_found` when `series_id` is unknown.
+
 ### Create Post Draft
 
 1. Method: `POST`

@@ -155,7 +155,7 @@ def test_category_get_by_id(tmp_path: Path) -> None:
     assert response.json()["name"] == "Technology"
 
 
-def test_category_get_returns_404_for_unknown(tmp_path: Path) -> None:
+def test_category_get_404_for_unknown(tmp_path: Path) -> None:
     client = build_client(db_path=str(tmp_path / "test.db"))
     response = client.get(
         "/api/v1/categories/cat-unknown",

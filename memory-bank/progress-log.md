@@ -1153,7 +1153,34 @@ If a task creates or changes durable architecture decisions, update `decisions.m
    - Updated `public_post_summary_response()` to accept optional taxonomy store params and populate enrichment fields.
    - Updated `list_public_posts` and `read_public_post` routes to pass taxonomy stores.
    - Added 3 API tests: valid enrichment、detail enrichment、orphaned taxonomy → null.
-4. Verification: 163 API tests pass，guards pass，admin + public builds pass。
+4. Verification: 163 API tests pass, guards pass, admin + public builds pass.
 5. Result: passed.
-6. Non-goals: management-route taxonomy enrichment、tag deletion cascade、published-list SQL join optimization.
-7. Next candidates: Docker/Compose deployment、management-route taxonomy enrichment、或 MCP tool wiring。
+6. Non-goals: management-route taxonomy enrichment, tag deletion cascade, published-list SQL join optimization.
+7. Next candidates: Docker/Compose deployment, management-route taxonomy enrichment, or MCP tool wiring.
+
+### Docker/Compose Deployment
+
+1. Status: completed.
+2. Scope: Nairi can now be started with `docker compose up -d` with all 3 services (API + Admin + Public Site) and a persistent SQLite volume.
+3. Changes:
+   - Added `Dockerfile.api` at `services/api/Dockerfile` (Python 3.11-slim + uvicorn with --reload)
+   - Added `Dockerfile.admin` at `apps/admin/Dockerfile` (Node 20-slim + npm run dev with hot-reload)
+   - Added `Dockerfile.public` at `apps/public-site/Dockerfile` (Node 20-slim + Next.js dev)
+   - Added `docker/docker-compose.yml` orchestrating all 3 services with named `nairi-data` volume
+   - Added `docker/.env.example` with token and config template
+   - Added `docs/docker-compose-plan.md` with architecture notes
+4. Key design decisions:
+   - `context: ..` in compose references project root; Dockerfiles use paths like `apps/admin/` and `services/api/src`
+   - Volume mounts for admin and public enable host-source hot-reload in dev mode
+   - `nairi-data` named volume persists SQLite DB at `/data/nairi.db` inside container
+   - API healthcheck uses `/api/v1/health` endpoint
+   - `NAIRI_API_TOKENS` env var defaults to admin-token with full scopes; override via `.env`
+5. Verification (2026-06-09):
+   - `docker compose build` — all 3 images built successfully
+   - `docker compose up -d` — all 3 services running (api: healthy, admin/up, public/up)
+   - `curl localhost:8000/api/v1/health` → 200 `{"status":"ok","service":"nairi-api","version":"0.1.0"}`
+   - `POST /api/v1/posts` → 201, `GET /api/v1/public/posts` → 200
+   - Admin on :5173 → 200, Public on :3000 → 307 (Next.js dev redirect, normal)
+6. Result: passed.
+7. Non-goals: nginx reverse proxy, Next.js standalone production build, admin/public healthchecks.
+8. Next candidates: nginx reverse proxy with HTTPS termination, Next.js standalone build for production, admin/public healthchecks.

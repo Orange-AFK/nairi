@@ -1,0 +1,52 @@
+name: nairi
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: services/api/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - NAIRI_DATABASE_PATH=/data/nairi.db
+      - NAIRI_API_TOKENS=${NAIRI_API_TOKENS:-{"admin-token":["posts:read","posts:write","posts:publish","taxonomy:read","taxonomy:write","admin:all"]}}
+    volumes:
+      - nairi-data:/data
+      - ../services/api/src:/app/services/api/src:rw
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  admin:
+    build:
+      context: ..
+      dockerfile: apps/admin/Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+    volumes:
+      - ../apps/admin:/app:rw
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  public:
+    build:
+      context: ..
+      dockerfile: apps/public-site/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_NAIRI_API_BASE_URL=http://localhost:8000
+    volumes:
+      - ../apps/public-site:/app:rw
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  nairi-data:
+    driver: local

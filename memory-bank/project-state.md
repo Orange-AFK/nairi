@@ -7,7 +7,7 @@
 1. Nairi is in early alpha implementation.
 2. The implementation still follows the accepted API-first, agent-first CMS direction.
 3. Core public and management content flows exist as scaffold implementations with verified route tests and guards.
-4. The current development focus is post-public-taxonomy-enrichment boundary closeout and documentation; taxonomy-to-post enforcement is active on `main`, taxonomy enrichment for public posts is active on a feature branch.
+4. The current development focus is Docker/Compose deployment and documentation; taxonomy-to-post enforcement is active on `main`, taxonomy enrichment for public posts is active on a feature branch, Docker/Compose is active on `main`.
 5. CMS admin console work has advanced beyond the foundation shell into the runtime API client boundary through draft list/detail, draft update, content-format edit payloads, targeted metadata JSON error copy, publish-review staging, publish confirmation, injected `publishPost` wiring, post-publish list/read-only behavior, separate published-history list readback, mixed-status copy, publish-review status scoping coverage, explicit hash routing, and API-backed category/tag/series pickers; it remains bounded to authenticated API contracts.
 
 ### Current Authority Snapshot

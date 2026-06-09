@@ -40,7 +40,7 @@ function adminApiClient(overrides: Partial<AdminApiClient> = {}): AdminApiClient
         slug: "first-draft",
         summary: "First draft summary.",
         categoryId: "dispatches",
-        seriesId: "field-journal",
+        seriesId: "series-field-journal",
         tags: ["draft", "release-notes"],
         metadata: {
           audience: "operators",
@@ -113,6 +113,12 @@ function adminApiClient(overrides: Partial<AdminApiClient> = {}): AdminApiClient
       return [
         { tagId: "tag-draft", name: "draft", slug: "draft", createdAt: "2026-06-01T00:00:00Z", updatedAt: "2026-06-01T00:00:00Z" },
         { tagId: "tag-release-notes", name: "release-notes", slug: "release-notes", createdAt: "2026-06-01T00:00:00Z", updatedAt: "2026-06-01T00:00:00Z" }
+      ];
+    },
+    async listSeries() {
+      return [
+        { seriesId: "series-getting-started", name: "Getting Started", slug: "getting-started", description: "Beginner series", createdAt: "2026-06-01T00:00:00Z", updatedAt: "2026-06-01T00:00:00Z" },
+        { seriesId: "series-field-journal", name: "Field Journal", slug: "field-journal", description: "Field notes collection", createdAt: "2026-06-01T00:00:00Z", updatedAt: "2026-06-01T00:00:00Z" }
       ];
     },
     ...overrides
@@ -276,7 +282,7 @@ describe("Nairi admin console shell", () => {
                 slug: "published-field-note",
                 summary: "Published summary.",
                 categoryId: "dispatches",
-                seriesId: "field-journal",
+                seriesId: "series-field-journal",
                 tags: ["published"],
                 metadata: {},
                 status: "published",
@@ -527,7 +533,7 @@ describe("Nairi admin console shell", () => {
     const slugField = screen.getByLabelText("Draft slug");
     const summaryField = screen.getByLabelText("Draft summary");
     const categoryField = screen.getByLabelText("Draft category");
-    const seriesField = screen.getByLabelText("Draft series ID");
+    const seriesField = screen.getByLabelText("Draft series");
     const tagsField = screen.getByLabelText("Draft tags");
     const metadataField = screen.getByLabelText("Draft metadata JSON");
     const contentFormatField = screen.getByLabelText("Draft content format");
@@ -535,7 +541,7 @@ describe("Nairi admin console shell", () => {
     expect(slugField).toHaveValue("first-draft");
     expect(summaryField).toHaveValue("First draft summary.");
     expect(categoryField).toHaveValue("dispatches");
-    expect(seriesField).toHaveValue("field-journal");
+    expect(seriesField).toHaveValue("series-field-journal");
     expect(tagsField).toHaveValue("draft, release-notes");
     expect(metadataField).toHaveValue(JSON.stringify({ audience: "operators", priority: 2 }, null, 2));
     expect(contentFormatField).toHaveValue("markdown");
@@ -546,8 +552,7 @@ describe("Nairi admin console shell", () => {
     await user.clear(summaryField);
     await user.type(summaryField, "Updated draft summary from the admin form.");
     await user.selectOptions(categoryField, "field-notes");
-    await user.clear(seriesField);
-    await user.type(seriesField, "monthly-field-journal");
+    await user.selectOptions(seriesField, "series-getting-started");
     await user.clear(tagsField);
     await user.type(tagsField, "updated, release-notes, updated");
     await user.clear(metadataField);
@@ -563,7 +568,7 @@ describe("Nairi admin console shell", () => {
       slug: "updated-draft-slug",
       summary: "Updated draft summary from the admin form.",
       categoryId: "field-notes",
-      seriesId: "monthly-field-journal",
+      seriesId: "series-getting-started",
       tags: ["updated", "release-notes"],
       metadata: {
         audience: "maintainers",
@@ -1104,7 +1109,7 @@ describe("Nairi admin console shell", () => {
     );
   });
 
-  it("normalizes a cleared draft series ID to null before update", async () => {
+  it("normalizes an unset draft series to null before update", async () => {
     const user = userEvent.setup();
     const updatePost = vi.fn(async (_postId: string, input: AdminPostUpdateInput): Promise<AdminPostDetail> => ({
       id: "post-1",
@@ -1126,9 +1131,8 @@ describe("Nairi admin console shell", () => {
     await user.click(await screen.findByRole("button", { name: /First draft/ }));
     await screen.findByText("revision-post-1-1");
 
-    const seriesField = screen.getByLabelText("Draft series ID");
-    await user.clear(seriesField);
-    await user.type(seriesField, "   ");
+    const seriesField = screen.getByLabelText("Draft series");
+    await user.selectOptions(seriesField, "");
     await user.click(screen.getByRole("button", { name: "Save draft changes" }));
 
     expect(updatePost).toHaveBeenCalledWith(
